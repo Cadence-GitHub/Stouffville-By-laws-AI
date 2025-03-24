@@ -1,0 +1,10 @@
+services:
+  backend:
+    image: stouffville-bylaws-ai/backend:latest
+    build: ./backend  # Fallback if image doesn't exist
+    volumes:
+      - ./backend:/app  # For development
+    ports:
+      - "5000:5000"
+    restart: always
+
