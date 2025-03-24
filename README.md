@@ -1,2 +1,82 @@
 # Stouffville-By-laws-AI
 AI-powered web application that makes Stouffville's municipal bylaws accessible and understandable to residents and municipal officers through natural conversation.
+
+## Development Setup with Docker
+
+This project uses Docker to create a consistent development environment. The setup includes a Python Flask backend that can be easily deployed and tested.
+
+### Prerequisites
+
+- [Docker](https://www.docker.com/get-started) installed on your machine
+- [Docker Compose](https://docs.docker.com/compose/install/) (included with Docker Desktop on Windows/Mac)
+- Git for version control
+
+### Getting Started
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/Stouffville-By-laws-AI.git
+   cd Stouffville-By-laws-AI
+   ```
+
+2. Build the backend Docker image:
+   ```bash
+   # Make the build script executable if needed
+   chmod +x build-backend.sh
+   
+   # Build the backend image
+   ./build-backend.sh
+   ```
+
+3. Start the backend service using Docker Compose:
+   ```bash
+   docker-compose up
+   ```
+   
+   Or run it in detached mode:
+   ```bash
+   docker-compose up -d
+   ```
+
+4. Access the backend API:
+   - The API will be available at http://localhost:5000
+   - Test the API with: `curl http://localhost:5000/api/hello`
+
+### Development Workflow
+
+- **Backend Files**: The backend code is in the `backend/` directory
+  - `app.py`: Main Flask application
+  - `requirements.txt`: Python dependencies
+  - `Dockerfile`: Container configuration
+
+- **Live Code Changes**: 
+  - The backend directory is mounted as a volume in the container
+  - Changes to Python files will be reflected immediately when you refresh (Flask debug mode is enabled)
+
+- **Managing Docker Containers**:
+  - View running containers: `docker-compose ps`
+  - View logs: `docker-compose logs -f`
+  - Stop containers: `docker-compose down`
+
+- **Rebuilding After Dependency Changes**:
+  - If you modify `requirements.txt`, you'll need to rebuild the image:
+    ```bash
+    ./build-backend.sh
+    docker-compose up -d
+    ```
+
+### API Endpoints
+
+- `GET /api/hello`: Returns a greeting message in JSON format
+
+## Contributing
+
+1. Create a feature branch from main
+2. Make your changes
+3. Submit a pull request
+
+## Next Steps
+
+- Frontend development (React application)
+- Database integration
+- AI model integration for bylaw analysis
