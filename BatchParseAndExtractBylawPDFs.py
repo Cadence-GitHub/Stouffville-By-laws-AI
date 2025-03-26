@@ -511,6 +511,37 @@ Key dates (in DD-MMM-YYYY format - use an agent or a function, if you cannot do 
                 logger.error(f"Extract data request failed after {max_retries} attempts: {str(e)}")
                 raise
 
+def validate_json_schema(data):
+    """
+    Validate if the JSON response has the expected structure.
+    Returns True if valid, False if invalid.
+    """
+    # Check for expected fields in a valid response
+    expected_fields = [
+        "bylawNumber", "bylawType", "bylawYear", "extractedText",
+        "legalTopics", "legislation", "otherBylaws", "condtionsAndClauses",
+        "entityAndDesignation", "otherEntitiesMentioned", "locationAddresses",
+        "moneyAndCategories", "hasEmbeddedImages", "hasEmbeddedMaps"
+    ]
+
+    # If the response has "candidates" at the top level, it's likely an error response
+    if "candidates" in data:
+        logger.warning("Response appears to be an error - found 'candidates' at top level")
+        return False
+
+    # Check if at least 70% of expected fields are present (allowing for some variation)
+    fields_found = 0
+    for field in expected_fields:
+        if field in data:
+            fields_found += 1
+
+    validity_percentage = (fields_found / len(expected_fields)) * 100
+    if validity_percentage < 70:
+        logger.warning(f"Response appears to be invalid - only {validity_percentage:.1f}% of expected fields present")
+        return False
+
+    return True
+
 def process_pdf_file(api_key, pdf_path, output_dir, model="gemini-2.0-flash", rate_limiter=None):
     """Process a single PDF file and save the output JSON"""
     try:
@@ -518,40 +549,48 @@ def process_pdf_file(api_key, pdf_path, output_dir, model="gemini-2.0-flash", ra
         pdf_name = os.path.basename(pdf_path)
         base_name = os.path.splitext(pdf_name)[0]
         output_path = os.path.join(output_dir, f"{base_name}.json")
-        
+
         logger.info(f"Processing {pdf_name}...")
-        
+
         # Upload file
         logger.info(f"Uploading {pdf_path}...")
         file_uri = upload_file(api_key, pdf_path, rate_limiter=rate_limiter)
         logger.info(f"File URI: {file_uri}")
-        
+
         # Count tokens
         logger.info("Counting tokens...")
         token_count = count_tokens(api_key, file_uri, model, rate_limiter)
         logger.info(f"Token count: {token_count}")
-        
+
         # Extract structured data
         logger.info(f"Extracting structured data with model {model}...")
         response = extract_structured_data(api_key, file_uri, model, rate_limiter, token_count)
-        
+
+        # Validate JSON schema
+        is_valid = validate_json_schema(response)
+
+        # Adjust output path if response is an error
+        if not is_valid:
+            output_path = os.path.join(output_dir, f"{base_name}-error.json")
+            logger.warning(f"Invalid response schema detected, saving as error file: {output_path}")
+
         # Save response to output file
         logger.info(f"Saving results to {output_path}...")
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         with open(output_path, "w") as f:
             json.dump(response, f, indent=2)
-        
+
         logger.info(f"Results saved to {output_path}")
-        
+
         # Delete the file after successful processing
         logger.info(f"Deleting file {file_uri} from Gemini API...")
         if delete_file(api_key, file_uri, rate_limiter):
             logger.info(f"File {file_uri} deleted successfully")
         else:
             logger.warning(f"Failed to delete file {file_uri}")
-        
+
         return True
-        
+
     except Exception as e:
         logger.error(f"Error processing {pdf_path}: {str(e)}")
         return False
