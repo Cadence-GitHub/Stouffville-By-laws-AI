@@ -1,4 +1,3 @@
-```markdown
 # PDF Data Extraction with Gemini API - Documentation
 
 ## Table of Contents
@@ -435,5 +434,3 @@ This proactive approach helps the script run smoothly over extended periods and 
 *   **Slow Processing:** Large PDF files or complex prompts can take time. Using more powerful models (like `gemini-1.5-pro`) might also increase latency compared to `flash` models. Rate limiting will also introduce delays if processing many files quickly. Check the logs for "Rate limited. Waiting..." messages.
 *   **Inaccurate Extractions:** The quality of extraction depends on the model, the clarity of the prompt, the document's layout/quality, and the complexity of the requested information. Refining the prompt in `extract_structured_data` is the primary way to improve accuracy. Consider providing few-shot examples within the prompt if necessary.
 *   **File Not Found Errors:** Ensure the `--input` path is correct and the script has read permissions for the input file(s)/directory. Ensure the `--output` directory exists or the script has write permissions to create it.
-
-```
