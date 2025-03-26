@@ -18,12 +18,35 @@ import logging
 from collections import deque
 from pathlib import Path
 
-# Setup logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+# Setup logging with both file and console handlers
+def setup_logging(log_file_path):
+    """Set up logging to both console and file"""
+    # Create logger
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+    
+    # Create formatters
+    file_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    console_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    
+    # Create and configure file handler
+    file_handler = logging.FileHandler(log_file_path)
+    file_handler.setLevel(logging.INFO)
+    file_handler.setFormatter(file_formatter)
+    
+    # Create and configure console handler
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+    console_handler.setFormatter(console_formatter)
+    
+    # Add handlers to logger
+    logger.addHandler(file_handler)
+    logger.addHandler(console_handler)
+    
+    return logger
+
+# Logger will be initialized in main()
+logger = None
 
 class RateLimiter:
     """Tracks and enforces Gemini API rate limits"""
@@ -249,6 +272,48 @@ def upload_file(api_key, pdf_path, display_name=None, rate_limiter=None):
                 logger.error(f"File upload failed after {max_retries} attempts: {str(e)}")
                 raise
 
+def delete_file(api_key, file_uri, rate_limiter=None):
+    """Delete a file from Gemini API"""
+    
+    if rate_limiter:
+        rate_limiter.wait_if_needed()
+    
+    # Extract file name from URI
+    # URI format is typically files/{file_name}
+    parts = file_uri.split('/')
+    if len(parts) < 2:
+        logger.error(f"Invalid file URI format: {file_uri}")
+        return False
+    
+    file_name = parts[-1]
+    
+    url = f"https://generativelanguage.googleapis.com/v1beta/files/{file_name}?key={api_key}"
+    
+    max_retries = 3
+    retry_delay = 2  # Initial delay in seconds
+    
+    for attempt in range(max_retries):
+        try:
+            response = requests.delete(url)
+            
+            response.raise_for_status()
+            
+            # Record the request if rate limiter is provided
+            if rate_limiter:
+                rate_limiter.record_request()
+            
+            logger.info(f"File {file_name} deleted successfully")
+            return True
+            
+        except requests.RequestException as e:
+            if attempt < max_retries - 1:
+                wait_time = retry_delay * (2 ** attempt)  # Exponential backoff
+                logger.warning(f"File deletion failed: {str(e)}. Retrying in {wait_time} seconds...")
+                time.sleep(wait_time)
+            else:
+                logger.error(f"File deletion failed after {max_retries} attempts: {str(e)}")
+                return False
+
 def count_tokens(api_key, file_uri, model="gemini-2.0-flash", rate_limiter=None):
     """Count tokens in a PDF file"""
     
@@ -325,36 +390,59 @@ def extract_structured_data(api_key, file_uri, model="gemini-2.0-flash", rate_li
       "properties": {
         "bylawNumber": {"type": "string"},
         "bylawYear": {"type": "string"},
+        "bylawType": {"type": "string"},
         "extractedText": {  "type": "array",  "items": {    "type": "string"  }},
         "legalTopics": {"type": "string"},
         "legislation": {"type": "string"},
+        "whyLegislation": {"type": "string"},
         "otherBylaws": {"type": "string"},
+        "whyOtherBylaws": {"type": "string"},
         "condtionsAndClauses": {"type": "string"},
-        "entitySigned": {"type": "string"},
+        "entityAndDesignation": {"type": "string"},
         "otherEntitiesMentioned": {"type": "string"},
         "locationAddresses": {"type": "string"},
         "moneyAndCategories": {"type": "string"},
         "table": {  "type": "array",  "items": {    "type": "string"  }},
-        "otherDetails": {"type": "string"}
+        "keywords": {  "type": "array",  "items": {    "type": "string"  }},
+        "keyDatesAndInfo": {  "type": "array",  "items": {    "type": "string"  }},
+        "otherDetails": {"type": "string"},
+        "newsSources": {"type": "string"},
+        "hasEmbeddedImages": {"type": "boolean"},
+        "imageDesciption": {"type": "string"},
+        "hasEmbeddedMaps": {"type": "boolean"},
+        "mapDescription": {"type": "string"},
+        "laymanExplanation": {"type": "string"}
+
       },
-      "required": ["bylawNumber", "bylawYear", "extractedText"]
+      "required": ["bylawNumber", "bylawYear", "bylawType", "extractedText", "legalTopics", "legislation", "otherBylaws", "condtionsAndClauses", "entityAndDesignation", "otherEntitiesMentioned", "locationAddresses", "moneyAndCategories", "table", "otherDetails", "hasEmbeddedImages", "hasEmbeddedMaps", "keywords", "laymanExplanation", "keyDatesAndInfo", "imageDesciption", "mapDescription", "whyLegislation", "whyOtherBylaws", "newsSources"]
     }
     
-    prompt = """For PDF file attached, produce a json file that has the below information:
+    prompt = """You are a fantastic parser of legal documents. You excel at reasoning while parsing and extracting. You follow instructions like a robot. You will validate the json produced against the PDF and the instructions provided before responding. For PDF file attached, produce a json file that has the below information:
 
 Bylaw number
 Bylaw year
-Put each page text extracted PDF without hallucination into its own array
+Bylaw type: Bylaws are numbered in a unique way. Ending with ZO could be zoning order, AP could be appointment, FI could be financial. Use your reasoning skills to define the type. Do not abbreviate.
+Important info: Put each page text extract from PDF without hallucination into its own array index. Separate paragraphs using 3 newline characters. Separate pages using 10 dashes.
 Canadian legal topics
-Acts, Regulations with sections referenced or mentioned
-Other bylaws mentioned
-Conditions and clauses
-Signing entity name
-Other Entity names
-Addresses or locations mentioned
-Money and category (examples of category: expense/revenue/payment etc.)
-Table: if you encounter tables, please provide them as an array
-Other details that are deemed necessary"""
+Acts, Regulations with sections referenced or mentioned. If nothing is found say None.
+If acts or regulation are mentioned, why are they mentioned? Is there a significance? Detail for each mentioned. Separate it by pipe symbol.
+Other bylaws mentioned. If nothing is found say None.
+If other bylaws are mentioned, why are they mentioned? Is there a significance? Detail for each bylaw mentioned. Separate it by pipe symbol.
+Conditions and clauses. If nothing is found say None.
+Signing entity (people or person) name and their designations
+Other Entity (people or person or institutions or companies) names. If nothing is found say None.
+Addresses or locations mentioned. If nothing is found say None.
+Money and category (examples of category: expense/revenue/payment etc.). If nothing is found say None.
+Table: if you encounter tables, please provide them as an array. Separate columns by using pipe symbol. use an agent or a function, if you cannot extract the table by yourself.
+Keyword: extract a lexicon of legal keywords from the text
+Other details that are deemed necessary. If nothing is found say None.
+Are there news sources mentioned? From where? If so, detail why and what here.
+Are there embedded images?
+If there are images, describe the image in detail. If there are multiple images, title them and describe them individually and separate others using a pipe symbol. use an agent or a function, if you cannot read the image by yourself.
+Are there embedded maps?
+If there are maps, describe the image in detail. If there are multiple maps, title them and describe them individually and separate others using a pipe symbol. use an agent or a function, if you cannot do read the map by yourself.
+Provide a plain simple english version of the bylaw so that a layman can understand. Do not hallucinate. Be precise and accurate.
+Key dates (in DD-MMM-YYYY format - use an agent or a function, if you cannot do it by yourself.) and information for the date mentioned in the document. If nothing is found say None."""
     
     data = {
         "contents": [
@@ -366,7 +454,7 @@ Other details that are deemed necessary"""
             }
         ],
         "generationConfig": {
-            "temperature": 0.1,
+            "temperature": 1.0,
             "responseSchema": schema,
             "responseMimeType":"application/json"
         }
@@ -454,6 +542,14 @@ def process_pdf_file(api_key, pdf_path, output_dir, model="gemini-2.0-flash", ra
             json.dump(response, f, indent=2)
         
         logger.info(f"Results saved to {output_path}")
+        
+        # Delete the file after successful processing
+        logger.info(f"Deleting file {file_uri} from Gemini API...")
+        if delete_file(api_key, file_uri, rate_limiter):
+            logger.info(f"File {file_uri} deleted successfully")
+        else:
+            logger.warning(f"Failed to delete file {file_uri}")
+        
         return True
         
     except Exception as e:
@@ -470,8 +566,14 @@ def main():
     parser.add_argument("--rpm", type=int, default=15, help="Requests per minute limit (default: 15)")
     parser.add_argument("--tpm", type=int, default=1000000, help="Tokens per minute limit (default: 1,000,000)")
     parser.add_argument("--rpd", type=int, default=1500, help="Requests per day limit (default: 1,500)")
+    parser.add_argument("--log-file", "-l", default="pdf_extraction.log", help="Path to log file (default: pdf_extraction.log)")
     
     args = parser.parse_args()
+    
+    # Initialize logger
+    global logger
+    logger = setup_logging(args.log_file)
+    logger.info("Starting PDF extraction process")
     
     # Initialize rate limiter
     rate_limiter = RateLimiter(
