@@ -10,6 +10,7 @@ This project uses Docker to create a consistent development environment. The set
 - [Docker](https://www.docker.com/get-started) installed on your machine
 - [Docker Compose](https://docs.docker.com/compose/install/) (included with Docker Desktop on Windows/Mac)
 - Git for version control
+- Google Gemini API key (for AI capability)
 
 ### Getting Started
 
@@ -19,7 +20,13 @@ This project uses Docker to create a consistent development environment. The set
    cd Stouffville-By-laws-AI
    ```
 
-2. Build the backend Docker image:
+2. Set up environment variables:
+   Create a `.env` file in the root directory with the following:
+   ```
+   GOOGLE_API_KEY=your_gemini_api_key_here
+   ```
+
+3. Build the backend Docker image:
    ```bash
    # Make the build script executable if needed
    chmod +x build-backend.sh
@@ -28,7 +35,7 @@ This project uses Docker to create a consistent development environment. The set
    ./build-backend.sh
    ```
 
-3. Start the backend service using Docker Compose:
+4. Start the backend service using Docker Compose:
    ```bash
    docker-compose up
    ```
@@ -38,9 +45,10 @@ This project uses Docker to create a consistent development environment. The set
    docker-compose up -d
    ```
 
-4. Access the backend API:
+5. Access the backend API:
    - The API will be available at http://localhost:5000
    - Test the API with: `curl http://localhost:5000/api/hello`
+   - Access the demo web interface at http://localhost:5000/api/demo
 
 ### Development Workflow
 
@@ -68,6 +76,19 @@ This project uses Docker to create a consistent development environment. The set
 ### API Endpoints
 
 - `GET /api/hello`: Returns a greeting message in JSON format
+- `POST /api/ask`: Processes AI queries about bylaws (requires JSON with a 'query' field)
+- `GET /api/demo`: Returns a simple web interface for testing the AI functionality
+- `POST /api/demo`: Processes form submissions from the demo interface
+
+### AI Integration
+
+This project uses Google's Gemini AI model through the LangChain framework. Make sure your `.env` file contains a valid Google API key to enable AI functionality.
+
+Dependencies for AI integration:
+- langchain
+- langchain-google-genai
+- google-generativeai
+- python-dotenv
 
 ## Contributing
 
@@ -79,4 +100,5 @@ This project uses Docker to create a consistent development environment. The set
 
 - Frontend development (React application)
 - Database integration
-- AI model integration for bylaw analysis
+- Expanded AI training on Stouffville bylaws
+- Advanced query processing
