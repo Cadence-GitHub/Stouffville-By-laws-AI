@@ -411,13 +411,14 @@ def extract_structured_data(api_key, file_uri, model="gemini-2.0-flash", rate_li
         "imageDesciption": {"type": "string"},
         "hasEmbeddedMaps": {"type": "boolean"},
         "mapDescription": {"type": "string"},
-        "laymanExplanation": {"type": "string"}
+        "laymanExplanation": {"type": "string"},
+        "urlOriginalDocument": {"type":"string"}
 
       },
-      "required": ["bylawNumber", "bylawYear", "bylawType", "extractedText", "legalTopics", "legislation", "otherBylaws", "condtionsAndClauses", "entityAndDesignation", "otherEntitiesMentioned", "locationAddresses", "moneyAndCategories", "table", "otherDetails", "hasEmbeddedImages", "hasEmbeddedMaps", "keywords", "laymanExplanation", "keyDatesAndInfo", "imageDesciption", "mapDescription", "whyLegislation", "whyOtherBylaws", "newsSources"]
+      "required": ["bylawNumber", "bylawYear", "bylawType", "extractedText", "legalTopics", "legislation", "otherBylaws", "condtionsAndClauses", "entityAndDesignation", "otherEntitiesMentioned", "locationAddresses", "moneyAndCategories", "table", "otherDetails", "hasEmbeddedImages", "hasEmbeddedMaps", "keywords", "laymanExplanation", "keyDatesAndInfo", "imageDesciption", "mapDescription", "whyLegislation", "whyOtherBylaws", "newsSources", "urlOriginalDocument"]
     }
     
-    prompt = """You are a fantastic parser of legal documents. You excel at reasoning while parsing and extracting. You follow instructions like a robot. You will validate the json produced against the PDF and the instructions provided before responding. For PDF file attached, produce a json file that has the below information:
+    prompt = """You are a fantastic parser of legal documents. You excel at reasoning while parsing and extracting. You follow instructions like a robot. You will validate the json produced against the PDF and the instructions provided before responding. For PDF file attached, produce a json file that has the below information
 
 Bylaw number
 Bylaw year
@@ -442,7 +443,10 @@ If there are images, describe the image in detail. If there are multiple images,
 Are there embedded maps?
 If there are maps, describe the image in detail. If there are multiple maps, title them and describe them individually and separate others using a pipe symbol. use an agent or a function, if you cannot do read the map by yourself.
 Provide a plain simple english version of the bylaw so that a layman can understand. Do not hallucinate. Be precise and accurate.
-Key dates (in DD-MMM-YYYY format - use an agent or a function, if you cannot do it by yourself.) and information for the date mentioned in the document. If nothing is found say None."""
+Key dates (in DD-MMM-YYYY format - use an agent or a function, if you cannot do it by yourself.) and information for the date mentioned in the document. If nothing is found say None.
+URL to original document will always be empty. Do not populate anything here.
+
+AVOID: Trying to cram in entire decoded image in the extractedText. AVOID: printing a bunch of \\n that breaches your output tokens in the json."""
     
     data = {
         "contents": [
@@ -518,10 +522,7 @@ def validate_json_schema(data):
     """
     # Check for expected fields in a valid response
     expected_fields = [
-        "bylawNumber", "bylawType", "bylawYear", "extractedText",
-        "legalTopics", "legislation", "otherBylaws", "condtionsAndClauses",
-        "entityAndDesignation", "otherEntitiesMentioned", "locationAddresses",
-        "moneyAndCategories", "hasEmbeddedImages", "hasEmbeddedMaps"
+        "bylawNumber", "bylawYear", "bylawType", "extractedText", "legalTopics", "legislation", "otherBylaws", "condtionsAndClauses", "entityAndDesignation", "otherEntitiesMentioned", "locationAddresses", "moneyAndCategories", "table", "otherDetails", "hasEmbeddedImages", "hasEmbeddedMaps", "keywords", "laymanExplanation", "keyDatesAndInfo", "imageDesciption", "mapDescription", "whyLegislation", "whyOtherBylaws", "newsSources", "urlOriginalDocument"
     ]
 
     # If the response has "candidates" at the top level, it's likely an error response
@@ -600,6 +601,7 @@ def main():
     parser.add_argument("--api-key", "-k", required=True, help="Gemini API key")
     parser.add_argument("--input", "-i", required=True, help="Path to input PDF file or directory of PDFs")
     parser.add_argument("--output", "-o", required=True, help="Path to output directory for JSON files")
+    #experimental model: gemini-2.5-pro-exp-03-25
     parser.add_argument("--model", "-m", default="gemini-2.0-flash", 
                         help="Gemini model ID (default: gemini-2.0-flash)")
     parser.add_argument("--rpm", type=int, default=15, help="Requests per minute limit (default: 15)")
