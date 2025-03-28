@@ -54,11 +54,17 @@ This project uses Docker to create a consistent development environment. The set
 
 - **Backend Files**: The backend code is in the `backend/` directory
   - `app.py`: Main Flask application
+  - `app/`: Application package containing templates and prompts
   - `requirements.txt`: Python dependencies
   - `Dockerfile`: Container configuration
 
+- **Database Files**: The by-laws database is in the `database/` directory
+  - `parking_related_by-laws.json`: Contains by-laws related to parking regulations
+  - `search_bylaws.py`: Utility script for searching and extracting by-laws by keyword
+
 - **Live Code Changes**: 
   - The backend directory is mounted as a volume in the container
+  - The database directory is mounted as a volume in the container
   - Changes to Python files will be reflected immediately when you refresh (Flask debug mode is enabled)
 
 - **Managing Docker Containers**:

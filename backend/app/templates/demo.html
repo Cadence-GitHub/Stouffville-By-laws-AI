@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Stouffville By-laws AI Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .loading {
+            display: none;
+            color: #0066cc;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        .answer-container {
+            margin-top: 20px;
+            border-left: 4px solid #0066cc;
+            padding-left: 15px;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        input[type="text"] {
+            width: 80%;
+            padding: 8px;
+            margin-right: 10px;
+        }
+        input[type="submit"] {
+            padding: 8px 16px;
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Stouffville By-laws AI Demo</h1>
+    
+    <form id="queryForm" action="/api/demo" method="post">
+        <label for="query">Ask a question:</label>
+        <input type="text" id="query" name="query" required>
+        <input type="submit" value="Submit">
+    </form>
+    
+    <div id="loadingMessage" class="loading">Generating answer, please wait...</div>
+    
+    {% if question %}
+    <div class="answer-container">
+        <p><b>Question:</b> {{ question }}</p>
+        <p><b>Answer:</b></p>
+        <div>{{ answer | safe }}</div>
+    </div>
+    {% endif %}
+
+    <script>
+        document.getElementById('queryForm').addEventListener('submit', function() {
+            document.getElementById('loadingMessage').style.display = 'block';
+        });
+    </script>
+</body>
+</html> 

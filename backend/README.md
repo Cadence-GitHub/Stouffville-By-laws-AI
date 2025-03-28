@@ -7,7 +7,7 @@ A Flask-based backend service that provides AI-powered responses to questions ab
 - REST API for querying the Gemini AI model
 - Simple web-based demo interface for testing without the frontend
 - CORS support for frontend integration
-- 10-second timeout protection for AI queries
+- 30-second timeout protection for AI queries
 
 ## API Endpoints
 
@@ -92,11 +92,27 @@ Frontend developers can directly use this production backend if they don't want 
    - Queries should be sent as JSON with a `query` field
    - Responses will contain either an `answer` field with the AI response or an `error` field
 
+## Project Structure
+
+- `app.py`: Main Flask application
+- `app/`: Application package
+  - `__init__.py`: Package initialization
+  - `prompts.py`: AI prompt templates
+  - `templates/`: HTML templates for web interfaces
+    - `demo.html`: Enhanced demo page with improved UI
+
+## Database
+
+The application uses a JSON database of Stouffville by-laws located in the `../database/` directory:
+
+- `parking_related_by-laws.json`: Contains by-laws related to parking regulations
+- `search_bylaws.py`: Utility script for searching and extracting by-laws by keyword
+
 ## Important Implementation Details
 
-- The AI is configured to provide one-sentence responses by default
 - The backend uses the `gemini-2.0-flash` model
-- A 10-second timeout is applied to all AI queries to prevent long-running requests
+- A 30-second timeout is applied to all AI queries to prevent long-running requests
+- The AI is configured to provide comprehensive HTML-formatted responses 
 - Error handling is implemented for both API key issues and model processing errors, including timeouts
 
 ## Development Notes
