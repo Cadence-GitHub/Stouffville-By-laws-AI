@@ -7,6 +7,7 @@ A Flask-based backend service that provides AI-powered responses to questions ab
 - REST API for querying the Gemini AI model
 - Simple web-based demo interface for testing without the frontend
 - CORS support for frontend integration
+- 10-second timeout protection for AI queries
 
 ## API Endpoints
 
@@ -94,8 +95,9 @@ Frontend developers can directly use this production backend if they don't want 
 ## Important Implementation Details
 
 - The AI is configured to provide one-sentence responses by default
-- The backend uses the `gemini-2.0-flash-thinking-exp-01-21` model
-- Error handling is implemented for both API key issues and model processing errors
+- The backend uses the `gemini-2.0-flash` model
+- A 10-second timeout is applied to all AI queries to prevent long-running requests
+- Error handling is implemented for both API key issues and model processing errors, including timeouts
 
 ## Development Notes
 

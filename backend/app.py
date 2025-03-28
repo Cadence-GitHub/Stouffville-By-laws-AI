@@ -55,8 +55,12 @@ def get_gemini_response(query):
         return {"error": "GOOGLE_API_KEY environment variable is not set"}
     
     try:
-        # Initialize Gemini model with the specified version
-        model = ChatGoogleGenerativeAI(model="gemini-2.0-flash-thinking-exp-01-21", google_api_key=api_key)
+        # Initialize Gemini model with the specified version and 10 second timeout
+        model = ChatGoogleGenerativeAI(
+            model="gemini-2.0-flash", 
+            google_api_key=api_key,
+            timeout=10  # Add 10 second timeout
+        )
         
         # Define how the AI should process the query
         # Currently restricting to one-sentence responses
