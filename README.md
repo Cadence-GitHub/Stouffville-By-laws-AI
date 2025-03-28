@@ -16,7 +16,7 @@ This project uses Docker to create a consistent development environment. The set
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/Stouffville-By-laws-AI.git
+   git clone https://github.com/Cadence-GitHub/Stouffville-By-laws-AI.git
    cd Stouffville-By-laws-AI
    ```
 
