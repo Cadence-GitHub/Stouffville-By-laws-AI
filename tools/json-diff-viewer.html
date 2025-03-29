@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Comparison Tool</title>
+    <style>
+        :root {
+            --primary: #4a6fa5;
+            --add: #b5e6b5;
+            --remove: #ffcccc;
+            --change: #fff2b2;
+            --dark-text: #333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+        }
+
+        body {
+            padding: 20px;
+            background-color: #f5f7fa;
+            color: var(--dark-text);
+            line-height: 1.6;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .drop-area {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            gap: 20px;
+        }
+
+        .drop-box {
+            flex: 1;
+            padding: 20px;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            text-align: center;
+            background-color: white;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .drop-box:hover {
+            border-color: var(--primary);
+            background-color: #f9f9f9;
+        }
+
+        .drop-box h3 {
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+
+        .drop-box p {
+            color: #777;
+            margin-bottom: 15px;
+        }
+
+        .file-btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-btn:hover {
+            background-color: #3a5985;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-name {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .compare-btn {
+            display: block;
+            width: 200px;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .compare-btn:hover {
+            background-color: #3a5985;
+        }
+
+        .compare-btn:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .result-container {
+            margin-top: 30px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .result-header {
+            padding: 15px;
+            background-color: var(--primary);
+            color: white;
+            font-weight: bold;
+        }
+
+        .result-content {
+            padding: 20px;
+        }
+
+        .change-table {
+            width: 100%;
+            table-layout: fixed;
+            border-collapse: collapse;
+        }
+
+        .change-table th {
+            text-align: left;
+            padding: 12px 15px;
+            background-color: #f2f2f2;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .change-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            vertical-align: top;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .changed-field {
+            background-color: var(--change);
+        }
+
+        .added-field {
+            background-color: var(--add);
+        }
+
+        .removed-field {
+            background-color: var(--remove);
+        }
+
+        .array-diff {
+            margin-left: 20px;
+            padding: 8px;
+            border-radius: 4px;
+            border-left: 3px solid #ccc;
+        }
+
+        .array-diff-header {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .diff-item {
+            margin-bottom: 3px;
+            padding: 3px 5px;
+            border-radius: 3px;
+        }
+
+        .added {
+            background-color: var(--add);
+        }
+
+        .removed {
+            background-color: var(--remove);
+        }
+
+        pre {
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 14px;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 4px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .expandable {
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .expandable:hover {
+            background-color: #f5f5f5;
+        }
+
+        .expandable::before {
+            content: '▶';
+            display: inline-block;
+            margin-right: 5px;
+            transition: transform 0.3s;
+        }
+
+        .expanded::before {
+            transform: rotate(90deg);
+        }
+
+        .expandable-content {
+            display: none;
+            padding-left: 20px;
+        }
+
+        .status-message {
+            text-align: center;
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .error {
+            background-color: var(--remove);
+            color: #721c24;
+        }
+
+        .success {
+            background-color: var(--add);
+            color: #155724;
+        }
+
+        @media (max-width: 768px) {
+            .drop-area {
+                flex-direction: column;
+            }
+
+            .drop-box {
+                margin-bottom: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>JSON Comparison Tool</h1>
+
+        <div class="drop-area">
+            <div class="drop-box" id="old-drop-area">
+                <h3>Old JSON</h3>
+                <p>Drag & drop a JSON file or click to browse</p>
+                <label for="old-file" class="file-btn">Select File</label>
+                <input type="file" id="old-file" class="file-input" accept=".json">
+                <div class="file-name" id="old-file-name"></div>
+            </div>
+
+            <div class="drop-box" id="new-drop-area">
+                <h3>New JSON</h3>
+                <p>Drag & drop a JSON file or click to browse</p>
+                <label for="new-file" class="file-btn">Select File</label>
+                <input type="file" id="new-file" class="file-input" accept=".json">
+                <div class="file-name" id="new-file-name"></div>
+            </div>
+        </div>
+
+        <button id="compare-btn" class="compare-btn" disabled>Compare Files</button>
+
+        <div id="status-message" class="status-message" style="display: none;"></div>
+
+        <div id="result-container" class="result-container" style="display: none;">
+            <div class="result-header">Comparison Results</div>
+            <div class="result-content" id="result-content"></div>
+        </div>
+    </div>
+
+    <script>
+        // State variables
+        let oldFileContent = null;
+        let newFileContent = null;
+        let oldFileName = '';
+        let newFileName = '';
+
+        // DOM Elements
+        const oldFileInput = document.getElementById('old-file');
+        const newFileInput = document.getElementById('new-file');
+        const oldFileNameElem = document.getElementById('old-file-name');
+        const newFileNameElem = document.getElementById('new-file-name');
+        const oldDropArea = document.getElementById('old-drop-area');
+        const newDropArea = document.getElementById('new-drop-area');
+        const compareBtn = document.getElementById('compare-btn');
+        const resultContainer = document.getElementById('result-container');
+        const resultContent = document.getElementById('result-content');
+        const statusMessage = document.getElementById('status-message');
+
+        // Event Listeners
+        oldFileInput.addEventListener('change', (e) => handleFileSelect(e, 'old'));
+        newFileInput.addEventListener('change', (e) => handleFileSelect(e, 'new'));
+
+        oldDropArea.addEventListener('click', () => oldFileInput.click());
+        newDropArea.addEventListener('click', () => newFileInput.click());
+
+        // Drag and drop events for old file
+        oldDropArea.addEventListener('dragover', handleDragOver);
+        oldDropArea.addEventListener('dragleave', handleDragLeave);
+        oldDropArea.addEventListener('drop', (e) => handleDrop(e, 'old'));
+
+        // Drag and drop events for new file
+        newDropArea.addEventListener('dragover', handleDragOver);
+        newDropArea.addEventListener('dragleave', handleDragLeave);
+        newDropArea.addEventListener('drop', (e) => handleDrop(e, 'new'));
+
+        // Compare button
+        compareBtn.addEventListener('click', compareFiles);
+
+        // Functions
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.style.borderColor = 'var(--primary)';
+            this.style.backgroundColor = '#f9f9f9';
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.style.borderColor = '#ccc';
+            this.style.backgroundColor = 'white';
+        }
+
+        function handleDrop(e, type) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const dropArea = type === 'old' ? oldDropArea : newDropArea;
+            dropArea.style.borderColor = '#ccc';
+            dropArea.style.backgroundColor = 'white';
+
+            const file = e.dataTransfer.files[0];
+            if (file && file.type === 'application/json') {
+                processFile(file, type);
+            } else {
+                showStatusMessage('Please select a valid JSON file.', 'error');
+            }
+        }
+
+        function handleFileSelect(e, type) {
+            const file = e.target.files[0];
+            if (file) {
+                processFile(file, type);
+            }
+        }
+
+        function processFile(file, type) {
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                try {
+                    const content = JSON.parse(e.target.result);
+
+                    if (type === 'old') {
+                        oldFileContent = content;
+                        oldFileName = file.name;
+                        oldFileNameElem.textContent = file.name;
+                    } else {
+                        newFileContent = content;
+                        newFileName = file.name;
+                        newFileNameElem.textContent = file.name;
+                    }
+
+                    // Enable compare button if both files are loaded
+                    compareBtn.disabled = !(oldFileContent && newFileContent);
+
+                    // Clear previous results
+                    resultContainer.style.display = 'none';
+                    hideStatusMessage();
+
+                } catch (error) {
+                    showStatusMessage('Invalid JSON format: ' + error.message, 'error');
+                    if (type === 'old') {
+                        oldFileContent = null;
+                        oldFileName = '';
+                        oldFileNameElem.textContent = '';
+                    } else {
+                        newFileContent = null;
+                        newFileName = '';
+                        newFileNameElem.textContent = '';
+                    }
+                    compareBtn.disabled = true;
+                }
+            };
+
+            reader.readAsText(file);
+        }
+
+        function compareFiles() {
+            if (!oldFileContent || !newFileContent) {
+                showStatusMessage('Please select both files to compare.', 'error');
+                return;
+            }
+
+            try {
+                const differences = findDifferences(oldFileContent, newFileContent);
+                displayResults(differences);
+                resultContainer.style.display = 'block';
+                hideStatusMessage();
+
+                // Scroll to results
+                resultContainer.scrollIntoView({ behavior: 'smooth' });
+            } catch (error) {
+                showStatusMessage('Error comparing files: ' + error.message, 'error');
+            }
+        }
+
+        function findDifferences(oldObj, newObj) {
+            const differences = {
+                changed: {},
+                added: {},
+                removed: {},
+                arrayChanges: {}
+            };
+
+            // Find all keys in both objects
+            const allKeys = new Set([
+                ...Object.keys(oldObj),
+                ...Object.keys(newObj)
+            ]);
+
+            for (const key of allKeys) {
+                // Key exists in both objects
+                if (key in oldObj && key in newObj) {
+                    // Check if values are different
+                    if (!deepEqual(oldObj[key], newObj[key])) {
+                        // Handle arrays differently
+                        if (Array.isArray(oldObj[key]) && Array.isArray(newObj[key])) {
+                            differences.arrayChanges[key] = compareArrays(oldObj[key], newObj[key]);
+                        } else if (typeof oldObj[key] === 'object' && oldObj[key] !== null &&
+                                  typeof newObj[key] === 'object' && newObj[key] !== null) {
+                            // Handle nested objects
+                            differences.changed[key] = findDifferences(oldObj[key], newObj[key]);
+                        } else {
+                            // Simple value change
+                            differences.changed[key] = {
+                                old: oldObj[key],
+                                new: newObj[key]
+                            };
+                        }
+                    }
+                }
+                // Key only in new object (added)
+                else if (!(key in oldObj) && key in newObj) {
+                    differences.added[key] = newObj[key];
+                }
+                // Key only in old object (removed)
+                else if (key in oldObj && !(key in newObj)) {
+                    differences.removed[key] = oldObj[key];
+                }
+            }
+
+            return differences;
+        }
+
+        function compareArrays(oldArray, newArray) {
+            const result = {
+                added: [],
+                removed: [],
+                changed: []
+            };
+
+            // Check for simple arrays of primitives
+            if (oldArray.every(item => typeof item !== 'object' || item === null) &&
+                newArray.every(item => typeof item !== 'object' || item === null)) {
+                // Find added items
+                const addedItems = newArray.filter(item => !oldArray.includes(item));
+                if (addedItems.length > 0) {
+                    result.added = addedItems;
+                }
+
+                // Find removed items
+                const removedItems = oldArray.filter(item => !newArray.includes(item));
+                if (removedItems.length > 0) {
+                    result.removed = removedItems;
+                }
+
+                return result;
+            }
+
+            // For arrays of objects, do a more complex comparison
+            // This is a simple implementation - could be improved with a more sophisticated diff algorithm
+            let oldRemaining = [...oldArray];
+            let newRemaining = [...newArray];
+
+            // First find exact matches and remove them from consideration
+            for (let i = oldRemaining.length - 1; i >= 0; i--) {
+                for (let j = newRemaining.length - 1; j >= 0; j--) {
+                    if (deepEqual(oldRemaining[i], newRemaining[j])) {
+                        oldRemaining.splice(i, 1);
+                        newRemaining.splice(j, 1);
+                        break;
+                    }
+                }
+            }
+
+            // Remaining items are either changed, added, or removed
+            result.removed = oldRemaining;
+            result.added = newRemaining;
+
+            return result;
+        }
+
+        function deepEqual(a, b) {
+            if (a === b) return true;
+
+            if (a === null || b === null) return false;
+
+            if (typeof a !== 'object' || typeof b !== 'object') return false;
+
+            if (Array.isArray(a) && Array.isArray(b)) {
+                if (a.length !== b.length) return false;
+
+                for (let i = 0; i < a.length; i++) {
+                    if (!deepEqual(a[i], b[i])) return false;
+                }
+
+                return true;
+            }
+
+            const keysA = Object.keys(a);
+            const keysB = Object.keys(b);
+
+            if (keysA.length !== keysB.length) return false;
+
+            for (const key of keysA) {
+                if (!keysB.includes(key)) return false;
+                if (!deepEqual(a[key], b[key])) return false;
+            }
+
+            return true;
+        }
+
+        function displayResults(differences) {
+            resultContent.innerHTML = '';
+
+            // Create summary
+            const summary = document.createElement('div');
+            summary.innerHTML = `
+                <h3 style="margin-bottom: 15px;">Summary</h3>
+                <p>Comparing "${oldFileName}" to "${newFileName}"</p>
+                <p>
+                    <strong>${Object.keys(differences.changed).length}</strong> fields changed |
+                    <strong>${Object.keys(differences.added).length}</strong> fields added |
+                    <strong>${Object.keys(differences.removed).length}</strong> fields removed |
+                    <strong>${Object.keys(differences.arrayChanges).length}</strong> arrays modified
+                </p>
+                <hr style="margin: 20px 0;">
+            `;
+            resultContent.appendChild(summary);
+
+            // No changes found
+            if (Object.keys(differences.changed).length === 0 &&
+                Object.keys(differences.added).length === 0 &&
+                Object.keys(differences.removed).length === 0 &&
+                Object.keys(differences.arrayChanges).length === 0) {
+
+                const noChanges = document.createElement('div');
+                noChanges.innerHTML = '<p style="text-align: center; padding: 20px;">No differences found between the two JSON files.</p>';
+                resultContent.appendChild(noChanges);
+                return;
+            }
+
+            // Create change table
+            const table = document.createElement('table');
+            table.className = 'change-table';
+
+            // Table header
+            const thead = document.createElement('thead');
+            thead.innerHTML = `
+                <tr>
+                    <th style="width: 15%;">Field</th>
+                    <th style="width: 42.5%;">Old Value</th>
+                    <th style="width: 42.5%;">New Value</th>
+                </tr>
+            `;
+            table.appendChild(thead);
+
+            // Table body
+            const tbody = document.createElement('tbody');
+
+            // Changed fields
+            for (const key in differences.changed) {
+                const row = document.createElement('tr');
+                row.className = 'changed-field';
+
+                const fieldCell = document.createElement('td');
+                fieldCell.innerHTML = `<strong>${key}</strong> (changed)`;
+
+                const oldValueCell = document.createElement('td');
+                const newValueCell = document.createElement('td');
+
+                if (typeof differences.changed[key] === 'object' &&
+                    differences.changed[key].hasOwnProperty('old') &&
+                    differences.changed[key].hasOwnProperty('new')) {
+                    // Simple value change
+                    oldValueCell.textContent = formatValue(differences.changed[key].old);
+                    newValueCell.textContent = formatValue(differences.changed[key].new);
+                } else {
+                    // Nested changes (object)
+                    oldValueCell.innerHTML = '<div class="expandable">Nested Object</div>';
+                    const oldNestedContent = document.createElement('div');
+                    oldNestedContent.className = 'expandable-content';
+                    oldNestedContent.innerHTML = '<pre>' + JSON.stringify(differences.changed[key], null, 2) + '</pre>';
+                    oldValueCell.appendChild(oldNestedContent);
+
+                    newValueCell.textContent = '(See left for differences)';
+
+                    oldValueCell.querySelector('.expandable').addEventListener('click', toggleExpand);
+                }
+
+                row.appendChild(fieldCell);
+                row.appendChild(oldValueCell);
+                row.appendChild(newValueCell);
+                tbody.appendChild(row);
+            }
+
+            // Array changes
+            for (const key in differences.arrayChanges) {
+                const row = document.createElement('tr');
+                row.className = 'changed-field';
+
+                const fieldCell = document.createElement('td');
+                fieldCell.innerHTML = `<strong>${key}</strong> (array changes)`;
+
+                const oldValueCell = document.createElement('td');
+                const newValueCell = document.createElement('td');
+
+                const changes = differences.arrayChanges[key];
+
+                // Added items
+                if (changes.added && changes.added.length > 0) {
+                    const addedDiv = document.createElement('div');
+                    addedDiv.className = 'array-diff';
+                    addedDiv.innerHTML = `<div class="array-diff-header">Added Items (${changes.added.length})</div>`;
+
+                    changes.added.forEach(item => {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'diff-item added';
+                        itemDiv.textContent = formatValue(item);
+                        addedDiv.appendChild(itemDiv);
+                    });
+
+                    newValueCell.appendChild(addedDiv);
+                }
+
+                // Removed items
+                if (changes.removed && changes.removed.length > 0) {
+                    const removedDiv = document.createElement('div');
+                    removedDiv.className = 'array-diff';
+                    removedDiv.innerHTML = `<div class="array-diff-header">Removed Items (${changes.removed.length})</div>`;
+
+                    changes.removed.forEach(item => {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'diff-item removed';
+                        itemDiv.textContent = formatValue(item);
+                        removedDiv.appendChild(itemDiv);
+                    });
+
+                    oldValueCell.appendChild(removedDiv);
+                }
+
+                // Changed items
+                if (changes.changed && changes.changed.length > 0) {
+                    const changedDiv = document.createElement('div');
+                    changedDiv.className = 'array-diff';
+                    changedDiv.innerHTML = `<div class="array-diff-header">Changed Items (${changes.changed.length})</div>`;
+
+                    // This would need more complex implementation for showing exact changes in objects
+
+                    oldValueCell.appendChild(changedDiv);
+                }
+
+                row.appendChild(fieldCell);
+                row.appendChild(oldValueCell);
+                row.appendChild(newValueCell);
+                tbody.appendChild(row);
+            }
+
+            // Added fields
+            for (const key in differences.added) {
+                const row = document.createElement('tr');
+                row.className = 'added-field';
+
+                const fieldCell = document.createElement('td');
+                fieldCell.innerHTML = `<strong>${key}</strong> (added)`;
+
+                const oldValueCell = document.createElement('td');
+                oldValueCell.textContent = '—';
+
+                const newValueCell = document.createElement('td');
+
+                if (typeof differences.added[key] === 'object' && differences.added[key] !== null) {
+                    // Object or array
+                    newValueCell.innerHTML = '<div class="expandable">Object/Array</div>';
+                    const nestedContent = document.createElement('div');
+                    nestedContent.className = 'expandable-content';
+                    nestedContent.innerHTML = '<pre>' + JSON.stringify(differences.added[key], null, 2) + '</pre>';
+                    newValueCell.appendChild(nestedContent);
+
+                    newValueCell.querySelector('.expandable').addEventListener('click', toggleExpand);
+                } else {
+                    // Simple value
+                    newValueCell.textContent = formatValue(differences.added[key]);
+                }
+
+                row.appendChild(fieldCell);
+                row.appendChild(oldValueCell);
+                row.appendChild(newValueCell);
+                tbody.appendChild(row);
+            }
+
+            // Removed fields
+            for (const key in differences.removed) {
+                const row = document.createElement('tr');
+                row.className = 'removed-field';
+
+                const fieldCell = document.createElement('td');
+                fieldCell.innerHTML = `<strong>${key}</strong> (removed)`;
+
+                const oldValueCell = document.createElement('td');
+
+                if (typeof differences.removed[key] === 'object' && differences.removed[key] !== null) {
+                    // Object or array
+                    oldValueCell.innerHTML = '<div class="expandable">Object/Array</div>';
+                    const nestedContent = document.createElement('div');
+                    nestedContent.className = 'expandable-content';
+                    nestedContent.innerHTML = '<pre>' + JSON.stringify(differences.removed[key], null, 2) + '</pre>';
+                    oldValueCell.appendChild(nestedContent);
+
+                    oldValueCell.querySelector('.expandable').addEventListener('click', toggleExpand);
+                } else {
+                    // Simple value
+                    oldValueCell.textContent = formatValue(differences.removed[key]);
+                }
+
+                const newValueCell = document.createElement('td');
+                newValueCell.textContent = '—';
+
+                row.appendChild(fieldCell);
+                row.appendChild(oldValueCell);
+                row.appendChild(newValueCell);
+                tbody.appendChild(row);
+            }
+
+            table.appendChild(tbody);
+            resultContent.appendChild(table);
+
+            // Add event listeners to expandables
+            document.querySelectorAll('.expandable').forEach(el => {
+                el.addEventListener('click', toggleExpand);
+            });
+        }
+
+        function formatValue(value) {
+            if (value === null) return 'null';
+            if (value === undefined) return 'undefined';
+            if (typeof value === 'string') return value;
+            if (typeof value === 'object') return JSON.stringify(value);
+            return String(value);
+        }
+
+        function toggleExpand(e) {
+            const expandable = e.currentTarget;
+            expandable.classList.toggle('expanded');
+            const content = expandable.nextElementSibling;
+            content.style.display = content.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function showStatusMessage(message, type) {
+            statusMessage.textContent = message;
+            statusMessage.className = `status-message ${type}`;
+            statusMessage.style.display = 'block';
+
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                hideStatusMessage();
+            }, 5000);
+        }
+
+        function hideStatusMessage() {
+            statusMessage.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
