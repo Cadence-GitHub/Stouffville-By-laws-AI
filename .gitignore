@@ -2,3 +2,5 @@ venv/
 .vscode/
 .env
 __pycache__/
+database/chroma-data/*
+!database/chroma-data/.gitkeep

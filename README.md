@@ -11,6 +11,7 @@ This project uses Docker to create a consistent development environment. The set
 - [Docker Compose](https://docs.docker.com/compose/install/) (included with Docker Desktop on Windows/Mac)
 - Git for version control
 - Google Gemini API key (for AI capability)
+- Voyage AI API key (for vector embeddings)
 
 ### Getting Started
 
@@ -24,6 +25,7 @@ This project uses Docker to create a consistent development environment. The set
    Create a `.env` file in the root directory with the following:
    ```
    GOOGLE_API_KEY=your_gemini_api_key_here
+   VOYAGE_API_KEY=your_voyage_api_key_here
    ```
 
 3. Build the backend Docker image:
@@ -54,13 +56,15 @@ This project uses Docker to create a consistent development environment. The set
 
 - **Backend Files**: The backend code is in the `backend/` directory
   - `app.py`: Main Flask application
-  - `app/`: Application package containing templates and prompts
+  - `app/`: Application package containing templates, prompts, and ChromaDB integration
   - `requirements.txt`: Python dependencies
   - `Dockerfile`: Container configuration
 
 - **Database Files**: The by-laws database is in the `database/` directory
   - `parking_related_by-laws.json`: Contains by-laws related to parking regulations
   - `search_bylaws.py`: Utility script for searching and extracting by-laws by keyword
+  - `init_chroma.py`: Script to initialize ChromaDB with by-laws data
+  - `chroma-data/`: Directory containing ChromaDB vector database files
 
 - **Live Code Changes**: 
   - The backend directory is mounted as a volume in the container
@@ -90,11 +94,27 @@ This project uses Docker to create a consistent development environment. The set
 
 This project uses Google's Gemini AI model through the LangChain framework. Make sure your `.env` file contains a valid Google API key to enable AI functionality.
 
+The application also leverages ChromaDB for vector search with Voyage AI embeddings to efficiently retrieve relevant by-laws based on semantic similarity.
+
 Dependencies for AI integration:
 - langchain
 - langchain-google-genai
 - google-generativeai
 - python-dotenv
+- chromadb
+- langchain-chroma
+- langchain-voyageai
+
+### Vector Database Setup
+
+To initialize the ChromaDB vector database with by-laws data:
+
+1. Make sure the ChromaDB container is running (`docker-compose up -d`)
+2. Run the initialization script:
+   ```bash
+   cd database
+   python init_chroma.py
+   ```
 
 ## Contributing
 
@@ -105,6 +125,5 @@ Dependencies for AI integration:
 ## Next Steps
 
 - Frontend development (React application)
-- Database integration
 - Expanded AI training on Stouffville bylaws
 - Advanced query processing

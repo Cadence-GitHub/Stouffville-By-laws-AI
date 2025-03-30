@@ -8,4 +8,22 @@ services:
     ports:
       - "5000:5000"
     restart: always
+    environment:
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - VOYAGE_API_KEY=${VOYAGE_API_KEY}
+      - CHROMA_HOST=chroma
+      - CHROMA_PORT=8000
+    depends_on:
+      - chroma
 
+  chroma:
+    image: chromadb/chroma:latest
+    volumes:
+      - ./database/chroma-data:/chroma/chroma-data
+    ports:
+      - "8000:8000"  # Expose ChromaDB API port for development
+    environment:
+      - CHROMA_SERVER_HOST=0.0.0.0
+      - CHROMA_SERVER_HTTP_PORT=8000
+      - PERSIST_DIRECTORY=/chroma/chroma-data
+    restart: always

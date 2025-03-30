@@ -4,4 +4,6 @@ langchain==0.3.21
 langchain-google-genai==2.0.10
 google-generativeai==0.8.4
 python-dotenv==1.0.1
-
+chromadb==0.6.3
+langchain-chroma==0.2.2
+langchain-voyageai==0.1.4
