@@ -1,26 +1,9 @@
 'use client'
 
 import styles from "./page.module.css";
-import { useState } from "react";
+import DynamicInput from "@/components/DynamicInput";
 
 export default function Home() {
-  
-  // Responsive UI interaction for the input fields (changes text on click)
-  // TODO-feature: Have a list of defaultValues to randomly assign to initialValue.
-  let initialValue = "Can my dog poop on someone else's lawn?"
-  const [userQuery, setUserQuery] = useState(initialValue);
-
-  // Triggers when input loses focus from user
-  const handleBlur = () => {
-    if (userQuery == "") {
-      setUserQuery(initialValue);
-    }
-  }
-
-  // Update input value when user types
-  const handleChange = (e) => {
-    setUserQuery(e.target.value);
-  };
   
   return (
     <div className="contentContainer">
@@ -38,21 +21,7 @@ export default function Home() {
           </button>
         </div>
 
-        <div>
-          <form>
-            <input 
-              name="userQuery" 
-              type="text" 
-              value={userQuery} 
-              onChange={handleChange} 
-              defaultValue={userQuery} 
-              onBlur={handleBlur} // When the input loses focus, check and reset if empty
-              onClick={e => setUserQuery('')} >
-            </input>
-            <button type="submit">Search</button>
-          </form>
-        </div>
-
+        <DynamicInput/>
 
       </div>
     </div>
