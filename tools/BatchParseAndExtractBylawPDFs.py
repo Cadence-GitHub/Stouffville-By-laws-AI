@@ -420,31 +420,31 @@ def extract_structured_data(api_key, file_uri, model="gemini-2.0-flash", rate_li
     
     prompt = """You are a fantastic parser of legal documents. You excel at reasoning while parsing and extracting. You follow instructions like a robot. You will validate the json produced against the PDF and the instructions provided before responding. For PDF file attached, produce a json file that has the below information
 
-Bylaw number
-Bylaw year
-Bylaw type: Bylaws are numbered in a unique way. Ending with ZO could be zoning order, AP could be appointment, FI could be financial. Use your reasoning skills to define the type. Do not abbreviate.
-Important info: Put each page text extract from PDF without hallucination into its own array index. Separate paragraphs using 3 newline characters. Separate pages using 10 dashes.
-Canadian legal topics
-Acts, Regulations with sections referenced or mentioned. If nothing is found say None.
-If acts or regulation are mentioned, why are they mentioned? Is there a significance? Detail for each mentioned. Separate it by pipe symbol.
-Other bylaws mentioned. If nothing is found say None.
-If other bylaws are mentioned, why are they mentioned? Is there a significance? Detail for each bylaw mentioned. Separate it by pipe symbol.
-Conditions and clauses. If nothing is found say None.
-Signing entity (people or person) name and their designations
-Other Entity (people or person or institutions or companies) names. If nothing is found say None.
-Addresses or locations mentioned. If nothing is found say None.
-Money and category (examples of category: expense/revenue/payment etc.). If nothing is found say None.
-Table: if you encounter tables, please provide them as an array. Separate columns by using pipe symbol. use an agent or a function, if you cannot extract the table by yourself.
-Keyword: extract a lexicon of legal keywords from the text
-Other details that are deemed necessary. If nothing is found say None.
-Are there news sources mentioned? From where? If so, detail why and what here.
-Are there embedded images?
-If there are images, describe the image in detail. If there are multiple images, title them and describe them individually and separate others using a pipe symbol. use an agent or a function, if you cannot read the image by yourself.
-Are there embedded maps?
-If there are maps, describe the image in detail. If there are multiple maps, title them and describe them individually and separate others using a pipe symbol. use an agent or a function, if you cannot do read the map by yourself.
-Provide a plain simple english version of the bylaw so that a layman can understand. Do not hallucinate. Be precise and accurate.
-Key dates (in DD-MMM-YYYY format - use an agent or a function, if you cannot do it by yourself.) and information for the date mentioned in the document. If nothing is found say None.
-URL to original document will always be empty. Do not populate anything here.
+bylawNumber: Bylaw number
+bylawYear: Bylaw year
+bylawType: Bylaws are numbered in a unique way. Ending with ZO could be zoning order, AP could be appointment, FI could be financial. Use your reasoning skills to define the type. Do not abbreviate.
+extractedText: Put each page text extract from PDF without hallucination into its own array index. Separate paragraphs using 3 newline characters. Separate pages using 10 dashes.
+legalTopics: Canadian legal topics
+legislation: Acts, Regulations with sections referenced or mentioned. If nothing is found say None.
+whyLegislation: If acts or regulation are mentioned, why are they mentioned? Is there a significance? Detail for each mentioned. Separate it by pipe symbol.
+otherBylaws: Other bylaws mentioned. If nothing is found say None.
+whyOtherBylaws: If other bylaws are mentioned, why are they mentioned? Is there a significance? Detail for each bylaw mentioned. Separate it by pipe symbol.
+condtionsAndClauses: Conditions and clauses. If nothing is found say None.
+entityAndDesignation: Signing entity (people or person) name and their designations
+otherEntitiesMentioned: Other Entity (people or person or institutions or companies) names. If nothing is found say None.
+locationAddresses: Addresses or locations mentioned. If nothing is found say None.
+moneyAndCategories: Money and category (examples of category: expense/revenue/payment etc.). If nothing is found say None.
+table: If you encounter tables, please provide them as an array. Separate columns by using pipe symbol. use an agent or a function, if you cannot extract the table by yourself.
+keywords: Extract a lexicon of legal keywords from the text
+keyDatesAndInfo: Key dates (in DD-MMM-YYYY format - use an agent or a function, if you cannot do it by yourself.) and information for the date mentioned in the document. If nothing is found say None.
+otherDetails: Other details that are deemed necessary. If nothing is found say None.
+newsSources: Are there news sources mentioned? From where? If so, detail why and what here.
+hasEmbeddedImages: Are there embedded images? (true/false)
+imageDesciption: If there are images, describe the image in detail. If there are multiple images, title them and describe them individually and separate others using a pipe symbol. use an agent or a function, if you cannot read the image by yourself.
+hasEmbeddedMaps: Are there embedded maps? (true/false)
+mapDescription: If there are maps, describe the image in detail. If there are multiple maps, title them and describe them individually and separate others using a pipe symbol. use an agent or a function, if you cannot do read the map by yourself.
+laymanExplanation: Provide a plain simple english version of the bylaw so that a layman can understand. Do not hallucinate. Be precise and accurate.
+urlOriginalDocument: URL to original document will always be empty. Do not populate anything here.
 
 AVOID: Trying to cram in entire decoded image in the extractedText. AVOID: printing a bunch of \\n that breaches your output tokens in the json."""
     
@@ -458,7 +458,7 @@ AVOID: Trying to cram in entire decoded image in the extractedText. AVOID: print
             }
         ],
         "generationConfig": {
-            "temperature": 1.0,
+            "temperature": 0.3,
             "responseSchema": schema,
             "responseMimeType":"application/json"
         }
