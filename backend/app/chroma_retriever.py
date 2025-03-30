@@ -15,8 +15,6 @@ class ChromaDBRetriever:
         self.chroma_port = int(os.environ.get("CHROMA_PORT", "8000"))
         
         # Initialize the embedding function - using the Voyage AI model
-        # Note: In production, you'd want to use Voyage or other embedding models
-        # For simplicity in this example, we use OpenAI embeddings
         self.embedding_function = VoyageAIEmbeddings(model="voyage-3-large")
         
         # Collection name for by-laws

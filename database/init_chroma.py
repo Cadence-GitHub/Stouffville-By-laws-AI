@@ -147,8 +147,20 @@ def main():
     # Add documents to the vector store in batches to avoid memory issues
     if documents:
         print(f"Adding {len(documents)} documents to ChromaDB...")
+        
+        # Define batch size
+        batch_size = 100
+        total_batches = (len(documents) + batch_size - 1) // batch_size  # Ceiling division
+        
         try:
-            vector_store.add_documents(documents)
+            for i in range(0, len(documents), batch_size):
+                batch = documents[i:i+batch_size]
+                batch_num = (i // batch_size) + 1
+                print(f"  Processing batch {batch_num}/{total_batches} ({len(batch)} documents)...")
+                vector_store.add_documents(batch)
+                # Small delay to avoid overwhelming the server
+                time.sleep(0.5)
+            
             print(f"Initialization complete. Added {total_bylaws} bylaws to ChromaDB.")
         except Exception as e:
             print(f"Error adding documents to ChromaDB: {str(e)}")
