@@ -63,7 +63,8 @@ def main():
         vector_store = Chroma(
             collection_name=args.collection,
             embedding_function=embedding_function,
-            client=chroma_client
+            client=chroma_client,
+            collection_metadata={"hnsw:M": 16, "hnsw:construction_ef": 128, "hnsw:search_ef": 50}
         )
         
         # If reset flag is set, clear the collection
@@ -98,7 +99,7 @@ def main():
     for json_file in json_files:
         print(f"Processing {os.path.basename(json_file)}...")
         
-        with open(json_file, 'r') as f:
+        with open(json_file, 'r', encoding='utf-8') as f:
             file_content = json.load(f)
         
         # Handle both single bylaw and list of bylaws
@@ -167,6 +168,51 @@ def main():
     else:
         print("No valid documents found to add to ChromaDB.")
 
+    get_stats(vector_store)
+ 
+
+def get_stats(self) :
+        """
+        Get statistics about the bylaw vector database.
+        
+        Returns:
+            Dictionary with statistics
+        """
+        total_docs = self._collection.count()
+        
+        # Get all metadata to analyze collection contents
+        results = self._collection.get()
+        unique_bylaws = set()
+        bylaw_types = {}
+        bylaw_years = {}
+        
+        for metadata in results.get("metadatas", []):
+            if metadata and "bylawNumber" in metadata:
+                unique_bylaws.add(metadata["bylawNumber"])
+            
+            if metadata and "bylawType" in metadata:
+                bylaw_type = metadata["bylawType"]
+                bylaw_types[bylaw_type] = bylaw_types.get(bylaw_type, 0) + 1
+            
+            if metadata and "bylawYear" in metadata:
+                bylaw_year = metadata["bylawYear"]
+                bylaw_years[bylaw_year] = bylaw_years.get(bylaw_year, 0) + 1
+        
+        # Sort years chronologically and types by frequency
+        sorted_years = dict(sorted(bylaw_years.items()))
+        sorted_types = dict(sorted(bylaw_types.items(), key=lambda x: x[1], reverse=True))
+        
+        print("Database Statistics:")
+        print(f"Total Documents: {total_docs}")
+        print(f"Unique Bylaws: {len(unique_bylaws)}")
+        print("Bylaw Types:")
+        for bylaw_type, count in sorted_types.items():
+            print(f"  - {bylaw_type}: {count}")
+        print("Bylaw Years:")
+        for year, count in sorted_years.items():
+            print(f"  - {year}: {count}")
+
+   
 if __name__ == "__main__":
     main()
 
