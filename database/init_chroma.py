@@ -4,6 +4,7 @@ Initialize ChromaDB with by-laws data using LangChain integration.
 
 This script loads by-laws from JSON files in the database directory and creates embeddings 
 using the 'extractedText' field while storing all other fields as metadata.
+It uses upsert to avoid duplicate documents based on bylaw IDs.
 
 Usage:
     python init_chroma.py
@@ -87,6 +88,15 @@ def main():
         print("2. Ensure port 8000 is properly exposed in docker-compose.yaml")
         return
     
+    # Get existing document IDs to avoid duplicates
+    try:
+        existing_docs = vector_store.get()
+        existing_ids = set(existing_docs.get("ids", []))
+        print(f"Found {len(existing_ids)} existing documents in the collection")
+    except Exception as e:
+        print(f"Error getting existing documents: {str(e)}")
+        existing_ids = set()
+    
     # Find all JSON files
     json_pattern = os.path.join(args.json_dir, "*.json")
     json_files = glob.glob(json_pattern)
@@ -95,6 +105,7 @@ def main():
     # Process each file
     total_bylaws = 0
     documents = []
+    document_ids = []
     
     for json_file in json_files:
         print(f"Processing {os.path.basename(json_file)}...")
@@ -106,8 +117,14 @@ def main():
         bylaws = file_content if isinstance(file_content, list) else [file_content]
         
         for bylaw in bylaws:
-            # Generate a unique ID for this bylaw
+            # Use bylawNumber directly as the document ID
             bylaw_id = bylaw.get("bylawNumber", "unknown")
+            doc_id = bylaw_id
+            
+            # Skip if document already exists (unless we're resetting)
+            if doc_id in existing_ids and not args.reset:
+                print(f"  Skipping bylaw {bylaw_id} - already exists in collection")
+                continue
             
             # Extract the text to be embedded - only the extractedText field
             if "extractedText" in bylaw:
@@ -141,6 +158,7 @@ def main():
                 )
                 
                 documents.append(document)
+                document_ids.append(doc_id)
                 total_bylaws += 1
             else:
                 print(f"  Warning: Bylaw {bylaw_id} has no extractedText field, skipping")
@@ -156,13 +174,28 @@ def main():
         try:
             for i in range(0, len(documents), batch_size):
                 batch = documents[i:i+batch_size]
+                batch_ids = document_ids[i:i+batch_size]
                 batch_num = (i // batch_size) + 1
                 print(f"  Processing batch {batch_num}/{total_batches} ({len(batch)} documents)...")
-                vector_store.add_documents(batch)
+                
+                # Use the underlying Collection object to perform upsert
+                # This allows us to provide explicit IDs for each document
+                texts = [doc.page_content for doc in batch]
+                metadatas = [doc.metadata for doc in batch]
+                embeddings = embedding_function.embed_documents(texts)
+                
+                # Perform the upsert operation directly on the collection
+                vector_store._collection.upsert(
+                    ids=batch_ids,
+                    embeddings=embeddings,
+                    metadatas=metadatas,
+                    documents=texts
+                )
+
                 # Small delay to avoid overwhelming the server
                 time.sleep(0.5)
             
-            print(f"Initialization complete. Added {total_bylaws} bylaws to ChromaDB.")
+                print(f"Initialization complete. Added/updated {total_bylaws} bylaws in ChromaDB.")
         except Exception as e:
             print(f"Error adding documents to ChromaDB: {str(e)}")
     else:
