@@ -2,3 +2,6 @@ venv/
 .vscode/
 .env
 __pycache__/
+CLAUDE.md
+database/chroma-data/*
+!database/chroma-data/.gitkeep
