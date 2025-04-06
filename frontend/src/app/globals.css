@@ -115,6 +115,35 @@ body {
   color: white;
 }
 
+.input[type=text] { 
+  width: 330px;  
+  height: 35px;
+  border-radius: 0.3vw;
+  padding: 1vw;
+  margin-bottom: 25px;
+  box-sizing: border-box;
+  outline: none;  
+  /* background-image:url("/src/assets/images/search.png");
+  background-position: 10px 10px;  */
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.clickable-text {
+  cursor: pointer;
+  color: #0060A1;
+}
+
+.clickable-text:hover {
+  text-decoration: underline;
+  color: #004c82;
+}
+
 
 @media (max-width: 600px) {
   .buttonRoute {
@@ -134,16 +163,10 @@ body {
     font-size: clamp(10px, 5vw, 15px);
     border-radius: 1.0vh;
   }
+
+  .input[type=text] {
+    border-radius: 0.8vw;
+  }
+
 }
 
-.input[type=text] { 
-  width: 330px;
-  height: 35px;
-  border-radius: 2vw;
-  padding: 1vw;
-  box-sizing: border-box;
-  outline: none;  
-  background-image:url("/src/assets/images/search.png");
-  background-position: 10px 10px; 
-  color: rgba(0, 0, 0, 0.5);
-}

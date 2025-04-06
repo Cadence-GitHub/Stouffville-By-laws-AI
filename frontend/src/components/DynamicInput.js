@@ -1,15 +1,28 @@
 'use Client'
 import { useState } from "react";
 import Image from "next/image";
-import searchIcon from "@/assets/images/search.png"
+
+
 
 const DynamicInput = () => {
-
+    
     // Responsive UI interaction for the input fields (changes text on click)
+    // Change the type of form being displayed when 
+    // user clicks on <p>Advanced Search<p/> or <p>Simple Search<p/>
+    const [useAdvancedForm, setUseAdvancedForm] = useState(false);
+    const [useFormLabel, setUseFormLabel] = useState("Switch to Advanced search");
+
+    const handleSwitch = () => {
+        setUseAdvancedForm(prev => ! prev);
+        
+        useFormLabel === "Switch to Advanced search" ? setUseFormLabel("Swtich to Simple search") : setUseFormLabel("Switch to Advanced search");
+    }
+
     // TODO-feature: Have a list of defaultValues to randomly assign to initialValue.
     let initialValue = "Can my dog poop on someone else's lawn?"
     const [userQuery, setUserQuery] = useState(initialValue);
-    
+
+
     // Triggers when input loses focus from user
     const handleBlur = () => {
         if (userQuery == "") {
@@ -22,6 +35,8 @@ const DynamicInput = () => {
         setUserQuery(e.target.value);
     };
 
+
+    // Officer type output flag *TODO feature*
     let isOfficer;
     const [officerFlag, useOfficerFlag] = useState(false);
     const HandleClick = (e) => {
@@ -37,19 +52,17 @@ const DynamicInput = () => {
     return (
         <div style={{margin: 22.5}}>
             <form>
-                <input 
-                    className="input"
-                    name="userQuery" 
-                    type="text" 
-                    value={userQuery} 
-                    onChange={handleChange} 
-                    defaultValue={userQuery} 
-                    onBlur={handleBlur} // When the input loses focus, check and reset if empty
-                    onClick={e => setUserQuery('')}/>
+                
+                {
+                    !useAdvancedForm ? 
+                    (<SimpleForm userQuery={userQuery} handleChange={handleChange} handleBlur={handleBlur} />) : 
+                    (<AdvancedForm userQuery={userQuery} handleChange={handleChange} handleBlur={handleBlur} />)
+                }
                 
                 {/* <Image src={searchIcon} alt="search" width={20} height={20}/> */}
+                
                 {/* TODO-feature: change user input to a form template onClick*/}
-                <p style={{fontSize: "15px", color: "#0060A1", fontWeight: "550", margin: 22.5}}>Advanced Search</p>
+                <p className="clickable-text" style={{fontSize: "15px", color: "#0060A1", fontWeight: "550", margin: 22.5}} onClick={handleSwitch}>{useFormLabel}</p>
             
                 {/* This element is a flag that changes the output that tailored to law enforcement officer language*/}
                 <button type="button" style={{margin: 22.5}} className="buttonState" onClick={HandleClick}>
@@ -60,6 +73,61 @@ const DynamicInput = () => {
             
                 <button style={{margin: 22.5}} className="buttonSubmit">Search</button>
             </form>
+        </div>
+    );
+};
+
+const SimpleForm = ({userQuery, handleChange, handleBlur}) => {
+    return (
+        <input 
+            className="input"
+            name="userQuery" 
+            type="text" 
+            value={userQuery} 
+            onChange={handleChange} 
+            defaultValue={userQuery} 
+            onBlur={handleBlur} // When the input loses focus, check and reset if empty
+            onClick={e => setUserQuery('')}
+        />
+    );
+};
+
+
+const AdvancedForm = ({userQuery, handleChange, handleBlur}) => {
+    return (
+        <div className="form">
+            <input 
+                className="input"
+                name="userQuery" 
+                type="text" 
+                value={userQuery} 
+                onChange={handleChange} 
+                defaultValue={userQuery} 
+                onBlur={handleBlur} // When the input loses focus, check and reset if empty
+                onClick={e => setUserQuery('')} 
+            />
+
+            <input  
+                className="input"
+                name="userQuery" 
+                type="text" 
+                value={userQuery} 
+                onChange={handleChange} 
+                defaultValue={userQuery} 
+                onBlur={handleBlur} // When the input loses focus, check and reset if empty
+                onClick={e => setUserQuery('')}
+            />
+
+            <input  
+                className="input"
+                name="userQuery" 
+                type="text" 
+                value={userQuery} 
+                onChange={handleChange} 
+                defaultValue={userQuery} 
+                onBlur={handleBlur} // When the input loses focus, check and reset if empty
+                onClick={e => setUserQuery('')}
+            />
         </div>
     );
 };
