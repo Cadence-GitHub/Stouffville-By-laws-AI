@@ -50,17 +50,19 @@ def get_gemini_response(query, relevant_bylaws, model="gemini-2.0-flash"):
         full_chain = full_prompt | model_instance | StrOutputParser()
         full_response = full_chain.invoke({"bylaws_content": bylaws_content, "question": query})
         
-        # 2. Get filtered response without expired bylaws
+        # Clean up the first response to remove markdown code block indicators
+        cleaned_full_response = clean_response(full_response)
+        
+        # 2. Get filtered response using the first response as input instead of the full bylaws content
         filtered_prompt = FILTERED_BYLAWS_PROMPT_TEMPLATE
         filtered_chain = filtered_prompt | model_instance | StrOutputParser()
-        filtered_response = filtered_chain.invoke({"bylaws_content": bylaws_content, "question": query})
+        filtered_response = filtered_chain.invoke({"first_response": cleaned_full_response, "question": query})
         
-        # Clean up responses to remove markdown code block indicators
-        full_response = clean_response(full_response)
+        # Final cleanup of responses
         filtered_response = clean_response(filtered_response)
         
         return {
-            "answer": full_response,
+            "answer": cleaned_full_response,
             "filtered_answer": filtered_response
         }
     except Exception as e:

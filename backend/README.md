@@ -6,7 +6,7 @@ A Flask-based backend service that provides AI-powered responses to questions ab
 
 - REST API for querying the Gemini AI model
 - Multiple Gemini model options for different performance/quality needs
-- Expired by-laws filtering to show only currently active regulations
+- Optimized expired by-laws filtering using a two-step prompting approach for cost efficiency and speed
 - Comparison mode to see differences between filtered and unfiltered answers
 - Simple web-based demo interface for testing without the frontend
 - CORS support for frontend integration
@@ -138,8 +138,21 @@ The application uses ChromaDB and Voyage AI embeddings to provide intelligent re
 2. If relevant documents are found, those specific by-laws are sent to Gemini AI
 3. The system generates two different responses:
    - A complete answer using all retrieved by-laws
-   - A filtered answer using only currently active by-laws
+   - A filtered answer that removes expired by-laws from the first response
 4. Demo interface provides options to compare both responses
+
+## Optimized Two-Step Prompt System
+
+The system uses a cost-efficient two-step approach for filtering expired by-laws:
+
+1. **First Prompt**: The complete by-laws content is sent to the Gemini model along with the user question to generate a comprehensive response
+2. **Second Prompt**: Instead of sending the by-laws content again, the system sends only the first response to a second prompt that filters out expired by-laws
+3. **Benefits**:
+   - Significantly reduces token usage and API costs
+   - Maintains quality by having the second prompt focus solely on filtering
+   - Preserves all formatting and style from the original response
+   - Increases speed
+   - Makes it possible to choose a more suitable model for each prompt to improve speed, accuracy, and cost
 
 ## Gemini AI Models
 

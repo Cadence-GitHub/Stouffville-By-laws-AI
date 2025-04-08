@@ -95,10 +95,17 @@ The vector database stores all by-laws, regardless of their status (active, expi
 2. The application can filter by-laws at query time based on their expiration status
 3. Users can compare responses with and without expired by-laws included
 
-While the database itself doesn't filter by-laws during storage, the application layer implements filtering through specialized prompts that:
+While the database itself doesn't filter by-laws during storage, the application implements an optimized two-step filtering process:
+
+1. First, a complete response is generated using all retrieved by-laws
+2. Then, a second prompt processes only this first response (not the full by-laws content) to filter out expired by-laws
+3. This approach significantly reduces token usage and API costs while maintaining quality
+
+This cost-efficient method allows the application to:
 - Use the current date information to determine by-law status
-- Instruct the AI to focus only on currently active by-laws when appropriate
-- Allow for side-by-side comparison of responses with and without expired by-laws
+- Focus the second prompt solely on filtering out expired content
+- Maintain consistent formatting and style between responses
+- Provide side-by-side comparison of responses with and without expired by-laws
 
 ## Troubleshooting
 

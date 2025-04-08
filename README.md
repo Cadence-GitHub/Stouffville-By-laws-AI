@@ -115,7 +115,7 @@ Dependencies for AI integration:
 
 ### Key Features
 
-- **Expired By-laws Filtering**: By default, the system only shows information about active by-laws. Expired, temporary, or obsolete by-laws are automatically filtered out.
+- **Expired By-laws Filtering**: The system generates a complete response with all by-laws, then uses this response to create a filtered version showing only active by-laws. This two-step approach optimizes costs and speed by reducing the context size for the second prompt.
 - **Comparison Mode**: Option to display both filtered (active only) and complete (including expired) answers side-by-side for comparison.
 - **Model Selection**: Users can select which Gemini model to use based on their requirements for speed, cost, and quality.
 - **Visual UI Improvements**: Enhanced demo interface with better layout and formatting options.
