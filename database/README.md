@@ -8,7 +8,7 @@ The `init_chroma.py` script converts by-law documents from JSON files into a vec
 
 ## Prerequisites
 
-- A running ChromaDB instance (typically via Docker)
+- A running ChromaDB instance (version 0.6.3 via Docker)
 - Voyage AI API key for generating embeddings
 - JSON files containing by-law data in the database directory
 
@@ -87,18 +87,33 @@ Adding 2 documents to ChromaDB...
 Initialization complete. Added 2 bylaws to ChromaDB.
 ```
 
+## Expired By-laws Processing
+
+The vector database stores all by-laws, regardless of their status (active, expired, temporary, etc.). This comprehensive approach ensures that:
+
+1. All by-law data remains accessible for historical reference and comparison
+2. The application can filter by-laws at query time based on their expiration status
+3. Users can compare responses with and without expired by-laws included
+
+While the database itself doesn't filter by-laws during storage, the application layer implements filtering through specialized prompts that:
+- Use the current date information to determine by-law status
+- Instruct the AI to focus only on currently active by-laws when appropriate
+- Allow for side-by-side comparison of responses with and without expired by-laws
+
 ## Troubleshooting
 
 If you encounter errors connecting to ChromaDB:
 1. Verify that the ChromaDB Docker container is running
 2. Check that port 8000 is properly exposed in docker-compose.yaml
 3. Ensure your Voyage AI API key is valid and has sufficient quota
+4. Verify you're using the correct ChromaDB version (0.6.3)
 
 ## Integration with the Application
 
 After initializing ChromaDB, the Flask application will automatically use it for queries. The application:
-1. First attempts to find relevant by-laws using vector search
-2. If matching documents are found, only sends those specific by-laws to the Gemini AI model
-3. Falls back to using the full JSON database if ChromaDB is unavailable
+1. Attempts to find relevant by-laws using vector search
+2. Sends the retrieved by-laws to the Gemini AI model
+3. Generates both complete and filtered responses based on by-law status
+4. Provides options for users to compare these different responses
 
-This approach improves response quality and reduces token usage by focusing the AI model on only the most relevant by-laws. 
+This approach improves response quality and provides users with the most relevant and up-to-date information about Stouffville's by-laws. 

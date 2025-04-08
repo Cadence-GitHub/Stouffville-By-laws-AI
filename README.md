@@ -86,15 +86,23 @@ This project uses Docker to create a consistent development environment. The set
 ### API Endpoints
 
 - `GET /api/hello`: Returns a greeting message in JSON format
-- `POST /api/ask`: Processes AI queries about bylaws (requires JSON with a 'query' field)
+- `POST /api/ask`: Processes AI queries about bylaws
+  - Requires JSON with a 'query' field
+  - Optionally accepts 'model' parameter to specify which Gemini model to use
 - `GET /api/demo`: Returns a simple web interface for testing the AI functionality
 - `POST /api/demo`: Processes form submissions from the demo interface
 
 ### AI Integration
 
-This project uses Google's Gemini AI model through the LangChain framework. Make sure your `.env` file contains a valid Google API key to enable AI functionality.
+This project uses Google's Gemini AI models through the LangChain framework. Make sure your `.env` file contains a valid Google API key to enable AI functionality.
 
-The application also leverages ChromaDB for vector search with Voyage AI embeddings to efficiently retrieve relevant by-laws based on semantic similarity.
+The application leverages ChromaDB (version 0.6.3) for vector search with Voyage AI embeddings to efficiently retrieve relevant by-laws based on semantic similarity.
+
+Available Gemini models:
+- gemini-2.0-flash-lite (fastest, lowest cost)
+- gemini-2.0-flash (balanced speed/quality, default)
+- gemini-2.0-flash-thinking-exp-01-21 (better reasoning)
+- gemini-2.5-pro-exp-03-25 (highest quality, most expensive)
 
 Dependencies for AI integration:
 - langchain
@@ -104,6 +112,13 @@ Dependencies for AI integration:
 - chromadb
 - langchain-chroma
 - langchain-voyageai
+
+### Key Features
+
+- **Expired By-laws Filtering**: By default, the system only shows information about active by-laws. Expired, temporary, or obsolete by-laws are automatically filtered out.
+- **Comparison Mode**: Option to display both filtered (active only) and complete (including expired) answers side-by-side for comparison.
+- **Model Selection**: Users can select which Gemini model to use based on their requirements for speed, cost, and quality.
+- **Visual UI Improvements**: Enhanced demo interface with better layout and formatting options.
 
 ### Vector Database Setup
 

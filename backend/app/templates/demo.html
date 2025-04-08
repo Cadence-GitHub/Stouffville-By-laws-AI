@@ -5,7 +5,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 800px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
             line-height: 1.6;
@@ -24,10 +24,21 @@
             padding: 15px;
             border-radius: 5px;
         }
+        .answer-container h3 {
+            color: #0066cc;
+            margin-top: 0;
+        }
         input[type="text"] {
             width: 80%;
             padding: 8px;
             margin-right: 10px;
+        }
+        select {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: white;
+            margin-left: 10px;
         }
         input[type="submit"] {
             padding: 8px 16px;
@@ -37,6 +48,24 @@
             border-radius: 4px;
             cursor: pointer;
         }
+        .checkbox-container {
+            margin: 10px 0;
+        }
+        .comparison-option {
+            margin-left: 30px;
+            display: none;
+        }
+        .answers-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .answers-wrapper.side-by-side {
+            flex-direction: row;
+        }
+        .answers-wrapper.side-by-side .answer-container {
+            flex: 1;
+        }
     </style>
 </head>
 <body>
@@ -44,17 +73,57 @@
     
     <form id="queryForm" action="/api/demo" method="post">
         <label for="query">Ask a question:</label>
-        <input type="text" id="query" name="query" required>
+        <input type="text" id="query" name="query" required value="{{ question or '' }}">
+        
+        <div style="margin: 15px 0;">
+            <label for="model">Select model:</label>
+            <select id="model" name="model">
+                <option value="gemini-2.0-flash-lite" {% if model == "gemini-2.0-flash-lite" %}selected{% endif %}>gemini-2.0-flash-lite (fastest, lowest cost)</option>
+                <option value="gemini-2.0-flash" {% if model == "gemini-2.0-flash" or not model %}selected{% endif %}>gemini-2.0-flash (balanced speed/quality)</option>
+                <option value="gemini-2.0-flash-thinking-exp-01-21" {% if model == "gemini-2.0-flash-thinking-exp-01-21" %}selected{% endif %}>gemini-2.0-flash-thinking-exp-01-21 (better reasoning)</option>
+                <option value="gemini-2.5-pro-exp-03-25" {% if model == "gemini-2.5-pro-exp-03-25" %}selected{% endif %}>gemini-2.5-pro-exp-03-25 (highest quality, most expensive)</option>
+            </select>
+        </div>
+        
+        <div class="info-box" style="margin: 15px 0; padding: 10px; background-color: #f0f7ff; border-left: 4px solid #0066cc; border-radius: 4px;">
+            <p><strong>Default behavior:</strong> By default, the system only shows information about <strong>active by-laws</strong>. Expired, temporary, or obsolete by-laws are automatically filtered out to provide the most relevant current information.</p>
+        </div>
+        
+        <div class="checkbox-container">
+            <input type="checkbox" id="filter_expired" name="filter_expired" value="true" {% if compare_mode %}checked{% endif %} onchange="toggleComparisonOption()">
+            <label for="filter_expired"><strong>Show both answers for comparison</strong> (see how responses differ with and without expired by-laws)</label>
+            
+            <span class="comparison-option" id="comparisonOption">
+                <input type="checkbox" id="side_by_side" name="side_by_side" value="true" {% if side_by_side %}checked{% endif %}>
+                <label for="side_by_side">Show side-by-side</label>
+            </span>
+        </div>
+        
         <input type="submit" value="Submit">
     </form>
     
     <div id="loadingMessage" class="loading">Generating answer, please wait...</div>
     
     {% if question %}
-    <div class="answer-container">
-        <p><b>Question:</b> {{ question }}</p>
-        <p><b>Answer:</b></p>
-        <div>{{ answer | safe }}</div>
+    <div class="answers-wrapper {% if side_by_side %}side-by-side{% endif %}">
+        {% if compare_mode %}
+        <div class="answer-container">
+            <h3>Complete Answer (includes all by-laws)</h3>
+            <p class="explanation" style="font-style: italic; color: #666;">This answer includes all relevant by-laws, including those that have expired or are no longer in effect.</p>
+            <div>{{ full_answer | safe }}</div>
+        </div>
+        
+        <div class="answer-container">
+            <h3>Filtered Answer (active by-laws only)</h3>
+            <p class="explanation" style="font-style: italic; color: #666;">This answer only includes currently active by-laws. Expired, temporary, or obsolete by-laws have been filtered out.</p>
+            <div>{{ filtered_answer | safe }}</div>
+        </div>
+        {% else %}
+        <div class="answer-container">
+            <h3>Answer (showing only active by-laws)</h3>
+            <div>{{ answer | safe }}</div>
+        </div>
+        {% endif %}
     </div>
     {% endif %}
 
@@ -62,6 +131,20 @@
         document.getElementById('queryForm').addEventListener('submit', function() {
             document.getElementById('loadingMessage').style.display = 'block';
         });
+        
+        function toggleComparisonOption() {
+            var filterCheckbox = document.getElementById('filter_expired');
+            var comparisonOption = document.getElementById('comparisonOption');
+            
+            if (filterCheckbox.checked) {
+                comparisonOption.style.display = 'inline';
+            } else {
+                comparisonOption.style.display = 'none';
+            }
+        }
+        
+        // Initialize on page load
+        toggleComparisonOption();
     </script>
 </body>
 </html> 
