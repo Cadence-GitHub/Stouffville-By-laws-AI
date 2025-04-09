@@ -38,6 +38,9 @@ def main():
     parser.add_argument("--collection", default="by-laws", help="Collection name")
     parser.add_argument("--reset", action="store_true", help="Reset collection if it exists")
     parser.add_argument("--json-dir", default=".", help="Directory containing by-laws JSON files")
+    parser.add_argument("--hnsw-M", default="16", help="Maximum number of neighbour connections")
+    parser.add_argument("--hnsw-construction_ef", default="100", help="Number of neighbours in the HNSW graph to explore when adding new vectors")
+    parser.add_argument("--hnsw-search_ef", default="10", help="Number of neighbours in the HNSW graph to explore when searching")
     
     args = parser.parse_args()
     
@@ -65,7 +68,7 @@ def main():
             collection_name=args.collection,
             embedding_function=embedding_function,
             client=chroma_client,
-            collection_metadata={"hnsw:M": 16, "hnsw:construction_ef": 128, "hnsw:search_ef": 50}
+            collection_metadata={"hnsw:M": args.hnsw_M, "hnsw:construction_ef": args.hnsw_construction_ef, "hnsw:search_ef": args.hnsw_search_ef}
         )
         
         # If reset flag is set, clear the collection
@@ -137,14 +140,15 @@ def main():
                 # Create metadata from all bylaw fields
                 metadata = {}
                 for k, v in bylaw.items():
-                    # Convert lists to strings for metadata
-                    if isinstance(v, list):
-                        metadata[k] = " ".join(str(item) for item in v)
-                    elif isinstance(v, (str, int, float, bool)) or v is None:
-                        metadata[k] = v
-                    else:
-                        # Convert other complex types to strings
-                        metadata[k] = str(v)
+                    if k != "extractedText": #Do not add embedded text to metadata
+                        # Convert lists to strings for metadata
+                        if isinstance(v, list):
+                            metadata[k] = " ".join(str(item) for item in v)
+                        elif isinstance(v, (str, int, float, bool)) or v is None:
+                            metadata[k] = v
+                        else:
+                            # Convert other complex types to strings
+                            metadata[k] = str(v)
                 
                 # Set ID in metadata for retrieval
                 metadata["id"] = bylaw_id
