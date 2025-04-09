@@ -32,6 +32,7 @@ The script connects to a running ChromaDB instance (by default at localhost:8000
 - Creates or uses an existing collection named "by-laws"
 - Uses the Voyage AI embeddings for vector representation
 - Stores the complete document metadata for retrieval
+- Checks for existing by-laws to avoid duplicates
 
 ## Usage
 
@@ -70,21 +71,23 @@ python init_chroma.py --chroma-host chroma.example.com --chroma-port 8000
 The script will:
 1. Connect to the ChromaDB instance
 2. Find all JSON files in the specified directory
-3. Process each by-law document
-4. Create embeddings and store them in ChromaDB
-5. Report the total number of by-laws processed
+3. Check existing by-laws in the collection to avoid duplicates
+4. Process each by-law document, skipping those already in the database
+5. Create embeddings and store only new by-laws in ChromaDB
+6. Report the total number of by-laws processed and added
 
 Example output:
 ```
 Initializing embedding function...
 Connecting to ChromaDB at localhost:8000...
 Successfully connected to ChromaDB collection 'by-laws'!
+Found 2 existing bylaws in the collection
 Found 3 JSON files
 Processing parking_related_by-laws.json...
   Creating document for bylaw 2015-139-RE...
-  Creating document for bylaw 2015-04-RE...
-Adding 2 documents to ChromaDB...
-Initialization complete. Added 2 bylaws to ChromaDB.
+  Skipping bylaw 2015-04-RE - already exists in collection
+Adding 1 document to ChromaDB...
+Initialization complete. Added 1 bylaw to ChromaDB.
 ```
 
 ## Expired By-laws Processing

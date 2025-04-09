@@ -79,6 +79,19 @@ def main():
             
         print(f"Successfully connected to ChromaDB collection '{args.collection}'!")
         
+        # Get existing bylaw IDs from the collection
+        existing_bylaws = set()
+        try:
+            collection_data = vector_store.get()
+            # Extract ID values from metadata
+            for metadata in collection_data.get('metadatas', []):
+                if metadata and 'id' in metadata:
+                    existing_bylaws.add(metadata['id'])
+            print(f"Found {len(existing_bylaws)} existing bylaws in the collection")
+        except Exception as e:
+            print(f"Error getting existing bylaws: {str(e)}")
+            existing_bylaws = set()
+        
     except Exception as e:
         print(f"Error connecting to ChromaDB: {str(e)}")
         print("\nTroubleshooting tips:")
@@ -138,6 +151,10 @@ def main():
                     page_content=text_to_embed,
                     metadata=metadata
                 )
+                
+                if bylaw_id in existing_bylaws:
+                    print(f"  Skipping bylaw {bylaw_id} - already exists in collection")
+                    continue
                 
                 documents.append(document)
                 total_bylaws += 1
