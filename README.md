@@ -142,3 +142,100 @@ To initialize the ChromaDB vector database with by-laws data:
 - Frontend development (React application)
 - Expanded AI training on Stouffville bylaws
 - Advanced query processing
+
+## System Architecture
+
+The Stouffville By-laws AI application follows a modular architecture designed for scalability and maintainability. Below is a diagram illustrating the system components and their interactions:
+
+```mermaid
+graph TB
+    %% External services
+    GoogleAPI["Google Generative AI API"]
+    VoyageAPI["Voyage AI API"]
+
+    %% Docker containers
+    subgraph Docker["Docker Environment"]
+        Backend["Backend Container"]
+        ChromaDB["ChromaDB Container"]
+    end
+
+    %% Components in Backend
+    subgraph BackendComponents["Backend"]
+        FlaskApp["Backend App (app.py)"]
+        ChromaRetriever["ChromaDB Retriever (chroma_retriever.py)"]
+        GeminiHandler["Gemini Handler (gemini_handler.py)"]
+        PromptsModule["Prompts Module (prompts.py)"]
+        Demo["Web Demo (templates/demo.html)"]
+
+        %% Subgraph for API Calls
+        subgraph APICalls["API Endpoints"]
+            API1["/ask (POST)"]
+            API2["/demo (GET)"]
+            API3["/hello (GET)"]
+        end
+    end
+
+    %% Data Processing Components
+    subgraph DataProcessing["Data Processing"]
+        SearchBylaws["Search Bylaws (search_bylaws.py)"]
+        InitChroma["Initialize ChromaDB (init_chroma.py)"]
+    end
+
+    %% Data Storage
+    ByLawsData[("By-laws JSON Data")]
+    ChromaDBData[("ChromaDB Vector Store")]
+
+
+    %% Connections between components
+    SearchBylaws --> ByLawsData
+    FlaskApp --> GeminiHandler
+    FlaskApp --> ChromaRetriever
+    FlaskApp --> Demo
+    ChromaRetriever --> ChromaDB
+    GeminiHandler --> PromptsModule
+    GeminiHandler --> GoogleAPI
+    InitChroma <--> VoyageAPI
+    InitChroma --> ByLawsData
+    InitChroma --> ChromaDB
+    API1 --> FlaskApp
+    API2 --> FlaskApp
+    API3 --> FlaskApp
+    
+    
+    %% Container connections
+    Backend --> ChromaDB
+    Backend -.-> BackendComponents
+    ChromaDB -.-> ChromaDBData
+
+    %% Data flow for initialization
+    ByLawsData --> InitChroma
+    
+    %% User interactions
+    User(("User")) --> API1
+    User --> API2
+    User --> API3
+    User --> Demo
+```
+
+### Architecture Overview
+
+The system implements a Retrieval-Augmented Generation (RAG) architecture with these key components:
+
+1. **Data Flow Pipeline**:
+   - Raw by-law documents are processed and stored as JSON
+   - Voyage AI generates embeddings for these documents
+   - ChromaDB indexes embeddings for efficient semantic retrieval
+   - When a query is received, relevant by-laws are retrieved and passed to Gemini AI
+   - Gemini generates natural language responses based on retrieved context
+
+2. **Backend Core**:
+   - Flask application handles HTTP routing and request processing
+   - ChromaDB Retriever manages vector database interactions
+   - Gemini Handler orchestrates AI model interactions
+   - Prompts Module contains templates that structure AI responses
+
+3. **External Services Integration**:
+   - Google Generative AI provides LLM capabilities via Gemini models
+   - Voyage AI supplies high-quality text embeddings for semantic search
+
+This architecture ensures that the system can accurately respond to user queries about Stouffville by-laws by finding the most semantically relevant information and presenting it in a natural, conversational format.
