@@ -86,15 +86,23 @@ This project uses Docker to create a consistent development environment. The set
 ### API Endpoints
 
 - `GET /api/hello`: Returns a greeting message in JSON format
-- `POST /api/ask`: Processes AI queries about bylaws (requires JSON with a 'query' field)
+- `POST /api/ask`: Processes AI queries about bylaws
+  - Requires JSON with a 'query' field
+  - Optionally accepts 'model' parameter to specify which Gemini model to use
 - `GET /api/demo`: Returns a simple web interface for testing the AI functionality
 - `POST /api/demo`: Processes form submissions from the demo interface
 
 ### AI Integration
 
-This project uses Google's Gemini AI model through the LangChain framework. Make sure your `.env` file contains a valid Google API key to enable AI functionality.
+This project uses Google's Gemini AI models through the LangChain framework. Make sure your `.env` file contains a valid Google API key to enable AI functionality.
 
-The application also leverages ChromaDB for vector search with Voyage AI embeddings to efficiently retrieve relevant by-laws based on semantic similarity.
+The application leverages ChromaDB (version 0.6.3) for vector search with Voyage AI embeddings to efficiently retrieve relevant by-laws based on semantic similarity.
+
+Available Gemini models:
+- gemini-2.0-flash-lite (fastest, lowest cost)
+- gemini-2.0-flash (balanced speed/quality, default)
+- gemini-2.0-flash-thinking-exp-01-21 (better reasoning)
+- gemini-2.5-pro-exp-03-25 (highest quality, most expensive)
 
 Dependencies for AI integration:
 - langchain
@@ -104,6 +112,13 @@ Dependencies for AI integration:
 - chromadb
 - langchain-chroma
 - langchain-voyageai
+
+### Key Features
+
+- **Expired By-laws Filtering**: The system generates a complete response with all by-laws, then uses this response to create a filtered version showing only active by-laws. This two-step approach optimizes costs and speed by reducing the context size for the second prompt.
+- **Comparison Mode**: Option to display both filtered (active only) and complete (including expired) answers side-by-side for comparison.
+- **Model Selection**: Users can select which Gemini model to use based on their requirements for speed, cost, and quality.
+- **Visual UI Improvements**: Enhanced demo interface with better layout and formatting options.
 
 ### Vector Database Setup
 
@@ -127,3 +142,100 @@ To initialize the ChromaDB vector database with by-laws data:
 - Frontend development (React application)
 - Expanded AI training on Stouffville bylaws
 - Advanced query processing
+
+## System Architecture
+
+The Stouffville By-laws AI application follows a modular architecture designed for scalability and maintainability. Below is a diagram illustrating the system components and their interactions:
+
+```mermaid
+graph TB
+    %% External services
+    GoogleAPI["Google Generative AI API"]
+    VoyageAPI["Voyage AI API"]
+
+    %% Docker containers
+    subgraph Docker["Docker Environment"]
+        Backend["Backend Container"]
+        ChromaDB["ChromaDB Container"]
+    end
+
+    %% Components in Backend
+    subgraph BackendComponents["Backend"]
+        FlaskApp["Backend App (app.py)"]
+        ChromaRetriever["ChromaDB Retriever (chroma_retriever.py)"]
+        GeminiHandler["Gemini Handler (gemini_handler.py)"]
+        PromptsModule["Prompts Module (prompts.py)"]
+        Demo["Web Demo (templates/demo.html)"]
+
+        %% Subgraph for API Calls
+        subgraph APICalls["API Endpoints"]
+            API1["/ask (POST)"]
+            API2["/demo (GET)"]
+            API3["/hello (GET)"]
+        end
+    end
+
+    %% Data Processing Components
+    subgraph DataProcessing["Data Processing"]
+        SearchBylaws["Search Bylaws (search_bylaws.py)"]
+        InitChroma["Initialize ChromaDB (init_chroma.py)"]
+    end
+
+    %% Data Storage
+    ByLawsData[("By-laws JSON Data")]
+    ChromaDBData[("ChromaDB Vector Store")]
+
+
+    %% Connections between components
+    SearchBylaws --> ByLawsData
+    FlaskApp --> GeminiHandler
+    FlaskApp --> ChromaRetriever
+    FlaskApp --> Demo
+    ChromaRetriever --> ChromaDB
+    GeminiHandler --> PromptsModule
+    GeminiHandler --> GoogleAPI
+    InitChroma <--> VoyageAPI
+    InitChroma --> ByLawsData
+    InitChroma --> ChromaDB
+    API1 --> FlaskApp
+    API2 --> FlaskApp
+    API3 --> FlaskApp
+    
+    
+    %% Container connections
+    Backend --> ChromaDB
+    Backend -.-> BackendComponents
+    ChromaDB -.-> ChromaDBData
+
+    %% Data flow for initialization
+    ByLawsData --> InitChroma
+    
+    %% User interactions
+    User(("User")) --> API1
+    User --> API2
+    User --> API3
+    User --> Demo
+```
+
+### Architecture Overview
+
+The system implements a Retrieval-Augmented Generation (RAG) architecture with these key components:
+
+1. **Data Flow Pipeline**:
+   - Raw by-law documents are processed and stored as JSON
+   - Voyage AI generates embeddings for these documents
+   - ChromaDB indexes embeddings for efficient semantic retrieval
+   - When a query is received, relevant by-laws are retrieved and passed to Gemini AI
+   - Gemini generates natural language responses based on retrieved context
+
+2. **Backend Core**:
+   - Flask application handles HTTP routing and request processing
+   - ChromaDB Retriever manages vector database interactions
+   - Gemini Handler orchestrates AI model interactions
+   - Prompts Module contains templates that structure AI responses
+
+3. **External Services Integration**:
+   - Google Generative AI provides LLM capabilities via Gemini models
+   - Voyage AI supplies high-quality text embeddings for semantic search
+
+This architecture ensures that the system can accurately respond to user queries about Stouffville by-laws by finding the most semantically relevant information and presenting it in a natural, conversational format.

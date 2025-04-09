@@ -8,7 +8,7 @@ The `init_chroma.py` script converts by-law documents from JSON files into a vec
 
 ## Prerequisites
 
-- A running ChromaDB instance (typically via Docker)
+- A running ChromaDB instance (version 0.6.3 via Docker)
 - Voyage AI API key for generating embeddings
 - JSON files containing by-law data in the database directory
 
@@ -32,6 +32,7 @@ The script connects to a running ChromaDB instance (by default at localhost:8000
 - Creates or uses an existing collection named "by-laws"
 - Uses the Voyage AI embeddings for vector representation
 - Stores the complete document metadata for retrieval
+- Checks for existing by-laws to avoid duplicates
 
 ## Usage
 
@@ -70,22 +71,44 @@ python init_chroma.py --chroma-host chroma.example.com --chroma-port 8000
 The script will:
 1. Connect to the ChromaDB instance
 2. Find all JSON files in the specified directory
-3. Process each by-law document
-4. Create embeddings and store them in ChromaDB
-5. Report the total number of by-laws processed
+3. Check existing by-laws in the collection to avoid duplicates
+4. Process each by-law document, skipping those already in the database
+5. Create embeddings and store only new by-laws in ChromaDB
+6. Report the total number of by-laws processed and added
 
 Example output:
 ```
 Initializing embedding function...
 Connecting to ChromaDB at localhost:8000...
 Successfully connected to ChromaDB collection 'by-laws'!
+Found 2 existing bylaws in the collection
 Found 3 JSON files
 Processing parking_related_by-laws.json...
   Creating document for bylaw 2015-139-RE...
-  Creating document for bylaw 2015-04-RE...
-Adding 2 documents to ChromaDB...
-Initialization complete. Added 2 bylaws to ChromaDB.
+  Skipping bylaw 2015-04-RE - already exists in collection
+Adding 1 document to ChromaDB...
+Initialization complete. Added 1 bylaw to ChromaDB.
 ```
+
+## Expired By-laws Processing
+
+The vector database stores all by-laws, regardless of their status (active, expired, temporary, etc.). This comprehensive approach ensures that:
+
+1. All by-law data remains accessible for historical reference and comparison
+2. The application can filter by-laws at query time based on their expiration status
+3. Users can compare responses with and without expired by-laws included
+
+While the database itself doesn't filter by-laws during storage, the application implements an optimized two-step filtering process:
+
+1. First, a complete response is generated using all retrieved by-laws
+2. Then, a second prompt processes only this first response (not the full by-laws content) to filter out expired by-laws
+3. This approach significantly reduces token usage and API costs while maintaining quality
+
+This cost-efficient method allows the application to:
+- Use the current date information to determine by-law status
+- Focus the second prompt solely on filtering out expired content
+- Maintain consistent formatting and style between responses
+- Provide side-by-side comparison of responses with and without expired by-laws
 
 ## Troubleshooting
 
@@ -93,12 +116,14 @@ If you encounter errors connecting to ChromaDB:
 1. Verify that the ChromaDB Docker container is running
 2. Check that port 8000 is properly exposed in docker-compose.yaml
 3. Ensure your Voyage AI API key is valid and has sufficient quota
+4. Verify you're using the correct ChromaDB version (0.6.3)
 
 ## Integration with the Application
 
 After initializing ChromaDB, the Flask application will automatically use it for queries. The application:
-1. First attempts to find relevant by-laws using vector search
-2. If matching documents are found, only sends those specific by-laws to the Gemini AI model
-3. Falls back to using the full JSON database if ChromaDB is unavailable
+1. Attempts to find relevant by-laws using vector search
+2. Sends the retrieved by-laws to the Gemini AI model
+3. Generates both complete and filtered responses based on by-law status
+4. Provides options for users to compare these different responses
 
-This approach improves response quality and reduces token usage by focusing the AI model on only the most relevant by-laws. 
+This approach improves response quality and provides users with the most relevant and up-to-date information about Stouffville's by-laws. 

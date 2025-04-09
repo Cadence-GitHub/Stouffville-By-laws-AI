@@ -26,6 +26,7 @@ import json
 import argparse
 import re
 from pathlib import Path
+import tiktoken
 from dotenv import load_dotenv
 from langchain_voyageai import VoyageAIEmbeddings
 from langchain_chroma import Chroma
@@ -33,14 +34,13 @@ import chromadb
 
 def count_tokens(text):
     """
-    Estimate token count using a simple approximation.
-    This uses a rough estimate of 4 characters per token, which is common for English text.
+    Count tokens using OpenAI's tiktoken library.
     
     Args:
         text (str): The text to count tokens for
         
     Returns:
-        int: Estimated token count
+        int: Exact token count
     """
     if not text:
         return 0
@@ -48,9 +48,10 @@ def count_tokens(text):
     # Convert to string if it's not already
     if not isinstance(text, str):
         text = json.dumps(text)
-        
-    # Approximate token count (English text averages ~4 chars per token)
-    return len(text) // 4
+    
+    # Use cl100k_base encoding (used by GPT-3.5 and GPT-4)
+    encoding = tiktoken.get_encoding("cl100k_base")
+    return len(encoding.encode(text))
 
 def search_bylaws(args):
     """
