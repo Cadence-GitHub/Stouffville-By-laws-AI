@@ -48,6 +48,9 @@ python init_chroma.py [OPTIONS]
 - `--collection`: Collection name (default: by-laws)
 - `--reset`: Reset collection if it exists
 - `--json-dir`: Directory containing by-laws JSON files (default: current directory)
+- `--hnsw-M`: Maximum number of neighbour connections (default: 16)
+- `--hnsw-construction_ef`: Number of neighbours in the HNSW graph to explore when adding new vectors (default: 100)
+- `--hnsw-search_ef`: Number of neighbours in the HNSW graph to explore when searching (default: 10)
 
 ### Examples
 
@@ -74,7 +77,9 @@ The script will:
 3. Check existing by-laws in the collection to avoid duplicates
 4. Process each by-law document, skipping those already in the database
 5. Create embeddings and store only new by-laws in ChromaDB
-6. Report the total number of by-laws processed and added
+6. Process documents in batches to avoid memory issues
+7. Report the total number of by-laws processed and added
+8. Display database statistics including total documents, unique bylaws, bylaw types, and years
 
 Example output:
 ```
@@ -87,28 +92,18 @@ Processing parking_related_by-laws.json...
   Creating document for bylaw 2015-139-RE...
   Skipping bylaw 2015-04-RE - already exists in collection
 Adding 1 document to ChromaDB...
-Initialization complete. Added 1 bylaw to ChromaDB.
+Processing batch 1/1 (1 documents)...
+Initialization complete. Added/updated 1 bylaws in ChromaDB.
+Database Statistics:
+Total Documents: 3
+Unique Bylaws: 3
+Bylaw Types:
+  - PARKING: 2
+  - GENERAL: 1
+Bylaw Years:
+  - 2015: 2
+  - 2018: 1
 ```
-
-## Expired By-laws Processing
-
-The vector database stores all by-laws, regardless of their status (active, expired, temporary, etc.). This comprehensive approach ensures that:
-
-1. All by-law data remains accessible for historical reference and comparison
-2. The application can filter by-laws at query time based on their expiration status
-3. Users can compare responses with and without expired by-laws included
-
-While the database itself doesn't filter by-laws during storage, the application implements an optimized two-step filtering process:
-
-1. First, a complete response is generated using all retrieved by-laws
-2. Then, a second prompt processes only this first response (not the full by-laws content) to filter out expired by-laws
-3. This approach significantly reduces token usage and API costs while maintaining quality
-
-This cost-efficient method allows the application to:
-- Use the current date information to determine by-law status
-- Focus the second prompt solely on filtering out expired content
-- Maintain consistent formatting and style between responses
-- Provide side-by-side comparison of responses with and without expired by-laws
 
 ## Troubleshooting
 
@@ -127,3 +122,56 @@ After initializing ChromaDB, the Flask application will automatically use it for
 4. Provides options for users to compare these different responses
 
 This approach improves response quality and provides users with the most relevant and up-to-date information about Stouffville's by-laws. 
+
+## Related Tools
+
+### Data Preparation Tool
+
+The `prepare_json_bylaws_for_db.py` script helps you prepare a subset of JSON by-law files for further processing by the `init_chroma.py` script.
+
+Key features:
+- Search by-laws by specific keywords in their metadata
+- Filter and collect relevant by-laws into a single output file
+- Calculate token usage and estimated LLM costs
+- Option to include all by-laws regardless of keywords
+
+Usage:
+```bash
+python prepare_json_bylaws_for_db.py [KEYWORD] [OPTIONS]
+```
+
+Options:
+- `KEYWORD`: The keyword to search for in by-laws' keywords field
+- `--dir`: Directory to search in (default: Stouffville_AI/database/By-laws-by-year)
+- `--output`: Output file name (default: {keyword}_related_by-laws.json or all_by-laws.json)
+
+If no keyword is provided, the script will ask if you want to include all by-laws.
+
+### Search Tool
+
+The `search_bylaws.py` script allows you to search the ChromaDB database using semantic search, keyword search, or a combination of both.
+
+Key features:
+- Semantic search using natural language queries
+- Keyword search within by-law metadata fields
+- Display database statistics including by-law types and years
+- Calculate token usage and estimated LLM costs
+- Save search results to a JSON file
+
+Usage:
+```bash
+python search_bylaws.py [OPTIONS]
+```
+
+Options:
+- `--query`: Natural language query for semantic search
+- `--keyword`: Keyword to search for in by-law metadata
+- `--limit`: Maximum number of results to return (default: 10)
+- `--output`: Output file name (default: search_results.json)
+- `--api-key`: Voyage AI API key (can also be set in .env file)
+- `--chroma-host`: ChromaDB host (default: localhost)
+- `--chroma-port`: ChromaDB port (default: 8000)
+- `--collection`: Collection name (default: by-laws)
+- `--stats`: Display database statistics
+
+At least one of `--query`, `--keyword`, or `--stats` is required. 
