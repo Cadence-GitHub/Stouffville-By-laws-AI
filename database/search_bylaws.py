@@ -29,7 +29,7 @@ def count_tokens(text):
     return len(encoding.encode(text))
 
 
-def search_bylaws_by_keyword(base_dir, keyword, output_file):
+def search_bylaws_by_keyword(base_dir, keyword, output_file, include_all=False):
     """
     Search through all JSON files in the base_dir for a specific keyword in the 'keywords' list.
     Print matching filenames and their keywords list, and append the entire JSON content
@@ -39,6 +39,7 @@ def search_bylaws_by_keyword(base_dir, keyword, output_file):
         base_dir (str): The directory to search in (and its subdirectories)
         keyword (str): The keyword to search for (partial matches are included)
         output_file (str): The file to append results to
+        include_all (bool): Whether to include all bylaws regardless of keywords
         
     Returns:
         tuple: (output tokens, source tokens) - token counts for output and source data
@@ -71,15 +72,20 @@ def search_bylaws_by_keyword(base_dir, keyword, output_file):
                         
                     total_source_tokens += file_tokens
                 
-                # Check if 'keywords' exists and is a list
-                if 'keywords' in bylaw_data and isinstance(bylaw_data['keywords'], list):
+                # If including all bylaws or if the keyword matches, add the file
+                if include_all:
+                    print(f"\nIncluding: {json_file}")
+                    if 'keywords' in bylaw_data and isinstance(bylaw_data['keywords'], list):
+                        print(f"Keywords: {bylaw_data['keywords']}")
+                    matching_files.append(str(json_file))
+                    output_data.append(bylaw_data)
+                # Otherwise check for keyword matches
+                elif keyword and 'keywords' in bylaw_data and isinstance(bylaw_data['keywords'], list):
                     # Look for keyword in the keywords list (case-insensitive)
                     if any(keyword.lower() in kw.lower() for kw in bylaw_data['keywords']):
                         print(f"\nFound match in: {json_file}")
                         print(f"Keywords: {bylaw_data['keywords']}")
                         matching_files.append(str(json_file))
-                        
-                        # Append to the output data
                         output_data.append(bylaw_data)
         except (json.JSONDecodeError, UnicodeDecodeError) as e:
             print(f"Error processing {json_file}: {e}")
@@ -148,19 +154,37 @@ def print_token_info(token_count, label=""):
 
 def main():
     parser = argparse.ArgumentParser(description='Search bylaws by keyword')
-    parser.add_argument('keyword', help='Keyword to search for in bylaw keywords')
+    parser.add_argument('keyword', nargs='?', help='Keyword to search for in bylaw keywords (optional)')
     parser.add_argument('--dir', default='Stouffville_AI/database/By-laws-by-year', 
                         help='Directory to search in (default: Stouffville_AI/database/By-laws-by-year)')
     parser.add_argument('--output', default=None,
-                        help='Output file name (default: {keyword}_related_by-laws.json)')
+                        help='Output file name (default: {keyword}_related_by-laws.json or all_by-laws.json)')
     
     args = parser.parse_args()
+    
+    include_all = False
+    
+    # If keyword is not provided, ask user if they want to include all bylaws
+    if args.keyword is None:
+        response = input("No keyword provided. Do you want to include all bylaws in the output file? (y/n): ")
+        if response.lower() in ['y', 'yes']:
+            include_all = True
+            print("Including all bylaws in the output.")
+            # Set a default keyword for output filename
+            if args.output is None:
+                args.output = "all_by-laws.json"
+        else:
+            keyword = input("Please enter a keyword to search for: ")
+            args.keyword = keyword
+            if not args.keyword:
+                print("No keyword provided. Exiting.")
+                return
     
     # Set default output filename to include the keyword if not specified
     if args.output is None:
         args.output = f"{args.keyword}_related_by-laws.json"
     
-    output_tokens, source_tokens = search_bylaws_by_keyword(args.dir, args.keyword, args.output)
+    output_tokens, source_tokens = search_bylaws_by_keyword(args.dir, args.keyword, args.output, include_all)
     
     # Display token count and cost information for both source and output
     print_token_info(source_tokens, "Source Data")
