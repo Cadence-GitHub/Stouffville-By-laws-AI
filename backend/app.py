@@ -122,18 +122,15 @@ def demo():
                 # Get Gemini response using the relevant bylaws
                 response = get_gemini_response(query, relevant_bylaws, model)
                 
-                # Update prompt timings if available in the response
-                first_prompt_time = 0
-                second_prompt_time = 0
+                # Only use prompt timings if available in the response
+                timing_info = ""
                 if 'timings' in response:
                     first_prompt_time = response['timings'].get('first_prompt', 0)
                     second_prompt_time = response['timings'].get('second_prompt', 0)
+                    timing_info = f"Timings: Retrieval: {retrieval_time:.2f}s, First prompt: {first_prompt_time:.2f}s, Second prompt: {second_prompt_time:.2f}s"
                 else:
-                    # If no detailed timings, calculate total prompt time
-                    total_prompt_time = time.time() - start_prompt_time
-                    # Estimate first and second prompt times (splitting total time)
-                    first_prompt_time = total_prompt_time * 0.6  # Approximate 60% for first prompt
-                    second_prompt_time = total_prompt_time * 0.4  # Approximate 40% for second prompt
+                    # If no detailed timings available, only show retrieval time
+                    timing_info = f"Timings: Retrieval: {retrieval_time:.2f}s"
                 
                 if 'error' in response:
                     answer = f"Error: {response['error']}"
@@ -143,7 +140,6 @@ def demo():
                     source_info = "Source: ChromaDB vector search (using Voyage AI embeddings)"
                     bylaw_info = f"Retrieved By-laws: {bylaw_numbers_str}"
                     model_info = f"Model: {model}"
-                    timing_info = f"Timings: Retrieval: {retrieval_time:.2f}s, First prompt: {first_prompt_time:.2f}s, Second prompt: {second_prompt_time:.2f}s"
                     footer = f"<hr><small><i>{source_info}<br>{bylaw_info}<br>{model_info}<br>{timing_info}</i></small>"
                     
                     if compare_mode:
