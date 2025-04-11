@@ -83,6 +83,14 @@
                 <option value="gemini-2.0-flash-thinking-exp-01-21" {% if model == "gemini-2.0-flash-thinking-exp-01-21" %}selected{% endif %}>gemini-2.0-flash-thinking-exp-01-21 (better reasoning)</option>
                 <option value="gemini-2.5-pro-exp-03-25" {% if model == "gemini-2.5-pro-exp-03-25" %}selected{% endif %}>gemini-2.5-pro-exp-03-25 (highest quality, most expensive)</option>
             </select>
+            
+            <label for="bylaws_limit" style="margin-left: 20px;">Bylaws to retrieve from ChromaDB:</label>
+            <select id="bylaws_limit" name="bylaws_limit">
+                <option value="5" {% if bylaws_limit == 5 %}selected{% endif %}>5</option>
+                <option value="10" {% if bylaws_limit == 10 or not bylaws_limit %}selected{% endif %}>10</option>
+                <option value="15" {% if bylaws_limit == 15 %}selected{% endif %}>15</option>
+                <option value="20" {% if bylaws_limit == 20 %}selected{% endif %}>20</option>
+            </select>
         </div>
         
         <div class="info-box" style="margin: 15px 0; padding: 10px; background-color: #f0f7ff; border-left: 4px solid #0066cc; border-radius: 4px;">
