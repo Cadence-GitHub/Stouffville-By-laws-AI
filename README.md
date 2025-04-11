@@ -118,6 +118,8 @@ Dependencies for AI integration:
 - **Expired By-laws Filtering**: The system generates a complete response with all by-laws, then uses this response to create a filtered version showing only active by-laws. This two-step approach optimizes costs and speed by reducing the context size for the second prompt.
 - **Comparison Mode**: Option to display both filtered (active only) and complete (including expired) answers side-by-side for comparison.
 - **Model Selection**: Users can select which Gemini model to use based on their requirements for speed, cost, and quality.
+- **Performance Metrics**: The demo interface displays detailed timing information showing how long each step takes (by-law retrieval, first prompt execution, and second prompt execution).
+- **Bylaw Limit Selection**: In the demo interface, users can choose how many relevant bylaws to retrieve (5, 10, 15, or 20) for their queries.
 - **Visual UI Improvements**: Enhanced demo interface with better layout and formatting options.
 
 ### Vector Database Setup
@@ -169,14 +171,15 @@ graph TB
 
         %% Subgraph for API Calls
         subgraph APICalls["API Endpoints"]
-            API1["/ask (POST)"]
-            API2["/demo (GET)"]
-            API3["/hello (GET)"]
+            API1["/api/ask (POST)"]
+            API2["/api/demo (GET/POST)"]
+            API3["/api/hello (GET)"]
         end
     end
 
     %% Data Processing Components
     subgraph DataProcessing["Data Processing"]
+        PrepareByLaws["Prepare JSON Bylaws (prepare_json_bylaws_for_db.py)"]
         SearchBylaws["Search Bylaws (search_bylaws.py)"]
         InitChroma["Initialize ChromaDB (init_chroma.py)"]
     end
@@ -187,7 +190,8 @@ graph TB
 
 
     %% Connections between components
-    SearchBylaws --> ByLawsData
+    PrepareByLaws --> ByLawsData
+    SearchBylaws --> ChromaDB
     FlaskApp --> GeminiHandler
     FlaskApp --> ChromaRetriever
     FlaskApp --> Demo
@@ -223,19 +227,30 @@ The system implements a Retrieval-Augmented Generation (RAG) architecture with t
 
 1. **Data Flow Pipeline**:
    - Raw by-law documents are processed and stored as JSON
-   - Voyage AI generates embeddings for these documents
-   - ChromaDB indexes embeddings for efficient semantic retrieval
+   - `prepare_json_bylaws_for_db.py` creates subsets of bylaws by keyword for further processing
+   - Voyage AI generates embeddings for these documents using the `voyage-3-large` model
+   - ChromaDB indexes embeddings for efficient semantic retrieval using HNSW algorithm
    - When a query is received, relevant by-laws are retrieved and passed to Gemini AI
-   - Gemini generates natural language responses based on retrieved context
+   - Gemini generates both complete and filtered responses (active bylaws only) based on retrieved context
 
 2. **Backend Core**:
    - Flask application handles HTTP routing and request processing
    - ChromaDB Retriever manages vector database interactions
-   - Gemini Handler orchestrates AI model interactions
+   - Gemini Handler orchestrates AI model interactions with multiple model options
    - Prompts Module contains templates that structure AI responses
 
-3. **External Services Integration**:
-   - Google Generative AI provides LLM capabilities via Gemini models
+3. **Database Tools**:
+   - `init_chroma.py` converts JSON bylaws into vector embeddings stored in ChromaDB
+   - `search_bylaws.py` allows semantic search, keyword search, or combinations of both
+   - Vector search is optimized with configurable HNSW parameters (M, construction_ef, search_ef)
+
+4. **External Services Integration**:
+   - Google Generative AI provides LLM capabilities via multiple Gemini models (2.0-flash-lite, 2.0-flash, etc.)
    - Voyage AI supplies high-quality text embeddings for semantic search
+
+5. **User Interface Options**:
+   - Web demo interface with model selection and bylaw limit options
+   - Performance metrics showing timing information for each processing step
+   - Option to compare filtered (active) and complete (including expired) bylaw responses
 
 This architecture ensures that the system can accurately respond to user queries about Stouffville by-laws by finding the most semantically relevant information and presenting it in a natural, conversational format.
