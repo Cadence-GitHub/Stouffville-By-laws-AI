@@ -86,6 +86,8 @@ def demo():
         compare_mode = request.form.get('filter_expired', 'false') == 'true'
         side_by_side = request.form.get('side_by_side', 'false') == 'true'
         model = request.form.get('model', 'gemini-2.0-flash')
+        # Get the bylaws limit parameter, default to 10 if not provided
+        bylaws_limit = int(request.form.get('bylaws_limit', '10'))
         
         if query:
             # Try to use ChromaDB to find relevant bylaws
@@ -95,8 +97,15 @@ def demo():
                     error_message = "Error: ChromaDB collection does not exist"
                     return render_template('demo.html', question=query, answer=error_message, model=model)
                 
+                # Track time for retrieving bylaws
+                import time
+                start_retrieval_time = time.time()
+                
                 # Use ChromaDB to find relevant bylaws
-                relevant_bylaws = chroma_retriever.retrieve_relevant_bylaws(query, limit=10)
+                relevant_bylaws = chroma_retriever.retrieve_relevant_bylaws(query, limit=bylaws_limit)
+                
+                # Calculate retrieval time
+                retrieval_time = time.time() - start_retrieval_time
                 
                 # If no relevant bylaws found, return an error
                 if not relevant_bylaws:
@@ -107,8 +116,21 @@ def demo():
                 bylaw_numbers = [bylaw.get("bylawNumber", "Unknown") for bylaw in relevant_bylaws]
                 bylaw_numbers_str = ", ".join(bylaw_numbers)
                 
+                # Track time for generating responses
+                start_prompt_time = time.time()
+                
                 # Get Gemini response using the relevant bylaws
                 response = get_gemini_response(query, relevant_bylaws, model)
+                
+                # Only use prompt timings if available in the response
+                timing_info = ""
+                if 'timings' in response:
+                    first_prompt_time = response['timings'].get('first_prompt', 0)
+                    second_prompt_time = response['timings'].get('second_prompt', 0)
+                    timing_info = f"Timings: Retrieval: {retrieval_time:.2f}s, First prompt: {first_prompt_time:.2f}s, Second prompt: {second_prompt_time:.2f}s"
+                else:
+                    # If no detailed timings available, only show retrieval time
+                    timing_info = f"Timings: Retrieval: {retrieval_time:.2f}s"
                 
                 if 'error' in response:
                     answer = f"Error: {response['error']}"
@@ -116,9 +138,9 @@ def demo():
                 else:
                     # Prepare the responses with source information
                     source_info = "Source: ChromaDB vector search (using Voyage AI embeddings)"
-                    bylaw_info = f"Referenced By-laws: {bylaw_numbers_str}"
+                    bylaw_info = f"Retrieved By-laws: {bylaw_numbers_str}"
                     model_info = f"Model: {model}"
-                    footer = f"<hr><small><i>{source_info}<br>{bylaw_info}<br>{model_info}</i></small>"
+                    footer = f"<hr><small><i>{source_info}<br>{bylaw_info}<br>{model_info}<br>{timing_info}</i></small>"
                     
                     if compare_mode:
                         # When comparing, provide both answers with the footer
@@ -132,7 +154,8 @@ def demo():
                             filtered_answer=filtered_answer,
                             compare_mode=compare_mode,
                             side_by_side=side_by_side,
-                            model=model
+                            model=model,
+                            bylaws_limit=bylaws_limit
                         )
                     else:
                         # Default is to show only the filtered answer (without expired bylaws)
@@ -145,14 +168,15 @@ def demo():
                             answer=answer,
                             compare_mode=compare_mode,
                             side_by_side=side_by_side,
-                            model=model
+                            model=model,
+                            bylaws_limit=bylaws_limit
                         )
                 
             except Exception as e:
                 error_message = f"Error: ChromaDB retrieval failed: {str(e)}"
                 return render_template('demo.html', question=query, answer=error_message, model=model)
     
-    return render_template('demo.html', compare_mode=False, side_by_side=False, model="gemini-2.0-flash")
+    return render_template('demo.html', compare_mode=False, side_by_side=False, model="gemini-2.0-flash", bylaws_limit=10)
 
 if __name__ == '__main__':
     # Run in debug mode for development

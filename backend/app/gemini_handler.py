@@ -3,6 +3,7 @@ import json
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.schema.output_parser import StrOutputParser
 from app.prompts import BYLAWS_PROMPT_TEMPLATE, FILTERED_BYLAWS_PROMPT_TEMPLATE
+import time
 
 # Define allowed models
 ALLOWED_MODELS = [
@@ -45,25 +46,41 @@ def get_gemini_response(query, relevant_bylaws, model="gemini-2.0-flash"):
         
         bylaws_content = json.dumps(relevant_bylaws, indent=2)
         
+        # Track timing for the first prompt
+        start_first_prompt = time.time()
+        
         # 1. Get response with all bylaws (original behavior)
         full_prompt = BYLAWS_PROMPT_TEMPLATE
         full_chain = full_prompt | model_instance | StrOutputParser()
         full_response = full_chain.invoke({"bylaws_content": bylaws_content, "question": query})
         
+        # Calculate first prompt time
+        first_prompt_time = time.time() - start_first_prompt
+        
         # Clean up the first response to remove markdown code block indicators
         cleaned_full_response = clean_response(full_response)
+        
+        # Track timing for the second prompt
+        start_second_prompt = time.time()
         
         # 2. Get filtered response using the first response as input instead of the full bylaws content
         filtered_prompt = FILTERED_BYLAWS_PROMPT_TEMPLATE
         filtered_chain = filtered_prompt | model_instance | StrOutputParser()
         filtered_response = filtered_chain.invoke({"first_response": cleaned_full_response, "question": query})
         
+        # Calculate second prompt time
+        second_prompt_time = time.time() - start_second_prompt
+        
         # Final cleanup of responses
         filtered_response = clean_response(filtered_response)
         
         return {
             "answer": cleaned_full_response,
-            "filtered_answer": filtered_response
+            "filtered_answer": filtered_response,
+            "timings": {
+                "first_prompt": first_prompt_time,
+                "second_prompt": second_prompt_time
+            }
         }
     except Exception as e:
         return {"error": str(e)}

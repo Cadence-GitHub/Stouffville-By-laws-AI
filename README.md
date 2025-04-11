@@ -118,6 +118,8 @@ Dependencies for AI integration:
 - **Expired By-laws Filtering**: The system generates a complete response with all by-laws, then uses this response to create a filtered version showing only active by-laws. This two-step approach optimizes costs and speed by reducing the context size for the second prompt.
 - **Comparison Mode**: Option to display both filtered (active only) and complete (including expired) answers side-by-side for comparison.
 - **Model Selection**: Users can select which Gemini model to use based on their requirements for speed, cost, and quality.
+- **Performance Metrics**: The demo interface displays detailed timing information showing how long each step takes (by-law retrieval, first prompt execution, and second prompt execution).
+- **Bylaw Limit Selection**: In the demo interface, users can choose how many relevant bylaws to retrieve (5, 10, 15, or 20) for their queries.
 - **Visual UI Improvements**: Enhanced demo interface with better layout and formatting options.
 
 ### Vector Database Setup

@@ -8,6 +8,8 @@ A Flask-based backend service that provides AI-powered responses to questions ab
 - Multiple Gemini model options for different performance/quality needs
 - Optimized expired by-laws filtering using a two-step prompting approach for cost efficiency and speed
 - Comparison mode to see differences between filtered and unfiltered answers
+- Performance metrics showing execution time for bylaw retrieval and each prompt (in demo interface)
+- Configurable number of bylaws to retrieve (5, 10, 15, or 20) in the demo interface
 - Simple web-based demo interface for testing without the frontend
 - CORS support for frontend integration
 - 50-second timeout protection for AI queries
@@ -34,7 +36,7 @@ Main endpoint for the React frontend to query the AI.
 ```json
 {
   "query": "What are the noise restrictions in Stouffville?",
-  "model": "gemini-2.0-flash" 
+  "model": "gemini-2.0-flash"
 }
 ```
 
@@ -64,8 +66,10 @@ A standalone web demo page with a simple form interface:
 
 The demo page includes:
 - Model selection dropdown
+- Bylaw limit selection (5, 10, 15, or 20 bylaws)
 - Comparison mode to show both filtered and unfiltered answers
 - Side-by-side view option for easier comparison
+- Performance metrics showing retrieval and processing times
 
 ## Setup for Frontend Developers
 
