@@ -116,9 +116,10 @@ Dependencies for AI integration:
 ### Key Features
 
 - **Expired By-laws Filtering**: The system generates a complete response with all by-laws, then uses this response to create a filtered version showing only active by-laws. This two-step approach optimizes costs and speed by reducing the context size for the second prompt.
-- **Comparison Mode**: Option to display both filtered (active only) and complete (including expired) answers side-by-side for comparison.
+- **Layman's Terms Conversion**: After filtering active by-laws, a third prompt transforms the technical legal language into plain, everyday language without bylaw references, making information more accessible to residents.
+- **Comparison Mode**: Option to display all three versions of the answer (complete, filtered active only, and layman's terms) for comparison.
 - **Model Selection**: Users can select which Gemini model to use based on their requirements for speed, cost, and quality.
-- **Performance Metrics**: The demo interface displays detailed timing information showing how long each step takes (by-law retrieval, first prompt execution, and second prompt execution).
+- **Performance Metrics**: The demo interface displays detailed timing information showing how long each step takes (by-law retrieval, first prompt execution, second prompt execution, and third prompt execution).
 - **Bylaw Limit Selection**: In the demo interface, users can choose how many relevant bylaws to retrieve (5, 10, 15, or 20) for their queries.
 - **Visual UI Improvements**: Enhanced demo interface with better layout and formatting options.
 
@@ -231,7 +232,10 @@ The system implements a Retrieval-Augmented Generation (RAG) architecture with t
    - Voyage AI generates embeddings for these documents using the `voyage-3-large` model
    - ChromaDB indexes embeddings for efficient semantic retrieval using HNSW algorithm
    - When a query is received, relevant by-laws are retrieved and passed to Gemini AI
-   - Gemini generates both complete and filtered responses (active bylaws only) based on retrieved context
+   - Gemini generates three different responses:
+     - Complete response with all retrieved by-laws
+     - Filtered response with only active by-laws
+     - Layman's terms response with simplified language and no bylaw references
 
 2. **Backend Core**:
    - Flask application handles HTTP routing and request processing
@@ -251,6 +255,6 @@ The system implements a Retrieval-Augmented Generation (RAG) architecture with t
 5. **User Interface Options**:
    - Web demo interface with model selection and bylaw limit options
    - Performance metrics showing timing information for each processing step
-   - Option to compare filtered (active) and complete (including expired) bylaw responses
+   - Option to compare all three versions of the answer (complete, filtered active only, and layman's terms)
 
 This architecture ensures that the system can accurately respond to user queries about Stouffville by-laws by finding the most semantically relevant information and presenting it in a natural, conversational format.

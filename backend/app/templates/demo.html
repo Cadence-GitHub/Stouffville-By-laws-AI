@@ -99,7 +99,7 @@
         
         <div class="checkbox-container">
             <input type="checkbox" id="filter_expired" name="filter_expired" value="true" {% if compare_mode %}checked{% endif %} onchange="toggleComparisonOption()">
-            <label for="filter_expired"><strong>Show both answers for comparison</strong> (see how responses differ with and without expired by-laws)</label>
+            <label for="filter_expired"><strong>Show full prompt chain</strong> (see how responses evolve from technical to layman's terms)</label>
             
             <span class="comparison-option" id="comparisonOption">
                 <input type="checkbox" id="side_by_side" name="side_by_side" value="true" {% if side_by_side %}checked{% endif %}>
@@ -125,6 +125,12 @@
             <h3>Filtered Answer (active by-laws only)</h3>
             <p class="explanation" style="font-style: italic; color: #666;">This answer only includes currently active by-laws. Expired, temporary, or obsolete by-laws have been filtered out.</p>
             <div>{{ filtered_answer | safe }}</div>
+        </div>
+        
+        <div class="answer-container">
+            <h3>Simplified Answer (layman's terms)</h3>
+            <p class="explanation" style="font-style: italic; color: #666;">This answer presents the information in simple, everyday language that's easy for anyone to understand.</p>
+            <div>{{ laymans_answer | safe }}</div>
         </div>
         {% else %}
         <div class="answer-container">

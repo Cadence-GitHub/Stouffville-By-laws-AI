@@ -127,7 +127,8 @@ def demo():
                 if 'timings' in response:
                     first_prompt_time = response['timings'].get('first_prompt', 0)
                     second_prompt_time = response['timings'].get('second_prompt', 0)
-                    timing_info = f"Timings: Retrieval: {retrieval_time:.2f}s, First prompt: {first_prompt_time:.2f}s, Second prompt: {second_prompt_time:.2f}s"
+                    third_prompt_time = response['timings'].get('third_prompt', 0)
+                    timing_info = f"Timings: Retrieval: {retrieval_time:.2f}s, First prompt: {first_prompt_time:.2f}s, Second prompt: {second_prompt_time:.2f}s, Third prompt: {third_prompt_time:.2f}s"
                 else:
                     # If no detailed timings available, only show retrieval time
                     timing_info = f"Timings: Retrieval: {retrieval_time:.2f}s"
@@ -146,12 +147,14 @@ def demo():
                         # When comparing, provide both answers with the footer
                         full_answer = response.get('answer', 'Error: No response') + footer
                         filtered_answer = response.get('filtered_answer', 'Error: No response') + footer
+                        laymans_answer = response.get('laymans_answer', 'Error: No response') + footer
                         
                         return render_template(
                             'demo.html', 
                             question=query, 
                             full_answer=full_answer,
                             filtered_answer=filtered_answer,
+                            laymans_answer=laymans_answer,
                             compare_mode=compare_mode,
                             side_by_side=side_by_side,
                             model=model,
