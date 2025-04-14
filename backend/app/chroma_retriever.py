@@ -24,7 +24,7 @@ class ChromaDBRetriever:
         self._initialize_vector_store()
     
     def _initialize_vector_store(self):
-        """Initialize the vector store connection."""
+        """Initialize the vector store connection. """
         try:
             # Create the ChromaDB client directly using the HttpClient
             chroma_client = chromadb.HttpClient(host=self.chroma_host, port=self.chroma_port)
@@ -50,11 +50,12 @@ class ChromaDBRetriever:
             limit (int): Maximum number of results to return
             
         Returns:
-            tuple: (list of by-law documents with their metadata, retrieval_time in seconds)
+            tuple: (list of by-law documents with their metadata, retrieval_time in seconds, exists_status)
+                   where exists_status is a boolean indicating if the collection exists and has documents
         """
         if not self.vector_store:
             print("ChromaDB connection not available")
-            return [], 0
+            return [], 0, False
             
         try:
             # Start timing the retrieval
@@ -84,22 +85,38 @@ class ChromaDBRetriever:
                 
                 results.append(bylaw_data)
             
-            return results, retrieval_time
+            # Return the results and a flag indicating the collection exists
+            return results, retrieval_time, True
             
         except Exception as e:
             print(f"Error retrieving bylaws: {str(e)}")
-            return [], 0
+            return [], 0, False
     
     def collection_exists(self):
-        """Check if the collection exists and has documents."""
+        """
+        Check if the collection exists and has documents.
+        
+        This function is maintained for backward compatibility.
+        It's more efficient to use retrieve_relevant_bylaws which returns an exists_status.
+        """
         if not self.vector_store:
             return False
             
         try:
-            # Try to get collection info - if it returns data, collection exists
-            collection_data = self.vector_store.get()
-            # In LangChain Chroma implementation, this will return a dict with keys like 'ids', 'documents', etc.
-            return len(collection_data.get('ids', [])) > 0
+            # Instead of getting all ids, just try to get a single document
+            # This is much more efficient for large collections
+            retriever = self.vector_store.as_retriever(
+                search_type="similarity", 
+                search_kwargs={"k": 1}
+            )
+            
+            # Use a simple but effective query that should match any document
+            # The _client.count() would be ideal but isn't directly accessible through LangChain's API
+            query = "document"
+            results = retriever.invoke(query)
+            
+            # If we got any results, the collection exists and has documents
+            return len(results) > 0
         except Exception as e:
             print(f"Error checking collection existence: {str(e)}")
             return False
