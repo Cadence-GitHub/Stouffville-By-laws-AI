@@ -94,4 +94,31 @@ Your task is to create a concise, straightforward response that:
 User Question: {question}
 
 Your response (in HTML format):"""
+)
+
+# Define the enhanced search prompt template to transform user queries
+ENHANCED_SEARCH_PROMPT_TEMPLATE = PromptTemplate(
+    input_variables=["question"],
+    template="""You are an expert legal interpreter specializing in municipal bylaws for the Town.
+
+Your task is to transform the following informal user question into formal, bylaw-oriented language that will improve semantic search results in a vector database of municipal regulations.
+
+Original question: {question}
+
+Transform this into formal, structured language that:
+1. Uses precise terminology commonly found in municipal bylaws and legal codes
+2. Includes relevant regulatory concepts, categories, and statutory language
+3. References specific bylaw domains that may govern this issue (e.g., animal control, property rights, waste management, public health, zoning ordinances)
+4. Structures the query as a comprehensive formal inquiry about regulatory compliance, obligations, permissions, and prohibitions
+5. Incorporates standard legal phrasings that would appear in official bylaw documents
+
+Your transformation should:
+- Maintain the core intent of the original question
+- Expand the semantic search surface by including related legal concepts
+- Use language patterns that maximize vector similarity with formal bylaw text
+- Be concise but thorough (50-75 words)
+
+Do not provide any explanations, just return the transformed query.
+
+Transformed query:"""
 ) 

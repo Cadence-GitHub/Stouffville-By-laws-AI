@@ -50,13 +50,17 @@ class ChromaDBRetriever:
             limit (int): Maximum number of results to return
             
         Returns:
-            list: List of by-law documents with their metadata
+            tuple: (list of by-law documents with their metadata, retrieval_time in seconds)
         """
         if not self.vector_store:
             print("ChromaDB connection not available")
-            return []
+            return [], 0
             
         try:
+            # Start timing the retrieval
+            import time
+            start_time = time.time()
+            
             # Use the vector store as a retriever
             retriever = self.vector_store.as_retriever(
                 search_type="similarity",
@@ -65,6 +69,9 @@ class ChromaDBRetriever:
             
             # Retrieve relevant documents
             documents = retriever.invoke(query)
+            
+            # Calculate retrieval time
+            retrieval_time = time.time() - start_time
             
             # Process the results
             results = []
@@ -77,11 +84,11 @@ class ChromaDBRetriever:
                 
                 results.append(bylaw_data)
             
-            return results
+            return results, retrieval_time
             
         except Exception as e:
             print(f"Error retrieving bylaws: {str(e)}")
-            return []
+            return [], 0
     
     def collection_exists(self):
         """Check if the collection exists and has documents."""
