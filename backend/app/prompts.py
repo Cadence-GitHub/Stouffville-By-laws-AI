@@ -1,6 +1,14 @@
 from langchain.prompts import PromptTemplate
 from datetime import datetime
 
+# Define temperature values for each prompt type in a dictionary
+TEMPERATURES = {
+    "bylaws": 0.0,
+    "filtered": 0.0,
+    "laymans": 0.7,
+    "enhanced_search": 0.2
+}
+
 # Define the prompt template for Gemini AI to use with Stouffville by-laws data
 BYLAWS_PROMPT_TEMPLATE = PromptTemplate(
     input_variables=["bylaws_content", "question"],

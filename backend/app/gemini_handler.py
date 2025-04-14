@@ -2,7 +2,11 @@ import os
 import json
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.schema.output_parser import StrOutputParser
-from app.prompts import BYLAWS_PROMPT_TEMPLATE, FILTERED_BYLAWS_PROMPT_TEMPLATE, LAYMANS_PROMPT_TEMPLATE, ENHANCED_SEARCH_PROMPT_TEMPLATE
+from app.prompts import (
+    BYLAWS_PROMPT_TEMPLATE, FILTERED_BYLAWS_PROMPT_TEMPLATE, 
+    LAYMANS_PROMPT_TEMPLATE, ENHANCED_SEARCH_PROMPT_TEMPLATE,
+    TEMPERATURES
+)
 import time
 
 # Define allowed models
@@ -13,12 +17,13 @@ ALLOWED_MODELS = [
     "gemini-2.5-pro-exp-03-25"
 ]
 
-def invoke_model_with_timing(model_instance, prompt_template, prompt_args):
+def invoke_model_with_timing(prompt_type, model_config, prompt_template, prompt_args):
     """
     Helper function to invoke a model with a prompt template and return the response and timing.
     
     Args:
-        model_instance: The initialized LLM model instance
+        prompt_type: Type of prompt to determine temperature
+        model_config: Configuration for LLM model
         prompt_template: The prompt template to use
         prompt_args (dict): The arguments to pass to the prompt template
     
@@ -26,6 +31,17 @@ def invoke_model_with_timing(model_instance, prompt_template, prompt_args):
         tuple: (cleaned_response, execution_time)
     """
     start_time = time.time()
+    
+    # Get temperature for this prompt type
+    temperature = TEMPERATURES.get(prompt_type, 0.0)
+    
+    # Create model instance with the appropriate temperature
+    model_instance = ChatGoogleGenerativeAI(
+        model=model_config['model'],
+        google_api_key=model_config['api_key'],
+        timeout=model_config['timeout'],
+        temperature=temperature
+    )
     
     # Create and invoke the chain
     chain = prompt_template | model_instance | StrOutputParser()
@@ -63,32 +79,35 @@ def get_gemini_response(query, relevant_bylaws, model="gemini-2.0-flash"):
         return {"error": f"Invalid model: {model}. Only these models are allowed: {', '.join(ALLOWED_MODELS)}"}
     
     try:
-        # Initialize Gemini model with the specified version and 50 second timeout
-        model_instance = ChatGoogleGenerativeAI(
-            model=model, 
-            google_api_key=api_key,
-            timeout=50
-        )
+        # Create a model configuration
+        model_config = {
+            'model': model,
+            'api_key': api_key,
+            'timeout': 50
+        }
         
         bylaws_content = json.dumps(relevant_bylaws, indent=2)
         
         # 1. Get response with all bylaws (original behavior)
         cleaned_full_response, first_prompt_time = invoke_model_with_timing(
-            model_instance, 
+            "bylaws",
+            model_config, 
             BYLAWS_PROMPT_TEMPLATE, 
             {"bylaws_content": bylaws_content, "question": query}
         )
         
-        # 2. Get filtered response using the first response as input instead of the full bylaws content
+        # 2. Get filtered response using the first response as input
         cleaned_filtered_response, second_prompt_time = invoke_model_with_timing(
-            model_instance,
+            "filtered",
+            model_config,
             FILTERED_BYLAWS_PROMPT_TEMPLATE,
             {"first_response": cleaned_full_response, "question": query}
         )
         
         # 3. Get layman's terms response using the filtered response as input
         laymans_response, third_prompt_time = invoke_model_with_timing(
-            model_instance,
+            "laymans",
+            model_config,
             LAYMANS_PROMPT_TEMPLATE,
             {"filtered_response": cleaned_filtered_response, "question": query}
         )
@@ -123,16 +142,17 @@ def transform_query_for_enhanced_search(query, model="gemini-2.0-flash"):
         return query, 0
     
     try:
-        # Initialize model for enhanced query transformation
-        transform_model = ChatGoogleGenerativeAI(
-            model=model,
-            google_api_key=api_key,
-            timeout=30
-        )
+        # Create a model configuration
+        model_config = {
+            'model': model,
+            'api_key': api_key,
+            'timeout': 30
+        }
         
         # Transform user query to formal bylaw language using the helper function
         transformed_query, transform_time = invoke_model_with_timing(
-            transform_model,
+            "enhanced_search",
+            model_config,
             ENHANCED_SEARCH_PROMPT_TEMPLATE,
             {"question": query}
         )
