@@ -2,11 +2,19 @@ from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
 import os
 import json
-import time  # Add time module import
+import time
 from dotenv import load_dotenv
-from app.prompts import BYLAWS_PROMPT_TEMPLATE, FILTERED_BYLAWS_PROMPT_TEMPLATE, ENHANCED_SEARCH_PROMPT_TEMPLATE
-from app.chroma_retriever import ChromaDBRetriever  # Import the simplified ChromaDB retriever
-from app.gemini_handler import get_gemini_response, transform_query_for_enhanced_search, ALLOWED_MODELS  # Import the refactored Gemini handler
+import tiktoken  # Still needed for potential direct use elsewhere
+
+# Import from app package using the simplified imports from __init__.py
+from app import (
+    ChromaDBRetriever,
+    get_gemini_response, 
+    transform_query_for_enhanced_search,
+    ALLOWED_MODELS,
+    count_tokens,
+    MODEL_PRICING
+)
 
 # Load API keys and environment variables from .env file
 load_dotenv()
@@ -167,6 +175,13 @@ def demo():
                 # Get Gemini response using the relevant bylaws
                 response = get_gemini_response(query, relevant_bylaws, model)
                 
+                # Count both input and output tokens and calculate costs
+                token_counts = count_tokens(bylaws=relevant_bylaws, response=response, model=model)
+                input_token_count = token_counts['input_tokens']
+                output_token_count = token_counts['output_tokens']
+                input_cost = token_counts['input_cost']
+                output_cost = token_counts['output_cost']
+                
                 # Calculate total pre-render processing time once
                 pre_render_time = time.time() - request_start_time
                 
@@ -196,6 +211,7 @@ def demo():
                     # Prepare the responses with source information
                     source_info = "Source: ChromaDB vector search (using Voyage AI embeddings)"
                     bylaw_info = f"Retrieved By-laws: {bylaw_numbers_str}"
+                    token_info = f"Total input tokens: {input_token_count} (${input_cost:.6f})<br>Total output tokens: {output_token_count} (${output_cost:.6f})"
                     model_info = f"Model: {model}"
                     enhanced_info = ""
                     if enhanced_search:
@@ -207,12 +223,12 @@ def demo():
                         
                         enhanced_bylaws_str = ", ".join(enhanced_bylaw_ids) if enhanced_bylaw_ids else "None"
                         enhanced_info = f"<br>Bylaws found by Enhanced Search: {enhanced_bylaws_str}"
-                    footer = f"<hr><small><i>{source_info}<br>{bylaw_info}{enhanced_info}<br>{model_info}<br>{timing_info}</i></small>"
+                    footer = f"<hr><small><i>{source_info}<br>{bylaw_info}{enhanced_info}<br>{token_info}<br>{model_info}<br>{timing_info}</i></small>"
                     
                     if compare_mode:
-                        # When comparing, provide both answers with the footer
-                        full_answer = response.get('answer', 'Error: No response') + footer
-                        filtered_answer = response.get('filtered_answer', 'Error: No response') + footer
+                        # When comparing, provide only the answers without the footer
+                        full_answer = response.get('answer', 'Error: No response') 
+                        filtered_answer = response.get('filtered_answer', 'Error: No response')
                         laymans_answer = response.get('laymans_answer', 'Error: No response') + footer
                         
                         return render_template(
