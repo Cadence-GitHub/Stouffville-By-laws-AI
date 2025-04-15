@@ -66,6 +66,13 @@
         .answers-wrapper.side-by-side .answer-container {
             flex: 1;
         }
+        .transformed-query {
+            margin-top: 20px;
+            padding: 10px 15px;
+            background-color: #f0f7ff;
+            border-left: 4px solid #0066cc;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -91,10 +98,15 @@
                 <option value="15" {% if bylaws_limit == 15 %}selected{% endif %}>15</option>
                 <option value="20" {% if bylaws_limit == 20 %}selected{% endif %}>20</option>
             </select>
+
+            <span style="margin-left: 20px;">
+                <input type="checkbox" id="enhanced_search" name="enhanced_search" value="true" {% if enhanced_search %}checked{% endif %} onchange="updateBylawsLimitOptions()">
+                <label for="enhanced_search">Enhanced search</label>
+            </span>
         </div>
         
         <div class="info-box" style="margin: 15px 0; padding: 10px; background-color: #f0f7ff; border-left: 4px solid #0066cc; border-radius: 4px;">
-            <p><strong>Default behavior:</strong> By default, the system only shows information about <strong>active by-laws</strong>. Expired, temporary, or obsolete by-laws are automatically filtered out to provide the most relevant current information.</p>
+            <p><strong>Default behavior:</strong> By default, the system shows information in simple, everyday language without bylaw references. Only active by-laws (not expired, temporary, or obsolete) are considered when generating the response.</p>
         </div>
         
         <div class="checkbox-container">
@@ -111,6 +123,15 @@
     </form>
     
     <div id="loadingMessage" class="loading">Generating answer, please wait...</div>
+    
+    {% if enhanced_search and transformed_query %}
+    <div class="transformed-query">
+        <h3>Enhanced Search Query Transformation</h3>
+        <p>The <strong>Enhanced Search</strong> option has transformed your original query into legal terminology to improve search results:</p>
+        <p><strong>Original Query:</strong> {{ question }}</p>
+        <p><strong>Transformed for Legal Search:</strong> {{ transformed_query }}</p>
+    </div>
+    {% endif %}
     
     {% if question %}
     <div class="answers-wrapper {% if side_by_side %}side-by-side{% endif %}">
@@ -134,7 +155,7 @@
         </div>
         {% else %}
         <div class="answer-container">
-            <h3>Answer (showing only active by-laws)</h3>
+            <h3>Answer (in layman's terms)</h3>
             <div>{{ answer | safe }}</div>
         </div>
         {% endif %}
@@ -157,8 +178,25 @@
             }
         }
         
+        function updateBylawsLimitOptions() {
+            var enhancedSearch = document.getElementById('enhanced_search');
+            var bylawsLimit = document.getElementById('bylaws_limit');
+            var options = bylawsLimit.options;
+            
+            for (var i = 0; i < options.length; i++) {
+                var value = options[i].value;
+                if (enhancedSearch.checked) {
+                    var enhancedValue = parseInt(value) + 10;
+                    options[i].text = value + "-" + enhancedValue;
+                } else {
+                    options[i].text = value;
+                }
+            }
+        }
+        
         // Initialize on page load
         toggleComparisonOption();
+        updateBylawsLimitOptions();
     </script>
 </body>
 </html> 

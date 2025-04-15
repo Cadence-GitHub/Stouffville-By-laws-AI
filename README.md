@@ -104,6 +104,12 @@ Available Gemini models:
 - gemini-2.0-flash-thinking-exp-01-21 (better reasoning)
 - gemini-2.5-pro-exp-03-25 (highest quality, most expensive)
 
+Each prompt type uses a specific temperature setting for optimal results:
+- Bylaws prompt: 0.0 (consistent, deterministic outputs)
+- Filtered prompt: 0.0 (consistent, deterministic outputs)
+- Layman's terms prompt: 0.7 (more creative, natural language)
+- Enhanced search prompt: 0.2 (slightly varied outputs while maintaining accuracy)
+
 Dependencies for AI integration:
 - langchain
 - langchain-google-genai
@@ -112,9 +118,12 @@ Dependencies for AI integration:
 - chromadb
 - langchain-chroma
 - langchain-voyageai
+- tiktoken
 
 ### Key Features
 
+- **Enhanced Search**: Transforms user queries into formal, bylaw-oriented language to improve semantic search results, combining both original and transformed search results to maximize retrieval relevance.
+- **Token Counting and Cost Calculation**: Tracks token usage for both input and output, calculating costs based on model-specific pricing to provide transparency about API usage.
 - **Expired By-laws Filtering**: The system generates a complete response with all by-laws, then uses this response to create a filtered version showing only active by-laws. This two-step approach optimizes costs and speed by reducing the context size for the second prompt.
 - **Layman's Terms Conversion**: After filtering active by-laws, a third prompt transforms the technical legal language into plain, everyday language without bylaw references, making information more accessible to residents.
 - **Comparison Mode**: Option to display all three versions of the answer (complete, filtered active only, and layman's terms) for comparison.
@@ -168,6 +177,7 @@ graph TB
         ChromaRetriever["ChromaDB Retriever (chroma_retriever.py)"]
         GeminiHandler["Gemini Handler (gemini_handler.py)"]
         PromptsModule["Prompts Module (prompts.py)"]
+        TokenCounter["Token Counter (token_counter.py)"]
         Demo["Web Demo (templates/demo.html)"]
 
         %% Subgraph for API Calls
@@ -196,9 +206,11 @@ graph TB
     FlaskApp --> GeminiHandler
     FlaskApp --> ChromaRetriever
     FlaskApp --> Demo
+    FlaskApp --> TokenCounter
     ChromaRetriever --> ChromaDB
     GeminiHandler --> PromptsModule
     GeminiHandler --> GoogleAPI
+    TokenCounter --> GeminiHandler
     InitChroma <--> VoyageAPI
     InitChroma --> ByLawsData
     InitChroma --> ChromaDB
@@ -220,6 +232,8 @@ graph TB
     User --> API2
     User --> API3
     User --> Demo
+    style GoogleAPI fill:#0CC0DF
+    style VoyageAPI fill:#0CC0DF
 ```
 
 ### Architecture Overview
@@ -232,6 +246,7 @@ The system implements a Retrieval-Augmented Generation (RAG) architecture with t
    - Voyage AI generates embeddings for these documents using the `voyage-3-large` model
    - ChromaDB indexes embeddings for efficient semantic retrieval using HNSW algorithm
    - When a query is received, relevant by-laws are retrieved and passed to Gemini AI
+   - If enhanced search is enabled, the system transforms the query into legal language and performs two searches
    - Gemini generates three different responses:
      - Complete response with all retrieved by-laws
      - Filtered response with only active by-laws
@@ -242,6 +257,7 @@ The system implements a Retrieval-Augmented Generation (RAG) architecture with t
    - ChromaDB Retriever manages vector database interactions
    - Gemini Handler orchestrates AI model interactions with multiple model options
    - Prompts Module contains templates that structure AI responses
+   - Token Counter calculates token usage and associated costs
 
 3. **Database Tools**:
    - `init_chroma.py` converts JSON bylaws into vector embeddings stored in ChromaDB
@@ -254,6 +270,8 @@ The system implements a Retrieval-Augmented Generation (RAG) architecture with t
 
 5. **User Interface Options**:
    - Web demo interface with model selection and bylaw limit options
+   - Enhanced search option for improved semantic retrieval
+   - Token usage and cost information
    - Performance metrics showing timing information for each processing step
    - Option to compare all three versions of the answer (complete, filtered active only, and layman's terms)
 

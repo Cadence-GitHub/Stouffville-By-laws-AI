@@ -2,10 +2,19 @@ from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
 import os
 import json
+import time
 from dotenv import load_dotenv
-from app.prompts import BYLAWS_PROMPT_TEMPLATE, FILTERED_BYLAWS_PROMPT_TEMPLATE
-from app.chroma_retriever import ChromaDBRetriever  # Import the simplified ChromaDB retriever
-from app.gemini_handler import get_gemini_response, ALLOWED_MODELS  # Import the refactored Gemini handler
+import tiktoken  # Still needed for potential direct use elsewhere
+
+# Import from app package using the simplified imports from __init__.py
+from app import (
+    ChromaDBRetriever,
+    get_gemini_response, 
+    transform_query_for_enhanced_search,
+    ALLOWED_MODELS,
+    count_tokens,
+    MODEL_PRICING
+)
 
 # Load API keys and environment variables from .env file
 load_dotenv()
@@ -43,12 +52,12 @@ def ask():
     
     # Try to use ChromaDB to find relevant bylaws
     try:
-        # Check if the ChromaDB collection exists and has documents
-        if not chroma_retriever.collection_exists():
-            return jsonify({"error": "ChromaDB collection does not exist"}), 500
+        # Use ChromaDB to find relevant bylaws - now also returns collection existence status
+        relevant_bylaws, retrieval_time, collection_exists = chroma_retriever.retrieve_relevant_bylaws(query, limit=10)
         
-        # Use ChromaDB to find relevant bylaws
-        relevant_bylaws = chroma_retriever.retrieve_relevant_bylaws(query, limit=10)
+        # Check if the collection exists
+        if not collection_exists:
+            return jsonify({"error": "ChromaDB collection does not exist"}), 500
         
         # If no relevant bylaws found, return an error
         if not relevant_bylaws:
@@ -68,6 +77,7 @@ def ask():
         response["source"] = "ChromaDB"
         response["bylaw_numbers"] = bylaw_numbers
         response["model"] = model
+        response["retrieval_time"] = retrieval_time
         
         return jsonify(response)
             
@@ -82,30 +92,76 @@ def demo():
     - POST: Processes the query and displays the result
     """
     if request.method == 'POST':
+        request_start_time = time.time()  # Start timing entire request processing
+        
         query = request.form.get('query', '')
         compare_mode = request.form.get('filter_expired', 'false') == 'true'
         side_by_side = request.form.get('side_by_side', 'false') == 'true'
         model = request.form.get('model', 'gemini-2.0-flash')
         # Get the bylaws limit parameter, default to 10 if not provided
         bylaws_limit = int(request.form.get('bylaws_limit', '10'))
+        # Check if enhanced search is enabled
+        enhanced_search = request.form.get('enhanced_search', 'false') == 'true'
         
         if query:
             # Try to use ChromaDB to find relevant bylaws
             try:
-                # Check if ChromaDB collection exists
-                if not chroma_retriever.collection_exists():
-                    error_message = "Error: ChromaDB collection does not exist"
-                    return render_template('demo.html', question=query, answer=error_message, model=model)
+                # Initialize relevant_bylaws list
+                relevant_bylaws = []
                 
-                # Track time for retrieving bylaws
-                import time
-                start_retrieval_time = time.time()
-                
-                # Use ChromaDB to find relevant bylaws
-                relevant_bylaws = chroma_retriever.retrieve_relevant_bylaws(query, limit=bylaws_limit)
-                
-                # Calculate retrieval time
-                retrieval_time = time.time() - start_retrieval_time
+                # If enhanced search is enabled, perform two searches and combine results
+                if enhanced_search:
+                    # Transform user query into legal language using the Gemini handler
+                    transformed_query, transform_time = transform_query_for_enhanced_search(query, model)
+                    
+                    # First search with original query - also checks if collection exists
+                    original_results, original_time, collection_exists = chroma_retriever.retrieve_relevant_bylaws(query, limit=bylaws_limit)
+                    
+                    # Check if collection exists
+                    if not collection_exists:
+                        error_message = "Error: ChromaDB collection does not exist"
+                        return render_template('demo.html', question=query, answer=error_message, model=model)
+                    
+                    # Second search with transformed query - always use 10 documents
+                    transformed_results, transformed_time, _ = chroma_retriever.retrieve_relevant_bylaws(transformed_query, limit=10)
+                    
+                    # Total retrieval time is the sum of both searches
+                    retrieval_time = original_time + transformed_time
+                    
+                    # Combine results and remove duplicates based on bylawNumber
+                    seen_bylaws = set()
+                    combined_results = []
+                    original_bylaw_ids = set()
+                    
+                    # First add ALL original results
+                    for bylaw in original_results:
+                        bylaw_id = bylaw.get("bylawNumber", "Unknown")
+                        seen_bylaws.add(bylaw_id)
+                        original_bylaw_ids.add(bylaw_id)
+                        combined_results.append(bylaw)
+                    
+                    # Then add only NEW transformed results that aren't duplicates
+                    for bylaw in transformed_results:
+                        bylaw_id = bylaw.get("bylawNumber", "Unknown")
+                        if bylaw_id not in seen_bylaws:
+                            seen_bylaws.add(bylaw_id)
+                            combined_results.append(bylaw)
+                    
+                    # Use the combined results
+                    relevant_bylaws = combined_results
+                else:
+                    # Standard search - just use the original query
+                    # This now also returns collection existence status
+                    relevant_bylaws, retrieval_time, collection_exists = chroma_retriever.retrieve_relevant_bylaws(query, limit=bylaws_limit)
+                    
+                    # Check if collection exists
+                    if not collection_exists:
+                        error_message = "Error: ChromaDB collection does not exist"
+                        return render_template('demo.html', question=query, answer=error_message, model=model)
+                        
+                    transform_time = 0  # No transform time for standard search
+                    original_time = 0  # Initialize for consistent timing display later
+                    transformed_time = 0  # Initialize for consistent timing display later
                 
                 # If no relevant bylaws found, return an error
                 if not relevant_bylaws:
@@ -116,11 +172,18 @@ def demo():
                 bylaw_numbers = [bylaw.get("bylawNumber", "Unknown") for bylaw in relevant_bylaws]
                 bylaw_numbers_str = ", ".join(bylaw_numbers)
                 
-                # Track time for generating responses
-                start_prompt_time = time.time()
-                
                 # Get Gemini response using the relevant bylaws
                 response = get_gemini_response(query, relevant_bylaws, model)
+                
+                # Count both input and output tokens and calculate costs
+                token_counts = count_tokens(bylaws=relevant_bylaws, response=response, model=model)
+                input_token_count = token_counts['input_tokens']
+                output_token_count = token_counts['output_tokens']
+                input_cost = token_counts['input_cost']
+                output_cost = token_counts['output_cost']
+                
+                # Calculate total pre-render processing time once
+                pre_render_time = time.time() - request_start_time
                 
                 # Only use prompt timings if available in the response
                 timing_info = ""
@@ -128,10 +191,18 @@ def demo():
                     first_prompt_time = response['timings'].get('first_prompt', 0)
                     second_prompt_time = response['timings'].get('second_prompt', 0)
                     third_prompt_time = response['timings'].get('third_prompt', 0)
-                    timing_info = f"Timings: Retrieval: {retrieval_time:.2f}s, First prompt: {first_prompt_time:.2f}s, Second prompt: {second_prompt_time:.2f}s, Third prompt: {third_prompt_time:.2f}s"
+                    
+                    # Include transform time in enhanced search mode
+                    if enhanced_search:
+                        timing_info = f"Timings: Transform: {transform_time:.2f}s, Original retrieval: {original_time:.2f}s, Enhanced retrieval: {transformed_time:.2f}s, First prompt: {first_prompt_time:.2f}s, Second prompt: {second_prompt_time:.2f}s, Third prompt: {third_prompt_time:.2f}s, Total processing: {pre_render_time:.2f}s"
+                    else:
+                        timing_info = f"Timings: Retrieval: {retrieval_time:.2f}s, First prompt: {first_prompt_time:.2f}s, Second prompt: {second_prompt_time:.2f}s, Third prompt: {third_prompt_time:.2f}s, Total processing: {pre_render_time:.2f}s"
                 else:
-                    # If no detailed timings available, only show retrieval time
-                    timing_info = f"Timings: Retrieval: {retrieval_time:.2f}s"
+                    # If no detailed timings available, only show retrieval time (and transform time if applicable)
+                    if enhanced_search:
+                        timing_info = f"Timings: Transform: {transform_time:.2f}s, Original retrieval: {original_time:.2f}s, Enhanced retrieval: {transformed_time:.2f}s, Total processing: {pre_render_time:.2f}s"
+                    else:
+                        timing_info = f"Timings: Retrieval: {retrieval_time:.2f}s, Total processing: {pre_render_time:.2f}s"
                 
                 if 'error' in response:
                     answer = f"Error: {response['error']}"
@@ -140,13 +211,24 @@ def demo():
                     # Prepare the responses with source information
                     source_info = "Source: ChromaDB vector search (using Voyage AI embeddings)"
                     bylaw_info = f"Retrieved By-laws: {bylaw_numbers_str}"
+                    token_info = f"Total input tokens: {input_token_count} (${input_cost:.6f})<br>Total output tokens: {output_token_count} (${output_cost:.6f})"
                     model_info = f"Model: {model}"
-                    footer = f"<hr><small><i>{source_info}<br>{bylaw_info}<br>{model_info}<br>{timing_info}</i></small>"
+                    enhanced_info = ""
+                    if enhanced_search:
+                        # Identify which bylaws came from the enhanced search
+                        enhanced_bylaw_ids = []
+                        for bylaw_id in bylaw_numbers:
+                            if bylaw_id not in original_bylaw_ids:
+                                enhanced_bylaw_ids.append(bylaw_id)
+                        
+                        enhanced_bylaws_str = ", ".join(enhanced_bylaw_ids) if enhanced_bylaw_ids else "None"
+                        enhanced_info = f"<br>Bylaws found by Enhanced Search: {enhanced_bylaws_str}"
+                    footer = f"<hr><small><i>{source_info}<br>{bylaw_info}{enhanced_info}<br>{token_info}<br>{model_info}<br>{timing_info}</i></small>"
                     
                     if compare_mode:
-                        # When comparing, provide both answers with the footer
-                        full_answer = response.get('answer', 'Error: No response') + footer
-                        filtered_answer = response.get('filtered_answer', 'Error: No response') + footer
+                        # When comparing, provide only the answers without the footer
+                        full_answer = response.get('answer', 'Error: No response') 
+                        filtered_answer = response.get('filtered_answer', 'Error: No response')
                         laymans_answer = response.get('laymans_answer', 'Error: No response') + footer
                         
                         return render_template(
@@ -158,11 +240,13 @@ def demo():
                             compare_mode=compare_mode,
                             side_by_side=side_by_side,
                             model=model,
-                            bylaws_limit=bylaws_limit
+                            bylaws_limit=bylaws_limit,
+                            enhanced_search=enhanced_search,
+                            transformed_query=transformed_query if enhanced_search else None
                         )
                     else:
-                        # Default is to show only the filtered answer (without expired bylaws)
-                        answer_text = response.get('filtered_answer', 'Error: No response')
+                        # Default is to show only the layman's answer
+                        answer_text = response.get('laymans_answer', 'Error: No response')
                         answer = f"{answer_text}{footer}"
                         
                         return render_template(
@@ -172,14 +256,16 @@ def demo():
                             compare_mode=compare_mode,
                             side_by_side=side_by_side,
                             model=model,
-                            bylaws_limit=bylaws_limit
+                            bylaws_limit=bylaws_limit,
+                            enhanced_search=enhanced_search,
+                            transformed_query=transformed_query if enhanced_search else None
                         )
                 
             except Exception as e:
                 error_message = f"Error: ChromaDB retrieval failed: {str(e)}"
                 return render_template('demo.html', question=query, answer=error_message, model=model)
     
-    return render_template('demo.html', compare_mode=False, side_by_side=False, model="gemini-2.0-flash", bylaws_limit=10)
+    return render_template('demo.html', compare_mode=False, side_by_side=False, model="gemini-2.0-flash", bylaws_limit=10, enhanced_search=False)
 
 if __name__ == '__main__':
     # Run in debug mode for development

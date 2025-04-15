@@ -117,9 +117,10 @@ If you encounter errors connecting to ChromaDB:
 
 After initializing ChromaDB, the Flask application will automatically use it for queries. The application:
 1. Attempts to find relevant by-laws using vector search
-2. Sends the retrieved by-laws to the Gemini AI model
-3. Generates both complete and filtered responses based on by-law status
-4. Provides options for users to compare these different responses
+2. With enhanced search enabled, transforms the user query into legal language and performs dual searches
+3. Sends the retrieved by-laws to the Gemini AI model
+4. Generates complete, filtered, and layman's terms responses
+5. Provides options for users to compare these different responses
 
 This approach improves response quality and provides users with the most relevant and up-to-date information about Stouffville's by-laws. 
 
