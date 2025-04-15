@@ -17,7 +17,7 @@ services:
       - chroma
 
   chroma:
-    image: chromadb/chroma:latest
+    image: chromadb/chroma:0.6.3
     volumes:
       - ./database/chroma-data:/chroma/chroma-data
     ports:

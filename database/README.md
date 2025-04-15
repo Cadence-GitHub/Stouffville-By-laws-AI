@@ -8,7 +8,7 @@ The `init_chroma.py` script converts by-law documents from JSON files into a vec
 
 ## Prerequisites
 
-- A running ChromaDB instance (typically via Docker)
+- A running ChromaDB instance (version 0.6.3 via Docker)
 - Voyage AI API key for generating embeddings
 - JSON files containing by-law data in the database directory
 
@@ -32,6 +32,7 @@ The script connects to a running ChromaDB instance (by default at localhost:8000
 - Creates or uses an existing collection named "by-laws"
 - Uses the Voyage AI embeddings for vector representation
 - Stores the complete document metadata for retrieval
+- Checks for existing by-laws to avoid duplicates
 
 ## Usage
 
@@ -47,6 +48,9 @@ python init_chroma.py [OPTIONS]
 - `--collection`: Collection name (default: by-laws)
 - `--reset`: Reset collection if it exists
 - `--json-dir`: Directory containing by-laws JSON files (default: current directory)
+- `--hnsw-M`: Maximum number of neighbour connections (default: 16)
+- `--hnsw-construction_ef`: Number of neighbours in the HNSW graph to explore when adding new vectors (default: 100)
+- `--hnsw-search_ef`: Number of neighbours in the HNSW graph to explore when searching (default: 10)
 
 ### Examples
 
@@ -70,21 +74,35 @@ python init_chroma.py --chroma-host chroma.example.com --chroma-port 8000
 The script will:
 1. Connect to the ChromaDB instance
 2. Find all JSON files in the specified directory
-3. Process each by-law document
-4. Create embeddings and store them in ChromaDB
-5. Report the total number of by-laws processed
+3. Check existing by-laws in the collection to avoid duplicates
+4. Process each by-law document, skipping those already in the database
+5. Create embeddings and store only new by-laws in ChromaDB
+6. Process documents in batches to avoid memory issues
+7. Report the total number of by-laws processed and added
+8. Display database statistics including total documents, unique bylaws, bylaw types, and years
 
 Example output:
 ```
 Initializing embedding function...
 Connecting to ChromaDB at localhost:8000...
 Successfully connected to ChromaDB collection 'by-laws'!
+Found 2 existing bylaws in the collection
 Found 3 JSON files
 Processing parking_related_by-laws.json...
   Creating document for bylaw 2015-139-RE...
-  Creating document for bylaw 2015-04-RE...
-Adding 2 documents to ChromaDB...
-Initialization complete. Added 2 bylaws to ChromaDB.
+  Skipping bylaw 2015-04-RE - already exists in collection
+Adding 1 document to ChromaDB...
+Processing batch 1/1 (1 documents)...
+Initialization complete. Added/updated 1 bylaws in ChromaDB.
+Database Statistics:
+Total Documents: 3
+Unique Bylaws: 3
+Bylaw Types:
+  - PARKING: 2
+  - GENERAL: 1
+Bylaw Years:
+  - 2015: 2
+  - 2018: 1
 ```
 
 ## Troubleshooting
@@ -93,12 +111,68 @@ If you encounter errors connecting to ChromaDB:
 1. Verify that the ChromaDB Docker container is running
 2. Check that port 8000 is properly exposed in docker-compose.yaml
 3. Ensure your Voyage AI API key is valid and has sufficient quota
+4. Verify you're using the correct ChromaDB version (0.6.3)
 
 ## Integration with the Application
 
 After initializing ChromaDB, the Flask application will automatically use it for queries. The application:
-1. First attempts to find relevant by-laws using vector search
-2. If matching documents are found, only sends those specific by-laws to the Gemini AI model
-3. Falls back to using the full JSON database if ChromaDB is unavailable
+1. Attempts to find relevant by-laws using vector search
+2. With enhanced search enabled, transforms the user query into legal language and performs dual searches
+3. Sends the retrieved by-laws to the Gemini AI model
+4. Generates complete, filtered, and layman's terms responses
+5. Provides options for users to compare these different responses
 
-This approach improves response quality and reduces token usage by focusing the AI model on only the most relevant by-laws. 
+This approach improves response quality and provides users with the most relevant and up-to-date information about Stouffville's by-laws. 
+
+## Related Tools
+
+### Data Preparation Tool
+
+The `prepare_json_bylaws_for_db.py` script helps you prepare a subset of JSON by-law files for further processing by the `init_chroma.py` script.
+
+Key features:
+- Search by-laws by specific keywords in their metadata
+- Filter and collect relevant by-laws into a single output file
+- Calculate token usage and estimated LLM costs
+- Option to include all by-laws regardless of keywords
+
+Usage:
+```bash
+python prepare_json_bylaws_for_db.py [KEYWORD] [OPTIONS]
+```
+
+Options:
+- `KEYWORD`: The keyword to search for in by-laws' keywords field
+- `--dir`: Directory to search in (default: Stouffville_AI/database/By-laws-by-year)
+- `--output`: Output file name (default: {keyword}_related_by-laws.json or all_by-laws.json)
+
+If no keyword is provided, the script will ask if you want to include all by-laws.
+
+### Search Tool
+
+The `search_bylaws.py` script allows you to search the ChromaDB database using semantic search, keyword search, or a combination of both.
+
+Key features:
+- Semantic search using natural language queries
+- Keyword search within by-law metadata fields
+- Display database statistics including by-law types and years
+- Calculate token usage and estimated LLM costs
+- Save search results to a JSON file
+
+Usage:
+```bash
+python search_bylaws.py [OPTIONS]
+```
+
+Options:
+- `--query`: Natural language query for semantic search
+- `--keyword`: Keyword to search for in by-law metadata
+- `--limit`: Maximum number of results to return (default: 10)
+- `--output`: Output file name (default: search_results.json)
+- `--api-key`: Voyage AI API key (can also be set in .env file)
+- `--chroma-host`: ChromaDB host (default: localhost)
+- `--chroma-port`: ChromaDB port (default: 8000)
+- `--collection`: Collection name (default: by-laws)
+- `--stats`: Display database statistics
+
+At least one of `--query`, `--keyword`, or `--stats` is required. 

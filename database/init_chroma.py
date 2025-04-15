@@ -37,6 +37,9 @@ def main():
     parser.add_argument("--collection", default="by-laws", help="Collection name")
     parser.add_argument("--reset", action="store_true", help="Reset collection if it exists")
     parser.add_argument("--json-dir", default=".", help="Directory containing by-laws JSON files")
+    parser.add_argument("--hnsw-M", default="16", help="Maximum number of neighbour connections")
+    parser.add_argument("--hnsw-construction_ef", default="100", help="Number of neighbours in the HNSW graph to explore when adding new vectors")
+    parser.add_argument("--hnsw-search_ef", default="10", help="Number of neighbours in the HNSW graph to explore when searching")
     
     args = parser.parse_args()
     
@@ -63,7 +66,8 @@ def main():
         vector_store = Chroma(
             collection_name=args.collection,
             embedding_function=embedding_function,
-            client=chroma_client
+            client=chroma_client,
+            collection_metadata={"hnsw:M": args.hnsw_M, "hnsw:construction_ef": args.hnsw_construction_ef, "hnsw:search_ef": args.hnsw_search_ef}
         )
         
         # If reset flag is set, clear the collection
@@ -78,6 +82,19 @@ def main():
             )
             
         print(f"Successfully connected to ChromaDB collection '{args.collection}'!")
+        
+        # Get existing bylaw IDs from the collection
+        existing_bylaws = set()
+        try:
+            collection_data = vector_store.get()
+            # Extract ID values from metadata
+            for metadata in collection_data.get('metadatas', []):
+                if metadata and 'id' in metadata:
+                    existing_bylaws.add(metadata['id'])
+            print(f"Found {len(existing_bylaws)} existing bylaws in the collection")
+        except Exception as e:
+            print(f"Error getting existing bylaws: {str(e)}")
+            existing_bylaws = set()
         
     except Exception as e:
         print(f"Error connecting to ChromaDB: {str(e)}")
@@ -94,18 +111,19 @@ def main():
     # Process each file
     total_bylaws = 0
     documents = []
+    document_ids = []
     
     for json_file in json_files:
         print(f"Processing {os.path.basename(json_file)}...")
         
-        with open(json_file, 'r') as f:
+        with open(json_file, 'r', encoding='utf-8') as f:
             file_content = json.load(f)
         
         # Handle both single bylaw and list of bylaws
         bylaws = file_content if isinstance(file_content, list) else [file_content]
         
         for bylaw in bylaws:
-            # Generate a unique ID for this bylaw
+            # Use bylawNumber directly as the document ID
             bylaw_id = bylaw.get("bylawNumber", "unknown")
             
             # Extract the text to be embedded - only the extractedText field
@@ -119,14 +137,15 @@ def main():
                 # Create metadata from all bylaw fields
                 metadata = {}
                 for k, v in bylaw.items():
-                    # Convert lists to strings for metadata
-                    if isinstance(v, list):
-                        metadata[k] = " ".join(str(item) for item in v)
-                    elif isinstance(v, (str, int, float, bool)) or v is None:
-                        metadata[k] = v
-                    else:
-                        # Convert other complex types to strings
-                        metadata[k] = str(v)
+                    if k != "extractedText": #Do not add embedded text to metadata
+                        # Convert lists to strings for metadata
+                        if isinstance(v, list):
+                            metadata[k] = " ".join(str(item) for item in v)
+                        elif isinstance(v, (str, int, float, bool)) or v is None:
+                            metadata[k] = v
+                        else:
+                            # Convert other complex types to strings
+                            metadata[k] = str(v)
                 
                 # Set ID in metadata for retrieval
                 metadata["id"] = bylaw_id
@@ -138,6 +157,10 @@ def main():
                     page_content=text_to_embed,
                     metadata=metadata
                 )
+                
+                if bylaw_id in existing_bylaws:
+                    print(f"  Skipping bylaw {bylaw_id} - already exists in collection")
+                    continue
                 
                 documents.append(document)
                 total_bylaws += 1
@@ -155,18 +178,64 @@ def main():
         try:
             for i in range(0, len(documents), batch_size):
                 batch = documents[i:i+batch_size]
+                batch_ids = document_ids[i:i+batch_size]
                 batch_num = (i // batch_size) + 1
                 print(f"  Processing batch {batch_num}/{total_batches} ({len(batch)} documents)...")
                 vector_store.add_documents(batch)
                 # Small delay to avoid overwhelming the server
                 time.sleep(0.5)
             
-            print(f"Initialization complete. Added {total_bylaws} bylaws to ChromaDB.")
+                print(f"Initialization complete. Added/updated {total_bylaws} bylaws in ChromaDB.")
         except Exception as e:
             print(f"Error adding documents to ChromaDB: {str(e)}")
     else:
         print("No valid documents found to add to ChromaDB.")
 
+    get_stats(vector_store)
+ 
+
+def get_stats(self) :
+        """
+        Get statistics about the bylaw vector database.
+        
+        Returns:
+            Dictionary with statistics
+        """
+        total_docs = self._collection.count()
+        
+        # Get all metadata to analyze collection contents
+        results = self._collection.get()
+        unique_bylaws = set()
+        bylaw_types = {}
+        bylaw_years = {}
+        
+        for metadata in results.get("metadatas", []):
+            if metadata and "bylawNumber" in metadata:
+                unique_bylaws.add(metadata["bylawNumber"])
+            
+            if metadata and "bylawType" in metadata:
+                bylaw_type = metadata["bylawType"]
+                bylaw_types[bylaw_type] = bylaw_types.get(bylaw_type, 0) + 1
+            
+            if metadata and "bylawYear" in metadata:
+                bylaw_year = metadata["bylawYear"]
+                bylaw_years[bylaw_year] = bylaw_years.get(bylaw_year, 0) + 1
+        
+        # Sort years chronologically and types by frequency
+        sorted_years = dict(sorted(bylaw_years.items()))
+        sorted_types = dict(sorted(bylaw_types.items(), key=lambda x: x[1], reverse=True))
+        
+        print("Database Statistics:")
+        print(f"Total Documents: {total_docs}")
+        print(f"Unique Bylaws: {len(unique_bylaws)}")
+        print("Bylaw Types:")
+        for bylaw_type, count in sorted_types.items():
+            print(f"  - {bylaw_type}: {count}")
+        print("Bylaw Years:")
+        for year, count in sorted_years.items():
+            print(f"  - {year}: {count}")
+
+   
 if __name__ == "__main__":
     main()
 
