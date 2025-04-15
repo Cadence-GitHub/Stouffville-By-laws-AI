@@ -6,6 +6,8 @@ A Flask-based backend service that provides AI-powered responses to questions ab
 
 - REST API for querying the Gemini AI model
 - Multiple Gemini model options for different performance/quality needs
+- Enhanced search capability that transforms user queries into legal language for better semantic search
+- Token counting and cost calculation for each query
 - Optimized expired by-laws filtering using a two-step prompting approach for cost efficiency and speed
 - Layman's terms conversion that transforms legal language into plain, everyday language accessible to residents
 - Comparison mode to see differences between complete, filtered, and layman's terms versions
@@ -14,6 +16,7 @@ A Flask-based backend service that provides AI-powered responses to questions ab
 - Simple web-based demo interface for testing without the frontend
 - CORS support for frontend integration
 - 50-second timeout protection for AI queries
+- Customizable temperature settings for different prompt types
 - ChromaDB vector search integration with Voyage AI embeddings for intelligent retrieval
 
 ## API Endpoints
@@ -49,7 +52,8 @@ Main endpoint for the React frontend to query the AI.
   "laymans_answer": "The AI-generated response in simple, everyday language without bylaw references",
   "source": "ChromaDB",
   "bylaw_numbers": ["2015-139-RE", "2015-04-RE"],
-  "model": "gemini-2.0-flash"
+  "model": "gemini-2.0-flash",
+  "retrieval_time": 0.45
 }
 ```
 
@@ -69,9 +73,12 @@ A standalone web demo page with a simple form interface:
 The demo page includes:
 - Model selection dropdown
 - Bylaw limit selection (5, 10, 15, or 20 bylaws)
+- Enhanced search option that transforms user queries into legal language
+- Token counting and cost calculation for input and output
 - Comparison mode to show all three versions of the response (complete, filtered, and layman's terms)
 - Side-by-side view option for easier comparison
 - Performance metrics showing retrieval and processing times
+- Visualization of bylaws found specifically by enhanced search
 
 ## Setup for Frontend Developers
 
@@ -98,7 +105,7 @@ Frontend developers can directly use this production backend if they don't want 
 
    ```bash
    # Install dependencies
-   pip install flask flask-cors langchain langchain-google-genai langchain-chroma langchain-voyageai chromadb python-dotenv
+   pip install flask flask-cors langchain langchain-google-genai langchain-chroma langchain-voyageai chromadb python-dotenv tiktoken
 
    # Run the application
    python app.py
@@ -119,10 +126,11 @@ Frontend developers can directly use this production backend if they don't want 
 
 - `app.py`: Main Flask application
 - `app/`: Application package
-  - `__init__.py`: Package initialization
-  - `prompts.py`: AI prompt templates (including filtered version for active by-laws only and layman's terms conversion)
+  - `__init__.py`: Package initialization with simplified imports
+  - `prompts.py`: AI prompt templates (including filtered version for active by-laws only, layman's terms conversion, and enhanced search)
   - `chroma_retriever.py`: ChromaDB integration for vector search
   - `gemini_handler.py`: Gemini AI model integration and response processing
+  - `token_counter.py`: Token counting and cost calculation utilities
   - `templates/`: HTML templates for web interfaces
     - `demo.html`: Enhanced demo page with improved UI, model selection, and comparison features
 
@@ -141,12 +149,16 @@ The application uses ChromaDB as the primary database for by-laws:
 The application uses ChromaDB and Voyage AI embeddings to provide intelligent retrieval:
 
 1. When a query is received, the system attempts to find relevant by-laws using vector search
-2. If relevant documents are found, those specific by-laws are sent to Gemini AI
-3. The system generates three different responses:
+2. If enhanced search is enabled, the system:
+   - Transforms the user query into formal, bylaw-oriented language
+   - Performs two searches: one with the original query and one with the transformed query
+   - Combines results, removing duplicates
+3. If relevant documents are found, those specific by-laws are sent to Gemini AI
+4. The system generates three different responses:
    - A complete answer using all retrieved by-laws
    - A filtered answer that removes expired by-laws from the first response
    - A layman's terms answer that simplifies the language and removes bylaw references from the filtered response
-4. Demo interface provides options to compare all three responses
+5. Demo interface provides options to compare all three responses
 
 ## Optimized Three-Step Prompt System
 
@@ -170,6 +182,20 @@ The backend supports multiple Gemini model options:
 - `gemini-2.0-flash`: Default model with balanced speed and quality
 - `gemini-2.0-flash-thinking-exp-01-21`: Better reasoning capabilities
 - `gemini-2.5-pro-exp-03-25`: Highest quality, but most expensive
+
+Each prompt type uses a specific temperature setting for optimal results:
+- Bylaws prompt: 0.0 (consistent, deterministic outputs)
+- Filtered prompt: 0.0 (consistent, deterministic outputs)
+- Layman's terms prompt: 0.7 (more creative, natural language)
+- Enhanced search prompt: 0.2 (slightly varied outputs while maintaining accuracy)
+
+## Token Counting and Cost Calculation
+
+The system includes a token counting utility that:
+- Counts input tokens (bylaws content and prompts)
+- Counts output tokens (all three responses)
+- Calculates costs based on model-specific pricing
+- Displays token usage and costs in the demo interface
 
 ## Important Implementation Details
 
