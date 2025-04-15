@@ -49,6 +49,46 @@ def setup_logging(log_file_path):
 # Logger will be initialized in main()
 logger = None
 
+def identify_errored_pdfs(input_dir, output_dir):
+    """
+    Identify PDFs that need to be reprocessed based on error files in the output directory.
+    Only identifies files with "-error.json" suffix (not "-reprocessed-error.json"),
+    to prevent infinite reprocessing loops.
+
+    Args:
+        input_dir: Directory containing PDF files
+        output_dir: Directory containing JSON output files
+
+    Returns:
+        List of paths to PDF files that need to be reprocessed
+    """
+    # Find all error JSON files (specifically "-error.json" not "-reprocessed-error.json")
+    error_jsons = glob.glob(os.path.join(output_dir, "*-error.json"))
+
+    # Check if any files matched the pattern
+    if not error_jsons:
+        logger.info("No error files found for reprocessing")
+        return []
+
+    # Count how many reprocessed error files exist (for reporting only)
+    reprocessed_error_files = glob.glob(os.path.join(output_dir, "*-reprocessed-error.json"))
+    if reprocessed_error_files:
+        logger.info(f"Found {len(reprocessed_error_files)} previously reprocessed error files (these will not be reprocessed again)")
+
+    # Extract base names (without the -error.json suffix)
+    error_base_names = [os.path.basename(error_file).replace("-error.json", "") for error_file in error_jsons]
+
+    # Find corresponding PDF files in input directory
+    pdf_files_to_reprocess = []
+    for base_name in error_base_names:
+        pdf_path = os.path.join(input_dir, f"{base_name}.pdf")
+        if os.path.isfile(pdf_path):
+            pdf_files_to_reprocess.append(pdf_path)
+        else:
+            logger.warning(f"Could not find PDF file for error JSON: {base_name}")
+
+    return pdf_files_to_reprocess
+
 def load_url_mappings(csv_path):
     """Load URL mappings from a CSV file.
 
@@ -584,13 +624,25 @@ def validate_json_schema(data):
 
     return True
 
-def process_pdf_file(api_key, pdf_path, output_dir, model="gemini-2.0-flash", rate_limiter=None, url_map=None):
+def process_pdf_file(api_key, pdf_path, output_dir, model="gemini-2.0-flash", rate_limiter=None, url_map=None, is_reprocessing=False):
     """Process a single PDF file and save the output JSON"""
     try:
         # Determine output filename
         pdf_name = os.path.basename(pdf_path)
         base_name = os.path.splitext(pdf_name)[0]
         output_path = os.path.join(output_dir, f"{base_name}.json")
+        error_output_path = os.path.join(output_dir, f"{base_name}-error.json")
+        reprocessed_error_path = os.path.join(output_dir, f"{base_name}-reprocessed-error.json")
+
+        # If reprocessing, remove existing error file
+        if is_reprocessing and os.path.exists(error_output_path):
+            logger.info(f"Removing existing error file: {error_output_path}")
+            os.remove(error_output_path)
+
+            # Also remove any previous reprocessed error file if it exists
+            if os.path.exists(reprocessed_error_path):
+                logger.info(f"Removing existing reprocessed error file: {reprocessed_error_path}")
+                os.remove(reprocessed_error_path)
 
         logger.info(f"Processing {pdf_name}...")
 
@@ -623,8 +675,14 @@ def process_pdf_file(api_key, pdf_path, output_dir, model="gemini-2.0-flash", ra
 
         # Adjust output path if response is an error
         if not is_valid:
-            output_path = os.path.join(output_dir, f"{base_name}-error.json")
-            logger.warning(f"Invalid response schema detected, saving as error file: {output_path}")
+            if is_reprocessing:
+                # If this is a reprocessing attempt that still produced an error,
+                # use the reprocessed-error suffix to avoid picking it up again
+                output_path = os.path.join(output_dir, f"{base_name}-reprocessed-error.json")
+                logger.warning(f"Reprocessing still produced invalid response, saving as: {output_path}")
+            else:
+                output_path = os.path.join(output_dir, f"{base_name}-error.json")
+                logger.warning(f"Invalid response schema detected, saving as error file: {output_path}")
 
         # Save response to output file
         logger.info(f"Saving results to {output_path}...")
@@ -652,7 +710,6 @@ def main():
     parser.add_argument("--api-key", "-k", required=True, help="Gemini API key")
     parser.add_argument("--input", "-i", required=True, help="Path to input PDF file or directory of PDFs")
     parser.add_argument("--output", "-o", required=True, help="Path to output directory for JSON files")
-    #experimental model: gemini-2.5-pro-exp-03-25
     parser.add_argument("--model", "-m", default="gemini-2.0-flash",
                         help="Gemini model ID (default: gemini-2.0-flash)")
     parser.add_argument("--rpm", type=int, default=15, help="Requests per minute limit (default: 15)")
@@ -660,6 +717,7 @@ def main():
     parser.add_argument("--rpd", type=int, default=1500, help="Requests per day limit (default: 1,500)")
     parser.add_argument("--log-file", "-l", default="pdf_extraction.log", help="Path to log file (default: pdf_extraction.log)")
     parser.add_argument("--csv-file", "-c", help="Path to CSV file with filename-URL mappings")
+    parser.add_argument("--error", action="store_true", help="Only reprocess PDFs with error JSON files")
 
     args = parser.parse_args()
 
@@ -688,25 +746,34 @@ def main():
         # Ensure output directory exists
         os.makedirs(args.output, exist_ok=True)
 
-        # Check if input is a file or directory
-        if os.path.isfile(args.input):
-            # Process single file
-            pdf_files = [args.input]
-        elif os.path.isdir(args.input):
-            # Process all PDF files in directory
-            pdf_files = glob.glob(os.path.join(args.input, "*.pdf"))
+        # Check if we're reprocessing only errored files
+        if args.error:
+            logger.info("Reprocessing only files with error JSON output")
+            pdf_files = identify_errored_pdfs(args.input, args.output)
             if not pdf_files:
-                logger.error(f"No PDF files found in {args.input}")
-                return 1
-            logger.info(f"Found {len(pdf_files)} PDF files to process")
+                logger.info("No errored files found to reprocess")
+                return 0
+            logger.info(f"Found {len(pdf_files)} errored files to reprocess")
         else:
-            logger.error(f"Input path {args.input} does not exist")
-            return 1
+            # Check if input is a file or directory
+            if os.path.isfile(args.input):
+                # Process single file
+                pdf_files = [args.input]
+            elif os.path.isdir(args.input):
+                # Process all PDF files in directory
+                pdf_files = glob.glob(os.path.join(args.input, "*.pdf"))
+                if not pdf_files:
+                    logger.error(f"No PDF files found in {args.input}")
+                    return 1
+                logger.info(f"Found {len(pdf_files)} PDF files to process")
+            else:
+                logger.error(f"Input path {args.input} does not exist")
+                return 1
 
         # Process each PDF file
         success_count = 0
         for pdf_file in pdf_files:
-            if process_pdf_file(args.api_key, pdf_file, args.output, args.model, rate_limiter, url_map):
+            if process_pdf_file(args.api_key, pdf_file, args.output, args.model, rate_limiter, url_map, is_reprocessing=args.error):
                 success_count += 1
 
         logger.info(f"Processing complete. {success_count}/{len(pdf_files)} files processed successfully.")
