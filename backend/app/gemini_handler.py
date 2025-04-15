@@ -2,7 +2,7 @@ import os
 import json
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.schema.output_parser import StrOutputParser
-from app.prompts import BYLAWS_PROMPT_TEMPLATE, FILTERED_BYLAWS_PROMPT_TEMPLATE
+from app.prompts import BYLAWS_PROMPT_TEMPLATE, FILTERED_BYLAWS_PROMPT_TEMPLATE, LAYMANS_PROMPT_TEMPLATE
 import time
 
 # Define allowed models
@@ -71,15 +71,31 @@ def get_gemini_response(query, relevant_bylaws, model="gemini-2.0-flash"):
         # Calculate second prompt time
         second_prompt_time = time.time() - start_second_prompt
         
+        # Clean up the filtered response
+        cleaned_filtered_response = clean_response(filtered_response)
+        
+        # Track timing for the third prompt (layman's terms)
+        start_third_prompt = time.time()
+        
+        # 3. Get layman's terms response using the filtered response as input
+        laymans_prompt = LAYMANS_PROMPT_TEMPLATE
+        laymans_chain = laymans_prompt | model_instance | StrOutputParser()
+        laymans_response = laymans_chain.invoke({"filtered_response": cleaned_filtered_response, "question": query})
+        
+        # Calculate third prompt time
+        third_prompt_time = time.time() - start_third_prompt
+        
         # Final cleanup of responses
-        filtered_response = clean_response(filtered_response)
+        laymans_response = clean_response(laymans_response)
         
         return {
             "answer": cleaned_full_response,
-            "filtered_answer": filtered_response,
+            "filtered_answer": cleaned_filtered_response,
+            "laymans_answer": laymans_response,
             "timings": {
                 "first_prompt": first_prompt_time,
-                "second_prompt": second_prompt_time
+                "second_prompt": second_prompt_time,
+                "third_prompt": third_prompt_time
             }
         }
     except Exception as e:

@@ -7,7 +7,8 @@ A Flask-based backend service that provides AI-powered responses to questions ab
 - REST API for querying the Gemini AI model
 - Multiple Gemini model options for different performance/quality needs
 - Optimized expired by-laws filtering using a two-step prompting approach for cost efficiency and speed
-- Comparison mode to see differences between filtered and unfiltered answers
+- Layman's terms conversion that transforms legal language into plain, everyday language accessible to residents
+- Comparison mode to see differences between complete, filtered, and layman's terms versions
 - Performance metrics showing execution time for bylaw retrieval and each prompt (in demo interface)
 - Configurable number of bylaws to retrieve (5, 10, 15, or 20) in the demo interface
 - Simple web-based demo interface for testing without the frontend
@@ -45,6 +46,7 @@ Main endpoint for the React frontend to query the AI.
 {
   "answer": "The AI-generated response about all Stouffville by-laws",
   "filtered_answer": "The AI-generated response about only active Stouffville by-laws",
+  "laymans_answer": "The AI-generated response in simple, everyday language without bylaw references",
   "source": "ChromaDB",
   "bylaw_numbers": ["2015-139-RE", "2015-04-RE"],
   "model": "gemini-2.0-flash"
@@ -67,7 +69,7 @@ A standalone web demo page with a simple form interface:
 The demo page includes:
 - Model selection dropdown
 - Bylaw limit selection (5, 10, 15, or 20 bylaws)
-- Comparison mode to show both filtered and unfiltered answers
+- Comparison mode to show all three versions of the response (complete, filtered, and layman's terms)
 - Side-by-side view option for easier comparison
 - Performance metrics showing retrieval and processing times
 
@@ -109,7 +111,7 @@ Frontend developers can directly use this production backend if they don't want 
    - Backend is configured with CORS support for frontend integration
    - Use the `/api/ask` endpoint for all AI queries from your React app
    - Queries should be sent as JSON with a `query` field and optional `model` field
-   - Responses will contain either an `answer`/`filtered_answer` field with the AI response or an `error` field
+   - Responses will contain `answer`, `filtered_answer`, and `laymans_answer` fields with the AI responses, or an `error` field
    - Responses include a `source` field indicating the data comes from ChromaDB
    - Responses include a `bylaw_numbers` array listing the referenced by-laws
 
@@ -118,7 +120,7 @@ Frontend developers can directly use this production backend if they don't want 
 - `app.py`: Main Flask application
 - `app/`: Application package
   - `__init__.py`: Package initialization
-  - `prompts.py`: AI prompt templates (including filtered version for active by-laws only)
+  - `prompts.py`: AI prompt templates (including filtered version for active by-laws only and layman's terms conversion)
   - `chroma_retriever.py`: ChromaDB integration for vector search
   - `gemini_handler.py`: Gemini AI model integration and response processing
   - `templates/`: HTML templates for web interfaces
@@ -140,21 +142,23 @@ The application uses ChromaDB and Voyage AI embeddings to provide intelligent re
 
 1. When a query is received, the system attempts to find relevant by-laws using vector search
 2. If relevant documents are found, those specific by-laws are sent to Gemini AI
-3. The system generates two different responses:
+3. The system generates three different responses:
    - A complete answer using all retrieved by-laws
    - A filtered answer that removes expired by-laws from the first response
-4. Demo interface provides options to compare both responses
+   - A layman's terms answer that simplifies the language and removes bylaw references from the filtered response
+4. Demo interface provides options to compare all three responses
 
-## Optimized Two-Step Prompt System
+## Optimized Three-Step Prompt System
 
-The system uses a cost-efficient two-step approach for filtering expired by-laws:
+The system uses a cost-efficient multi-step approach for processing by-laws information:
 
 1. **First Prompt**: The complete by-laws content is sent to the Gemini model along with the user question to generate a comprehensive response
 2. **Second Prompt**: Instead of sending the by-laws content again, the system sends only the first response to a second prompt that filters out expired by-laws
-3. **Benefits**:
+3. **Third Prompt**: The filtered response is sent to a third prompt that transforms the legal language into plain, everyday language and removes all bylaw references
+4. **Benefits**:
    - Significantly reduces token usage and API costs
-   - Maintains quality by having the second prompt focus solely on filtering
-   - Preserves all formatting and style from the original response
+   - Maintains quality by having each prompt focus on a specific task
+   - Preserves formatting while transforming content appropriately at each step
    - Increases speed
    - Makes it possible to choose a more suitable model for each prompt to improve speed, accuracy, and cost
 
