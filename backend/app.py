@@ -241,7 +241,8 @@ def demo():
                             side_by_side=side_by_side,
                             model=model,
                             bylaws_limit=bylaws_limit,
-                            enhanced_search=enhanced_search
+                            enhanced_search=enhanced_search,
+                            transformed_query=transformed_query if enhanced_search else None
                         )
                     else:
                         # Default is to show only the layman's answer
@@ -256,7 +257,8 @@ def demo():
                             side_by_side=side_by_side,
                             model=model,
                             bylaws_limit=bylaws_limit,
-                            enhanced_search=enhanced_search
+                            enhanced_search=enhanced_search,
+                            transformed_query=transformed_query if enhanced_search else None
                         )
                 
             except Exception as e:

@@ -66,6 +66,13 @@
         .answers-wrapper.side-by-side .answer-container {
             flex: 1;
         }
+        .transformed-query {
+            margin-top: 20px;
+            padding: 10px 15px;
+            background-color: #f0f7ff;
+            border-left: 4px solid #0066cc;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -116,6 +123,15 @@
     </form>
     
     <div id="loadingMessage" class="loading">Generating answer, please wait...</div>
+    
+    {% if enhanced_search and transformed_query %}
+    <div class="transformed-query">
+        <h3>Enhanced Search Query Transformation</h3>
+        <p>The <strong>Enhanced Search</strong> option has transformed your original query into legal terminology to improve search results:</p>
+        <p><strong>Original Query:</strong> {{ question }}</p>
+        <p><strong>Transformed for Legal Search:</strong> {{ transformed_query }}</p>
+    </div>
+    {% endif %}
     
     {% if question %}
     <div class="answers-wrapper {% if side_by_side %}side-by-side{% endif %}">
