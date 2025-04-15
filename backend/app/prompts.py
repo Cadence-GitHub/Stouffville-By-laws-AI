@@ -38,6 +38,7 @@ When answering questions:
    - <b> or <strong> tags for emphasis
    - <hr> for separating sections if needed
    - Other basic HTML formatting as appropriate
+12. IMPORTANT: When referring to specific by-laws in your response, always create hyperlinks using the by-law number as anchor text and linking to the original document URL. For example, instead of just writing "By-law 2024-103-PR", create a hyperlink like this: <a href="https://example.com/document.pdf">By-law 2024-103-PR</a> using the "urlOriginalDocument" field from each by-law for the URL.
 
 User Question: {question}
 
