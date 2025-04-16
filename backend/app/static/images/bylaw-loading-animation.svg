@@ -475,11 +475,11 @@
   </g>
   
   <!-- Loading text - 8-bit style -->
-  <text x="400" y="370" text-anchor="middle" font-family="monospace" font-size="24" fill="#ffffff" font-weight="bold">ANALYSING BYLAWS </text>
+  <text x="400" y="370" text-anchor="middle" font-family="monospace" font-size="24" fill="#0066cc" font-weight="bold">ANALYSING BYLAWS </text>
   <g id="loadingDots">
-    <text x="515" y="370" text-anchor="start" font-family="monospace" font-size="24" fill="#ffffff" font-weight="bold">.</text>
-    <text x="530" y="370" text-anchor="start" font-family="monospace" font-size="24" fill="#ffffff" font-weight="bold">.</text>
-    <text x="545" y="370" text-anchor="start" font-family="monospace" font-size="24" fill="#ffffff" font-weight="bold">.</text>
+    <text x="515" y="370" text-anchor="start" font-family="monospace" font-size="24" fill="#0066cc" font-weight="bold">.</text>
+    <text x="530" y="370" text-anchor="start" font-family="monospace" font-size="24" fill="#0066cc" font-weight="bold">.</text>
+    <text x="545" y="370" text-anchor="start" font-family="monospace" font-size="24" fill="#0066cc" font-weight="bold">.</text>
     <animate attributeName="opacity" 
              values="1;0;1" 
              dur="1.5s" 
