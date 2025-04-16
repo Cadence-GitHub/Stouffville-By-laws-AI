@@ -21,7 +21,8 @@ load_dotenv()
 
 # Initialize Flask app and enable CORS for frontend integration
 app = Flask(__name__, 
-            template_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'app', 'templates'))
+            template_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'app', 'templates'),
+            static_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'app', 'static'))
 CORS(app)
 
 # Define paths to data files relative to the project root
