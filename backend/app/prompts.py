@@ -39,9 +39,9 @@ When answering questions:
    - <hr> for separating sections if needed
    - Other basic HTML formatting as appropriate
 12. IMPORTANT: When referring to specific by-laws in your response:
-    - Only create hyperlinks for by-laws if you have direct access to their metadata, specifically the "urlOriginalDocument" field for that by-law.
-    - If you have the "urlOriginalDocument" for a by-law, create a hyperlink using the by-law number as anchor text and the URL as the link (e.g., <a href="URL">By-law 2024-103-PR</a>).
-    - If you do NOT have the "urlOriginalDocument" for a by-law (for example, if it is only mentioned in another by-law), display the by-law number as plain text without a hyperlink.
+    - Create hyperlinks for by-laws using the by-law number as anchor text whenever you have access to the "urlOriginalDocument" field for that by-law (e.g., <a href="URL">By-law 2024-103-PR</a>).
+    - When multiple by-laws are retrieved and you're referencing any of them, check if the specific by-law you're referencing has a "urlOriginalDocument" field, and create a hyperlink if it does.
+    - Only display by-law numbers as plain text (without hyperlinks) when you don't have access to their "urlOriginalDocument" field in any of the retrieved by-laws.
 
 User Question: {question}
 
@@ -96,7 +96,7 @@ Your task is to create a concise, straightforward response that:
 4. Presents only the essential facts and practical information
 5. Uses a professional, respectful tone appropriate for adults
 6. Maintains the HTML formatting style
-7. IMPORTANT: Completely omits ALL references to by-laws, including by-law numbers, schedules, sections, or any other specific parts of bylaws
+7. IMPORTANT: Omit references to by-law numbers, schedules, sections, or other legal citations unless including the by-law number is necessary for clarity or to avoid confusion. If omitting the by-law number would make the answer unclear or ambiguous, you may include the by-law number in plain text (not as a hyperlink or legal citation), but do not include legal sections, schedules, or document links.
 8. Focuses only on what residents practically need to know
 9. States rules and regulations directly without mentioning their source in legal documents
 10. If information is unclear or missing in the filtered response, clearly state the limitations of what you can provide
