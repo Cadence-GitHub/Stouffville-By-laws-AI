@@ -634,16 +634,6 @@ def process_pdf_file(api_key, pdf_path, output_dir, model="gemini-2.0-flash", ra
         error_output_path = os.path.join(output_dir, f"{base_name}-error.json")
         reprocessed_error_path = os.path.join(output_dir, f"{base_name}-reprocessed-error.json")
 
-        # If reprocessing, remove existing error file
-        if is_reprocessing and os.path.exists(error_output_path):
-            logger.info(f"Removing existing error file: {error_output_path}")
-            os.remove(error_output_path)
-
-            # Also remove any previous reprocessed error file if it exists
-            if os.path.exists(reprocessed_error_path):
-                logger.info(f"Removing existing reprocessed error file: {reprocessed_error_path}")
-                os.remove(reprocessed_error_path)
-
         logger.info(f"Processing {pdf_name}...")
 
         # Upload file
@@ -655,6 +645,10 @@ def process_pdf_file(api_key, pdf_path, output_dir, model="gemini-2.0-flash", ra
         logger.info("Counting tokens...")
         token_count = count_tokens(api_key, file_uri, model, rate_limiter)
         logger.info(f"Token count: {token_count}")
+        if token_count > 10000:
+            # Skip large token to process manually
+            logger.info(f"Large token detected. Skipping. Run it manually.")
+            return False
 
         # Extract structured data
         logger.info(f"Extracting structured data with model {model}...")
@@ -672,6 +666,16 @@ def process_pdf_file(api_key, pdf_path, output_dir, model="gemini-2.0-flash", ra
                 logger.info(f"Added URL for {pdf_name}: {url_map[pdf_name]}")
             else:
                 logger.warning(f"No URL found for {pdf_name}")
+
+            # If reprocessing, remove existing error file
+            if is_reprocessing and os.path.exists(error_output_path):
+                logger.info(f"Removing existing error file: {error_output_path}")
+                os.remove(error_output_path)
+
+                # Also remove any previous reprocessed error file if it exists
+                if os.path.exists(reprocessed_error_path):
+                    logger.info(f"Removing existing reprocessed error file: {reprocessed_error_path}")
+                    os.remove(reprocessed_error_path)
 
         # Adjust output path if response is an error
         if not is_valid:
