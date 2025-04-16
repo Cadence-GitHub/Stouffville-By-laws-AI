@@ -15,6 +15,7 @@
             color: #0066cc;
             margin-top: 20px;
             font-weight: bold;
+            text-align: center;
         }
         .answer-container {
             margin-top: 20px;
@@ -73,6 +74,10 @@
             border-left: 4px solid #0066cc;
             border-radius: 5px;
         }
+
+        .loading-text {
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -122,7 +127,10 @@
         <input type="submit" value="Submit">
     </form>
     
-    <div id="loadingMessage" class="loading">Generating answer, please wait...</div>
+    <div id="loadingMessage" class="loading">
+        <img src="../static/images/bylaw-loading-animation.svg" alt="Loading..." style="max-width:500px;">
+        <div class="loading-text">Generating answer, please wait...</div>
+    </div>
     
     {% if enhanced_search and transformed_query %}
     <div class="transformed-query">
