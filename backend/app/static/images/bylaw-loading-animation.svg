@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="xMidYMid meet">
-  <!-- 8-bit pixel background -->
-  <rect x="0" y="0" width="800" height="400" fill="#000000"/>
+  <!-- 8-bit pixel background - removed for transparency -->
   
   <!-- Room background - 8-bit style -->
   <rect x="50" y="50" width="700" height="300" fill="#5588aa"/>
