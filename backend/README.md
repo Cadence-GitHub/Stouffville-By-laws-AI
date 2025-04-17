@@ -14,6 +14,8 @@ A Flask-based backend service that provides AI-powered responses to questions ab
 - Performance metrics showing execution time for bylaw retrieval and each prompt (in demo interface)
 - Configurable number of bylaws to retrieve (5, 10, 15, or 20) in the demo interface
 - Simple web-based demo interface for testing without the frontend
+- Interactive bylaw viewer with detailed information about specific bylaws
+- Direct bylaw linking and sidebar viewing from AI responses
 - CORS support for frontend integration
 - 50-second timeout protection for AI queries
 - Customizable temperature settings for different prompt types
@@ -64,6 +66,30 @@ Main endpoint for the React frontend to query the AI.
 }
 ```
 
+### GET `/api/bylaw/<bylaw_number>`
+
+Retrieves the full JSON data for a specific bylaw by its number. Intelligently handles different format variations of bylaw numbers.
+
+**Response (Success):**
+```json
+{
+  "bylawNumber": "2023-060-RE",
+  "bylawType": "Regulation",
+  "bylawYear": "2023",
+  "condtionsAndClauses": "...",
+  "laymanExplanation": "...",
+  "content": "...",
+  ...
+}
+```
+
+**Response (Error):**
+```json
+{
+  "error": "No bylaws found matching 2023-060-RE"
+}
+```
+
 ### GET/POST `/api/demo`
 
 A standalone web demo page with a simple form interface:
@@ -79,6 +105,7 @@ The demo page includes:
 - Side-by-side view option for easier comparison
 - Performance metrics showing retrieval and processing times
 - Visualization of bylaws found specifically by enhanced search
+- Interactive sidebar to view full bylaw details directly from hyperlinks
 
 ## Setup for Frontend Developers
 
@@ -133,6 +160,12 @@ Frontend developers can directly use this production backend if they don't want 
   - `token_counter.py`: Token counting and cost calculation utilities
   - `templates/`: HTML templates for web interfaces
     - `demo.html`: Enhanced demo page with improved UI, model selection, and comparison features
+  - `static/`: Static assets for web interfaces
+    - `demo.css`: CSS styling for the demo interface
+    - `demo.js`: JavaScript for the demo interface
+    - `bylawViewer.html`: Bylaw viewer interface
+    - `bylawViewer.css`: CSS styling for the bylaw viewer
+    - `bylawViewer.js`: JavaScript for the bylaw viewer
 
 ## Database
 
@@ -159,6 +192,28 @@ The application uses ChromaDB and Voyage AI embeddings to provide intelligent re
    - A filtered answer that removes expired by-laws from the first response
    - A layman's terms answer that simplifies the language and removes bylaw references from the filtered response
 5. Demo interface provides options to compare all three responses
+
+## Bylaw Viewer Feature
+
+The application includes an interactive bylaw viewer that:
+
+1. Displays detailed information about specific bylaws in a user-friendly format
+2. Supports direct linking to bylaws from AI responses using hyperlinks
+3. Can open bylaws in a sidebar without leaving the main interface
+4. Features a dark mode toggle for better readability
+5. Intelligently formats:
+   - Tables and lists from bylaw content
+   - Location addresses with Google Maps links
+   - Links to original PDF documents
+   - Formatted text with proper spacing and line breaks
+6. Shows comprehensive metadata including:
+   - Bylaw number, type, and year
+   - Layman's explanation in simple terms
+   - Key dates and information
+   - Conditions and clauses
+   - Legal topics and related legislation
+   - Entity and designation information
+   - And many more fields when available
 
 ## Optimized Three-Step Prompt System
 
@@ -204,6 +259,7 @@ The system includes a token counting utility that:
 - The AI is configured to provide comprehensive HTML-formatted responses 
 - Error handling is implemented for API key issues, model selection, and processing errors
 - Responses include current date information to help with determining expired by-laws
+- Bylaw responses include cache-prevention headers to ensure fresh data
 
 ## Development Notes
 

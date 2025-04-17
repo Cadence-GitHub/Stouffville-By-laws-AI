@@ -113,6 +113,31 @@ If you encounter errors connecting to ChromaDB:
 3. Ensure your Voyage AI API key is valid and has sufficient quota
 4. Verify you're using the correct ChromaDB version (0.6.3)
 
+## Direct Bylaw Retrieval
+
+The ChromaDB integration includes a robust function to retrieve specific bylaws by their number:
+
+```python
+def retrieve_bylaw_by_number(self, bylaw_number):
+    """
+    Retrieve a specific bylaw by its number, trying different format variations.
+    
+    Returns:
+        tuple: (bylaw document or None, retrieval_time in seconds, collection_exists)
+    """
+```
+
+This function:
+1. Attempts an exact match using the bylaw number as provided
+2. If no match is found, generates multiple format variations:
+   - Different spacing around dashes (e.g., "2015-139-RE", "2015 - 139 - RE")
+   - Different dash placements for multi-part numbers
+   - Completely removing dashes or spaces
+3. Searches for each variation until a match is found
+4. Returns the complete bylaw metadata along with timing information
+
+This robust matching system ensures users can find bylaws regardless of formatting differences in how the bylaw number is entered.
+
 ## Integration with the Application
 
 After initializing ChromaDB, the Flask application will automatically use it for queries. The application:
@@ -121,6 +146,15 @@ After initializing ChromaDB, the Flask application will automatically use it for
 3. Sends the retrieved by-laws to the Gemini AI model
 4. Generates complete, filtered, and layman's terms responses
 5. Provides options for users to compare these different responses
+6. Allows direct access to specific bylaws through the `/api/bylaw/<bylaw_number>` endpoint
+7. Integrates with an interactive bylaw viewer to display comprehensive bylaw information
+
+The bylaw viewer uses the direct retrieval function to fetch complete bylaw data and displays it in a user-friendly format with:
+- Comprehensive metadata display
+- Linked locations (Google Maps integration)
+- Original document links
+- Formatted content with proper spacing and structure
+- Dark mode support for better readability
 
 This approach improves response quality and provides users with the most relevant and up-to-date information about Stouffville's by-laws. 
 
