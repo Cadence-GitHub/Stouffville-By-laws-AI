@@ -2,6 +2,8 @@ from langchain_chroma import Chroma
 import os
 import chromadb
 from langchain_voyageai import VoyageAIEmbeddings
+import re
+import time
 
 class ChromaDBRetriever:
     """
@@ -21,15 +23,11 @@ class ChromaDBRetriever:
         self.collection_name = "by-laws"
         
         # Initialize vector store
-        self._initialize_vector_store()
-    
-    def _initialize_vector_store(self):
-        """Initialize the vector store connection. """
         try:
-            # Create the ChromaDB client directly using the HttpClient
+            # Create the ChromaDB client
             chroma_client = chromadb.HttpClient(host=self.chroma_host, port=self.chroma_port)
             
-            # Connect to the existing ChromaDB collection using LangChain's Chroma
+            # Connect to the existing ChromaDB collection
             self.vector_store = Chroma(
                 collection_name=self.collection_name,
                 embedding_function=self.embedding_function,
@@ -59,7 +57,6 @@ class ChromaDBRetriever:
             
         try:
             # Start timing the retrieval
-            import time
             start_time = time.time()
             
             # Use the vector store as a retriever
@@ -98,55 +95,103 @@ class ChromaDBRetriever:
     
     def retrieve_bylaw_by_number(self, bylaw_number):
         """
-        Retrieve a specific bylaw by its number using metadata filtering.
-        This is more efficient than semantic search for exact matches.
+        Retrieve a specific bylaw by its number, trying different format variations.
         
-        Args:
-            bylaw_number (str): The exact bylaw number to retrieve
-            
         Returns:
-            tuple: (bylaw document or None, retrieval_time in seconds, exists_status)
+            tuple: (bylaw document or None, retrieval_time in seconds, collection_exists)
         """
         if not self.vector_store:
-            print("ChromaDB connection not available")
             return None, 0, False
             
         try:
-            # Start timing the retrieval
-            import time
             start_time = time.time()
             
-            # Access the underlying ChromaDB collection directly
+            # Get the direct collection access
             collection = self.vector_store._collection
             
-            # Use metadata filtering to find the exact bylaw number
-            results = collection.get(
+            # Try the original format first (fastest when it works)
+            direct_match = collection.get(
                 where={"bylawNumber": bylaw_number},
                 limit=1
             )
             
-            # Calculate retrieval time
-            retrieval_time = time.time() - start_time
+            # If exact match found, return it
+            if direct_match and direct_match['metadatas'] and len(direct_match['metadatas']) > 0:
+                bylaw_data = direct_match['metadatas'][0]
+                if 'documents' in direct_match and direct_match['documents']:
+                    bylaw_data["content"] = direct_match['documents'][0]
+                    
+                return bylaw_data, time.time() - start_time, True
             
-            # Check if we found the bylaw
-            if results and len(results['metadatas']) > 0:
-                # Create a document object similar to what retrieve_relevant_bylaws returns
-                bylaw_data = results['metadatas'][0]
+            # Generate variations of the bylaw number format
+            variations = []
+            
+            # Check if we have multiple parts separated by dashes
+            if '-' in bylaw_number:
+                # Split on dash and clean up each part
+                parts = [part.strip() for part in bylaw_number.split('-')]
                 
-                # Add the content
-                if 'documents' in results and len(results['documents']) > 0:
-                    bylaw_data["content"] = results['documents'][0]
+                # Handle both simple formats (like "72-17") and complex ones (like "2001-01-LI")
+                if len(parts) == 2:  # Simple case: number-number
+                    variations = [
+                        f"{parts[0]}-{parts[1]}",       # No spaces
+                        f"{parts[0]} -{parts[1]}",      # Space before dash
+                        f"{parts[0]}- {parts[1]}",      # Space after dash
+                        f"{parts[0]} - {parts[1]}"      # Spaces on both sides
+                    ]
+                elif len(parts) >= 3:  # Complex case: number-number-letter or more parts
+                    # For three parts (like "2001-01-LI")
+                    variations = [
+                        f"{parts[0]}-{parts[1]}-{parts[2]}",         # No spaces
+                        f"{parts[0]} - {parts[1]} - {parts[2]}",     # Spaces around dashes
+                        f"{parts[0]}-{parts[1]} - {parts[2]}",       # Mixed spaces
+                        f"{parts[0]} - {parts[1]}-{parts[2]}",       # Mixed spaces
+                        f"{parts[0]}-{parts[1]}-{parts[2]}",         # No spaces
+                        # Join all parts with spaces around dashes
+                        " - ".join(parts)
+                    ]
+                    
+                    # Also try without any dashes for cases where spaces are used instead
+                    variations.append(" ".join(parts))
+                    
+                # Add variations where all dashes are replaced by spaces
+                no_dash_version = bylaw_number.replace('-', ' ')
+                variations.append(no_dash_version)
                 
-                # Remove keywords field if present
-                if "keywords" in bylaw_data:
-                    del bylaw_data["keywords"]
-                
-                return bylaw_data, retrieval_time, True
+                # Also try completely removing spaces and dashes
+                compact_version = bylaw_number.replace('-', '').replace(' ', '')
+                variations.append(compact_version)
             else:
-                # Bylaw not found
-                return None, retrieval_time, True
+                # If there are no dashes, try adding them between groups of numbers/letters
+                # For formats like "72 17" that might be in database as "72-17"
+                parts = bylaw_number.split()
+                if len(parts) == 2:
+                    variations = [
+                        f"{parts[0]}-{parts[1]}",       # With dash
+                        f"{parts[0]} - {parts[1]}"      # With dash and spaces
+                    ]
+            
+            # Try each variation
+            for variant in variations:
+                if variant == bylaw_number:  # Skip if already tried
+                    continue
+                    
+                variant_match = collection.get(
+                    where={"bylawNumber": variant},
+                    limit=1
+                )
+                
+                if variant_match and variant_match['metadatas'] and len(variant_match['metadatas']) > 0:
+                    bylaw_data = variant_match['metadatas'][0]
+                    if 'documents' in variant_match and variant_match['documents']:
+                        bylaw_data["content"] = variant_match['documents'][0]
+                        
+                    print(f"Found bylaw via variation match: '{bylaw_data.get('bylawNumber')}'")
+                    return bylaw_data, time.time() - start_time, True
+            
+            # If we got here, no match was found
+            return None, time.time() - start_time, True
             
         except Exception as e:
-            print(f"Error retrieving bylaw by number: {str(e)}")
             return None, 0, False
     
