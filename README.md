@@ -51,6 +51,7 @@ This project uses Docker to create a consistent development environment. The set
    - The API will be available at http://localhost:5000
    - Test the API with: `curl http://localhost:5000/api/hello`
    - Access the demo web interface at http://localhost:5000/api/demo
+   - View specific bylaws at http://localhost:5000/static/bylawViewer.html?bylaw=BYLAW-NUMBER
 
 ### Development Workflow
 
@@ -65,6 +66,10 @@ This project uses Docker to create a consistent development environment. The set
   - `search_bylaws.py`: Utility script for searching and extracting by-laws by keyword
   - `init_chroma.py`: Script to initialize ChromaDB with by-laws data
   - `chroma-data/`: Directory containing ChromaDB vector database files
+
+- **Static Assets**: Frontend assets are in the `backend/app/static/` directory
+  - `demo.css` and `demo.js`: Styling and functionality for the demo interface
+  - `bylawViewer.html`, `bylawViewer.css`, and `bylawViewer.js`: Bylaw viewer interface
 
 - **Live Code Changes**: 
   - The backend directory is mounted as a volume in the container
@@ -89,6 +94,9 @@ This project uses Docker to create a consistent development environment. The set
 - `POST /api/ask`: Processes AI queries about bylaws
   - Requires JSON with a 'query' field
   - Optionally accepts 'model' parameter to specify which Gemini model to use
+- `GET /api/bylaw/<bylaw_number>`: Retrieves full data for a specific bylaw
+  - Intelligently handles different format variations of bylaw numbers
+  - Returns complete metadata and content for the requested bylaw
 - `GET /api/demo`: Returns a simple web interface for testing the AI functionality
 - `POST /api/demo`: Processes form submissions from the demo interface
 
@@ -130,7 +138,32 @@ Dependencies for AI integration:
 - **Model Selection**: Users can select which Gemini model to use based on their requirements for speed, cost, and quality.
 - **Performance Metrics**: The demo interface displays detailed timing information showing how long each step takes (by-law retrieval, first prompt execution, second prompt execution, and third prompt execution).
 - **Bylaw Limit Selection**: In the demo interface, users can choose how many relevant bylaws to retrieve (5, 10, 15, or 20) for their queries.
+- **Interactive Bylaw Viewer**: A dedicated interface to view complete bylaw information with rich formatting, dark mode support, and detailed metadata display.
+- **Direct Bylaw Linking**: AI responses include hyperlinks to specific bylaws that open in the bylaw viewer (either in a new tab or sidebar).
+- **Intelligent Bylaw Number Matching**: The system can match bylaw numbers even with different formatting variations (spacing, dashes, etc.).
 - **Visual UI Improvements**: Enhanced demo interface with better layout and formatting options.
+
+### Bylaw Viewer Feature
+
+The application includes an interactive bylaw viewer that:
+
+1. Displays detailed information about specific bylaws in a user-friendly format
+2. Supports direct linking to bylaws from AI responses using hyperlinks
+3. Can open bylaws in a sidebar without leaving the main interface
+4. Features a dark mode toggle for better readability
+5. Intelligently formats:
+   - Tables and lists from bylaw content
+   - Location addresses with Google Maps links
+   - Links to original PDF documents
+   - Formatted text with proper spacing and line breaks
+6. Shows comprehensive metadata including:
+   - Bylaw number, type, and year
+   - Layman's explanation in simple terms
+   - Key dates and information
+   - Conditions and clauses
+   - Legal topics and related legislation
+   - Entity and designation information
+   - And many more fields when available
 
 ### Vector Database Setup
 
@@ -179,12 +212,14 @@ graph TB
         PromptsModule["Prompts Module (prompts.py)"]
         TokenCounter["Token Counter (token_counter.py)"]
         Demo["Web Demo (templates/demo.html)"]
+        BylawViewer["Bylaw Viewer (static/bylawViewer.html)"]
 
         %% Subgraph for API Calls
         subgraph APICalls["API Endpoints"]
             API1["/api/ask (POST)"]
             API2["/api/demo (GET/POST)"]
             API3["/api/hello (GET)"]
+            API4["/api/bylaw/<bylaw_number> (GET)"]
         end
     end
 
@@ -217,6 +252,9 @@ graph TB
     API1 --> FlaskApp
     API2 --> FlaskApp
     API3 --> FlaskApp
+    API4 --> ChromaRetriever
+    BylawViewer --> API4
+    Demo --> BylawViewer
     
     
     %% Container connections
@@ -231,7 +269,9 @@ graph TB
     User(("User")) --> API1
     User --> API2
     User --> API3
+    User --> API4
     User --> Demo
+    User --> BylawViewer
     style GoogleAPI fill:#0CC0DF
     style VoyageAPI fill:#0CC0DF
 ```
@@ -258,11 +298,13 @@ The system implements a Retrieval-Augmented Generation (RAG) architecture with t
    - Gemini Handler orchestrates AI model interactions with multiple model options
    - Prompts Module contains templates that structure AI responses
    - Token Counter calculates token usage and associated costs
+   - Bylaw Viewer provides an interactive interface to explore complete bylaw information
 
 3. **Database Tools**:
    - `init_chroma.py` converts JSON bylaws into vector embeddings stored in ChromaDB
    - `search_bylaws.py` allows semantic search, keyword search, or combinations of both
    - Vector search is optimized with configurable HNSW parameters (M, construction_ef, search_ef)
+   - Bylaw retrieval by number supports multiple format variations for flexible matching
 
 4. **External Services Integration**:
    - Google Generative AI provides LLM capabilities via multiple Gemini models (2.0-flash-lite, 2.0-flash, etc.)
@@ -274,5 +316,7 @@ The system implements a Retrieval-Augmented Generation (RAG) architecture with t
    - Token usage and cost information
    - Performance metrics showing timing information for each processing step
    - Option to compare all three versions of the answer (complete, filtered active only, and layman's terms)
+   - Interactive bylaw viewer for exploring specific bylaws in detail
+   - Sidebar integration that allows viewing bylaws without leaving the main interface
 
 This architecture ensures that the system can accurately respond to user queries about Stouffville by-laws by finding the most semantically relevant information and presenting it in a natural, conversational format.
