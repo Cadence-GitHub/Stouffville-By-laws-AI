@@ -78,6 +78,57 @@
         .loading-text {
             margin-top: 10px;
         }
+
+        .bylaw-sidebar {
+        position: fixed;
+        top: 0;
+        right: -50%;
+        width: 50%;
+        height: 100vh;
+        background: white;
+        box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
+        transition: right 0.3s ease;
+        z-index: 1000;
+        }
+        
+        .bylaw-sidebar.active {
+            right: 0;
+        }
+        
+        .bylaw-sidebar iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .sidebar-resizer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 10px;
+            height: 100%;
+            cursor: ew-resize;
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar-resizer:hover {
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+        
+        body.sidebar-open .container {
+            margin-right: 50%;
+            transition: margin-right 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .bylaw-sidebar {
+                display: none;
+            }
+            
+            body.sidebar-open .container {
+                margin-right: 0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -205,6 +256,127 @@
         // Initialize on page load
         toggleComparisonOption();
         updateBylawsLimitOptions();
+
+        // Wait for DOM to be completely loaded
+        document.addEventListener('DOMContentLoaded', function() {
+                console.log('DOM loaded, initializing bylaw sidebar');
+                
+                // Get elements
+                const sidebar = document.getElementById('bylaw-sidebar');
+                const resizer = document.getElementById('sidebar-resizer');
+                const frame = document.getElementById('bylaw-frame');
+                
+                // Debug check to see if elements exist
+                console.log('Sidebar element:', sidebar);
+                console.log('Resizer element:', resizer);
+                console.log('Frame element:', frame);
+                
+                // Only proceed if all elements exist
+                if (!sidebar || !resizer || !frame) {
+                    console.error('Required sidebar elements not found');
+                    return;
+                }
+                
+                let isResizing = false;
+                
+                // Handle bylaw links
+                function handleBylawLinks() {
+                    document.querySelectorAll('a[href*="bylawViewer.html"]').forEach(link => {
+                        link.addEventListener('click', function(e) {
+                            const href = this.getAttribute('href');
+                            const isMobile = window.innerWidth <= 768;
+                            
+                            // Extract bylaw ID
+                            const bylawMatch = href.match(/[?&]bylaw=([^&]+)/);
+                            if (!bylawMatch) return true;
+                            
+                            const bylawId = bylawMatch[1];
+                            console.log('Bylaw link clicked:', bylawId);
+                            
+                            if (isMobile) {
+                                // On mobile, let it open in new tab
+                                return true;
+                            } else {
+                                // On desktop, open in sidebar
+                                e.preventDefault();
+                                openBylawSidebar(bylawId);
+                                return false;
+                            }
+                        });
+                    });
+                }
+                
+                function openBylawSidebar(bylawId) {    
+                    // First clear the existing iframe content
+                    frame.src = 'about:blank';
+                    
+                    // Force a reflow
+                    void frame.offsetWidth;
+                    
+                    // Add a unique timestamp as a fragment identifier (doesn't affect query params)
+                    const timestamp = new Date().getTime();
+                    frame.src = `/static/bylawViewer.html?bylaw=${bylawId}#${timestamp}`;
+                    sidebar.classList.add('active');
+                    document.body.classList.add('sidebar-open');
+                }
+                
+                function closeBylawSidebar() {
+                    sidebar.classList.remove('active');
+                    document.body.classList.remove('sidebar-open');
+                    setTimeout(() => { frame.src = 'about:blank'; }, 300);
+                }
+                
+                // Set up resize functionality
+                resizer.addEventListener('mousedown', function(e) {
+                    isResizing = true;
+                    document.addEventListener('mousemove', handleMouseMove);
+                    document.addEventListener('mouseup', stopResize);
+                    e.preventDefault();
+                });
+                
+                function handleMouseMove(e) {
+                    if (!isResizing) return;
+                    
+                    const windowWidth = window.innerWidth;
+                    const sidebarWidth = windowWidth - e.clientX;
+                    const percentage = Math.min(Math.max((sidebarWidth / windowWidth) * 100, 30), 70);
+                    
+                    sidebar.style.width = `${percentage}%`;
+                    document.querySelector('.container').style.marginRight = `${percentage}%`;
+                }
+                
+                function stopResize() {
+                    isResizing = false;
+                    document.removeEventListener('mousemove', handleMouseMove);
+                }
+                
+                // Handle messages from iframe
+                window.addEventListener('message', function(event) {
+                    if (event.data === 'close-bylaw-sidebar') {
+                        closeBylawSidebar();
+                    }
+                });
+                
+                // Watch for new content
+                const observer = new MutationObserver(function() {
+                    handleBylawLinks();
+                });
+                
+                observer.observe(document.body, {
+                    childList: true,
+                    subtree: true
+                });
+                
+                // Initial setup
+                handleBylawLinks();
+                console.log('Bylaw sidebar initialized');
+            });
+
     </script>
+
+    <div id="bylaw-sidebar" class="bylaw-sidebar">
+        <div id="sidebar-resizer" class="sidebar-resizer"></div>
+        <iframe id="bylaw-frame" src="about:blank"></iframe>
+    </div>
 </body>
 </html> 

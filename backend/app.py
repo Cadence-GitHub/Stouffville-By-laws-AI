@@ -268,6 +268,46 @@ def demo():
     
     return render_template('demo.html', compare_mode=False, side_by_side=False, model="gemini-2.0-flash", bylaws_limit=10, enhanced_search=False)
 
+@app.route('/api/bylaw/<bylaw_number>')
+def get_bylaw_json(bylaw_number):
+    """
+    API endpoint that returns the full JSON data for a specific bylaw by its number.
+    This is used by the bylaw viewer to display detailed information.
+    """
+    try:
+        # Try to retrieve the bylaw using its number as a search query
+        relevant_bylaws, _, collection_exists = chroma_retriever.retrieve_relevant_bylaws(bylaw_number, limit=10)
+        
+        if not collection_exists:
+            return jsonify({"error": "ChromaDB collection does not exist"}), 500
+            
+        if not relevant_bylaws:
+            return jsonify({"error": f"No bylaws found matching {bylaw_number}"}), 404
+            
+        # Find exact match by bylaw number
+        exact_match = None
+        for bylaw in relevant_bylaws:
+            if bylaw.get("bylawNumber") == bylaw_number:
+                exact_match = bylaw
+                break
+                
+        if not exact_match:
+            # If no exact match, return the first result
+            exact_match = relevant_bylaws[0]
+            
+        # Return the full bylaw data as JSON
+        response = jsonify(exact_match)
+        
+        # Add cache-prevention headers
+        response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+        
+        return response
+        
+    except Exception as e:
+        return jsonify({"error": f"Error retrieving bylaw information: {str(e)}"}), 500
+
 if __name__ == '__main__':
     # Run in debug mode for development
     # In production, we should set debug=False and configure a proper WSGI server
