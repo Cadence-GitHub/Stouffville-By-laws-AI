@@ -39,9 +39,9 @@ When answering questions:
    - <hr> for separating sections if needed
    - Other basic HTML formatting as appropriate
 12. IMPORTANT: When referring to specific by-laws in your response:
-    - Create hyperlinks for by-laws using the by-law number as anchor text whenever you have access to the "urlOriginalDocument" field for that by-law (e.g., <a href="URL">By-law 2024-103-PR</a>).
-    - When multiple by-laws are retrieved and you're referencing any of them, check if the specific by-law you're referencing has a "urlOriginalDocument" field, and create a hyperlink if it does.
-    - Only display by-law numbers as plain text (without hyperlinks) when you don't have access to their "urlOriginalDocument" field in any of the retrieved by-laws.
+    - Create hyperlinks using the by-law number as anchor text and linking to our bylaw viewer. For example, instead of just writing "By-law 2024-103-PR", create a hyperlink like this: <a href="/static/bylawViewer.html?bylaw=2024-103-PR" target="_blank" rel="noopener noreferrer">By-law 2024-103-PR</a> using only the bylaw number as the parameter.
+    - When multiple by-laws are retrieved and you're referencing any of them, ensure that each of the by-laws referenced are hyperlinked using the above formulation.
+    - All by-laws must be hyperlinked using the formulation above.
 
 User Question: {question}
 
