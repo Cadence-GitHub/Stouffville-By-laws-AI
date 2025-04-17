@@ -96,3 +96,57 @@ class ChromaDBRetriever:
             print(f"Error retrieving bylaws: {str(e)}")
             return [], 0, False
     
+    def retrieve_bylaw_by_number(self, bylaw_number):
+        """
+        Retrieve a specific bylaw by its number using metadata filtering.
+        This is more efficient than semantic search for exact matches.
+        
+        Args:
+            bylaw_number (str): The exact bylaw number to retrieve
+            
+        Returns:
+            tuple: (bylaw document or None, retrieval_time in seconds, exists_status)
+        """
+        if not self.vector_store:
+            print("ChromaDB connection not available")
+            return None, 0, False
+            
+        try:
+            # Start timing the retrieval
+            import time
+            start_time = time.time()
+            
+            # Access the underlying ChromaDB collection directly
+            collection = self.vector_store._collection
+            
+            # Use metadata filtering to find the exact bylaw number
+            results = collection.get(
+                where={"bylawNumber": bylaw_number},
+                limit=1
+            )
+            
+            # Calculate retrieval time
+            retrieval_time = time.time() - start_time
+            
+            # Check if we found the bylaw
+            if results and len(results['metadatas']) > 0:
+                # Create a document object similar to what retrieve_relevant_bylaws returns
+                bylaw_data = results['metadatas'][0]
+                
+                # Add the content
+                if 'documents' in results and len(results['documents']) > 0:
+                    bylaw_data["content"] = results['documents'][0]
+                
+                # Remove keywords field if present
+                if "keywords" in bylaw_data:
+                    del bylaw_data["keywords"]
+                
+                return bylaw_data, retrieval_time, True
+            else:
+                # Bylaw not found
+                return None, retrieval_time, True
+            
+        except Exception as e:
+            print(f"Error retrieving bylaw by number: {str(e)}")
+            return None, 0, False
+    

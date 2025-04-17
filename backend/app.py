@@ -275,25 +275,28 @@ def get_bylaw_json(bylaw_number):
     This is used by the bylaw viewer to display detailed information.
     """
     try:
-        # Try to retrieve the bylaw using its number as a search query
-        relevant_bylaws, _, collection_exists = chroma_retriever.retrieve_relevant_bylaws(bylaw_number, limit=10)
+        # Use direct metadata filtering to find the exact bylaw by number
+        exact_match, retrieval_time, collection_exists = chroma_retriever.retrieve_bylaw_by_number(bylaw_number)
         
         if not collection_exists:
             return jsonify({"error": "ChromaDB collection does not exist"}), 500
             
-        if not relevant_bylaws:
-            return jsonify({"error": f"No bylaws found matching {bylaw_number}"}), 404
+        if exact_match is None:
+            # If exact match not found by metadata search, try semantic search as fallback
+            relevant_bylaws, _, _ = chroma_retriever.retrieve_relevant_bylaws(bylaw_number, limit=10)
             
-        # Find exact match by bylaw number
-        exact_match = None
-        for bylaw in relevant_bylaws:
-            if bylaw.get("bylawNumber") == bylaw_number:
-                exact_match = bylaw
-                break
+            if not relevant_bylaws:
+                return jsonify({"error": f"No bylaws found matching {bylaw_number}"}), 404
                 
-        if not exact_match:
-            # If no exact match, return the first result
-            exact_match = relevant_bylaws[0]
+            # Try to find an exact match in the results
+            for bylaw in relevant_bylaws:
+                if bylaw.get("bylawNumber") == bylaw_number:
+                    exact_match = bylaw
+                    break
+                    
+            if not exact_match:
+                # If still no exact match, return the first result
+                exact_match = relevant_bylaws[0]
             
         # Return the full bylaw data as JSON
         response = jsonify(exact_match)
