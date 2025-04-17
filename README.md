@@ -219,7 +219,7 @@ graph TB
             API1["/api/ask (POST)"]
             API2["/api/demo (GET/POST)"]
             API3["/api/hello (GET)"]
-            API4["/api/bylaw/<bylaw_number> (GET)"]
+            API4["/api/bylaw/ (GET)"]
         end
     end
 
@@ -243,6 +243,7 @@ graph TB
     FlaskApp --> Demo
     FlaskApp --> TokenCounter
     ChromaRetriever --> ChromaDB
+    ChromaRetriever <--> BylawViewer
     GeminiHandler --> PromptsModule
     GeminiHandler --> GoogleAPI
     TokenCounter --> GeminiHandler
@@ -253,7 +254,7 @@ graph TB
     API2 --> FlaskApp
     API3 --> FlaskApp
     API4 --> ChromaRetriever
-    BylawViewer --> API4
+    API4 --> BylawViewer
     Demo --> BylawViewer
     
     
