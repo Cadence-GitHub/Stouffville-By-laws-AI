@@ -110,6 +110,7 @@ Available Gemini models:
 - gemini-2.0-flash-lite (fastest, lowest cost)
 - gemini-2.0-flash (balanced speed/quality, default)
 - gemini-2.0-flash-thinking-exp-01-21 (better reasoning)
+- gemini-2.5-flash-preview-04-17 (fast, high quality)
 - gemini-2.5-pro-exp-03-25 (highest quality, most expensive)
 
 Each prompt type uses a specific temperature setting for optimal results:
