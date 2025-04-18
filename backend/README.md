@@ -236,6 +236,7 @@ The backend supports multiple Gemini model options:
 - `gemini-2.0-flash-lite`: Fastest, lowest cost option
 - `gemini-2.0-flash`: Default model with balanced speed and quality
 - `gemini-2.0-flash-thinking-exp-01-21`: Better reasoning capabilities
+- `gemini-2.5-flash-preview-04-17`: Fast, high quality option
 - `gemini-2.5-pro-exp-03-25`: Highest quality, but most expensive
 
 Each prompt type uses a specific temperature setting for optimal results:
