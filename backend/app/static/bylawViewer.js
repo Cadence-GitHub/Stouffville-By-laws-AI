@@ -166,21 +166,13 @@ function displayBylaw(bylaw) {
     const datesSection = createSection('Key Dates', bylaw.keyDatesAndInfo);
     if (datesSection) container.appendChild(datesSection);
     
+    // Entity and designation section
+    const entitySection = createSection('Entity and Designation', bylaw.entityAndDesignation);
+    if (entitySection) container.appendChild(entitySection);
+    
     // Conditions and clauses section
     const conditionsSection = createSection('Conditions and Clauses', bylaw.condtionsAndClauses);
     if (conditionsSection) container.appendChild(conditionsSection);
-    
-    // Legal Topics section
-    const legalTopicsSection = createSection('Legal Topics', bylaw.legalTopics);
-    if (legalTopicsSection) container.appendChild(legalTopicsSection);
-    
-    // Legislation section
-    const legislationSection = createSection('Legislation', bylaw.legislation);
-    if (legislationSection) container.appendChild(legislationSection);
-    
-    // Why Legislation section
-    const whyLegislationSection = createSection('Why Legislation', bylaw.whyLegislation);
-    if (whyLegislationSection) container.appendChild(whyLegislationSection);
     
     // Other Bylaws section
     const otherBylawsSection = createSection('Other Bylaws', bylaw.otherBylaws);
@@ -190,13 +182,21 @@ function displayBylaw(bylaw) {
     const whyOtherBylawsSection = createSection('Why Other Bylaws', bylaw.whyOtherBylaws);
     if (whyOtherBylawsSection) container.appendChild(whyOtherBylawsSection);
     
-    // Entity and designation section
-    const entitySection = createSection('Entity and Designation', bylaw.entityAndDesignation);
-    if (entitySection) container.appendChild(entitySection);
+    // Legislation section
+    const legislationSection = createSection('Legislation', bylaw.legislation);
+    if (legislationSection) container.appendChild(legislationSection);
+    
+    // Why Legislation section
+    const whyLegislationSection = createSection('Why Legislation', bylaw.whyLegislation);
+    if (whyLegislationSection) container.appendChild(whyLegislationSection);
     
     // Other Entities Mentioned section
     const otherEntitiesSection = createSection('Other Entities Mentioned', bylaw.otherEntitiesMentioned);
     if (otherEntitiesSection) container.appendChild(otherEntitiesSection);
+    
+    // Legal Topics section
+    const legalTopicsSection = createSection('Legal Topics', bylaw.legalTopics);
+    if (legalTopicsSection) container.appendChild(legalTopicsSection);
     
     // Location Addresses section
     if (shouldDisplay(bylaw.locationAddresses)) {
@@ -241,10 +241,6 @@ function displayBylaw(bylaw) {
     // Money and Categories section
     const moneySection = createSection('Money and Categories', bylaw.moneyAndCategories);
     if (moneySection) container.appendChild(moneySection);
-    
-    // Keywords section
-    const keywordsSection = createSection('Keywords', bylaw.keywords);
-    if (keywordsSection) container.appendChild(keywordsSection);
     
     // Other Details section
     const otherDetailsSection = createSection('Other Details', bylaw.otherDetails);
@@ -294,18 +290,11 @@ function displayBylaw(bylaw) {
         container.appendChild(urlSection);
     }
     
-    // Table section
-    if (shouldDisplay(bylaw.table)) {
-        const tableContent = formatTable(bylaw.table);
-        const tableSection = createSection('Table Data', tableContent, true, true);
-        if (tableSection) container.appendChild(tableSection);
-    }
-    
     // Full text section
-    if (shouldDisplay(bylaw.extractedText)) {
-        const textContent = Array.isArray(bylaw.extractedText) 
-            ? bylaw.extractedText.join('\n') 
-            : bylaw.extractedText;
+    if (shouldDisplay(bylaw.content)) {
+        const textContent = Array.isArray(bylaw.content) 
+            ? bylaw.content.join('\n') 
+            : bylaw.content;
         
         const textSection = document.createElement('div');
         textSection.className = 'bylaw-section full-width';
