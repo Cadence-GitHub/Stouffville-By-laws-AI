@@ -2,6 +2,21 @@ document.addEventListener('DOMContentLoaded', function() {
     // Form submission loading
     document.getElementById('queryForm').addEventListener('submit', function() {
         document.getElementById('loadingMessage').style.display = 'block';
+        
+        //Let's also clear out previous responses and statuses
+        var answerBlock = document.getElementsByClassName('answers-wrapper');
+        var transformBlock = document.getElementsByClassName('transformed-query');
+
+        if(answerBlock != null)
+        {
+            answerBlock[0].style.display = 'none';
+        }
+
+        if(transformBlock != null)
+        {
+            transformBlock[0].style.display = 'none';
+        }
+
     });
     
     // Toggle comparison option
