@@ -8,6 +8,7 @@ from app.prompts import (
     TEMPERATURES
 )
 import time
+# Import Google Genai will be done dynamically only when needed
 
 # Define allowed models
 ALLOWED_MODELS = [
@@ -15,6 +16,7 @@ ALLOWED_MODELS = [
     "gemini-2.0-flash-lite", 
     "gemini-2.0-flash-thinking-exp-01-21",
     "gemini-2.5-flash-preview-04-17",
+    "gemini-2.5-flash-thinking-preview-04-17",
     "gemini-2.5-pro-exp-03-25"
 ]
 
@@ -36,17 +38,72 @@ def invoke_model_with_timing(prompt_type, model_config, prompt_template, prompt_
     # Get temperature for this prompt type
     temperature = TEMPERATURES.get(prompt_type, 0.0)
     
-    # Create model instance with the appropriate temperature
-    model_instance = ChatGoogleGenerativeAI(
-        model=model_config['model'],
-        google_api_key=model_config['api_key'],
-        timeout=model_config['timeout'],
-        temperature=temperature
-    )
-    
-    # Create and invoke the chain
-    chain = prompt_template | model_instance | StrOutputParser()
-    response = chain.invoke(prompt_args)
+    # =====================================================================
+    # TODO: TEMPORARY WORKAROUND - REMOVE ONCE LANGCHAIN ADDS THINKING MODE SUPPORT
+    # This direct Google API usage should be removed once LangChain implements 
+    # thinking mode control. This is being tracked at:
+    # https://github.com/langchain-ai/langchain-google/issues/872
+    # 
+    # When that issue is resolved, we can revert back to the standard LangChain
+    # implementation for all models and pass thinking configuration there.
+    # =====================================================================
+    if model_config['model'] == 'gemini-2.5-flash-preview-04-17':
+        try:
+            # Only import google-genai when needed
+            from google import genai
+            from google.genai import types
+            
+            # Configure Google Genai API directly with thinking mode disabled
+            genai_client = genai.Client(api_key=model_config['api_key'])
+            formatted_prompt = prompt_template.format(**prompt_args)
+            
+            response = genai_client.models.generate_content(
+                model=model_config['model'],
+                contents=formatted_prompt,
+                config=types.GenerateContentConfig(
+                    temperature=temperature,
+                    thinking_config=types.ThinkingConfig(
+                        thinking_budget=0  # Turn off thinking mode
+                    )
+                )
+            )
+            
+            # Add stop reason to the response text if available
+            response_text = response.text
+            if hasattr(response, 'candidates') and response.candidates and response.candidates[0].finish_reason:
+                response_text += f"\n\nStop reason: {response.candidates[0].finish_reason}"
+            
+            return clean_response(response_text), time.time() - start_time
+        except ImportError:
+            # Return an error message
+            error_message = (
+                "ERROR: The 'gemini-2.5-flash-preview-04-17' model with thinking mode disabled "
+                "requires the 'google-genai' package. Please install it with: "
+                "pip install google-genai>=1.10.0"
+            )
+            print(error_message)
+            # Return the error message as the response
+            return error_message, time.time() - start_time
+    else:
+        # For all other models, including gemini-2.5-flash-thinking-preview-04-17,
+        # use the standard LangChain implementation
+        
+        # For the special thinking variant, use the actual model name
+        model_name = model_config['model']
+        if model_name == 'gemini-2.5-flash-thinking-preview-04-17':
+            model_name = 'gemini-2.5-flash-preview-04-17'
+        
+        # Create model instance with the appropriate temperature
+        model_instance = ChatGoogleGenerativeAI(
+            model=model_name,
+            google_api_key=model_config['api_key'],
+            timeout=model_config['timeout'],
+            temperature=temperature
+        )
+        
+        # Create and invoke the chain
+        chain = prompt_template | model_instance | StrOutputParser()
+        response = chain.invoke(prompt_args)
     
     # Calculate execution time
     execution_time = time.time() - start_time

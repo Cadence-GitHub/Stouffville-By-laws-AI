@@ -12,6 +12,8 @@ MODEL_PRICING = {
     "gemini-2.0-flash": {"input": 0.10, "output": 0.40},
     "gemini-2.0-flash-lite": {"input": 0.07, "output": 0.30},
     "gemini-2.0-flash-thinking-exp-01-21": {"input": 0.10, "output": 2.00},
+    "gemini-2.5-flash-preview-04-17": {"input": 0.15, "output": 0.60},
+    "gemini-2.5-flash-thinking-preview-04-17": {"input": 0.15, "output": 7},
     "gemini-2.5-pro-exp-03-25": {"input": 1.25, "output": 10.00}
 }
 
