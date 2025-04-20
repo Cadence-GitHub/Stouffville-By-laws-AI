@@ -40,7 +40,7 @@ Optional arguments:
 
 Output format:
     The script creates a JSON file for each PDF with the following schema elements:
-    - bylawNumber        : Bylaw alphanumeric code
+    - bylawNumber        : Bylaw alphanumeric code in the format YYYY-NNN where YYYY is the year and NNN is a three-digit bylaw number (e.g., 2015-001)
     - bylawYear          : Bylaw year
     - bylawType          : Type of bylaw based on code and content
     - bylawHeader        : Title or header of the document
@@ -1010,7 +1010,7 @@ def get_field_prompt(field_name, field_type, text_content):
     """
     # Define field-specific prompts based on the field name
     field_prompts = {
-        "bylawNumber": "Extract the bylaw alphanumeric code from the text.",
+        "bylawNumber": "Extract the bylaw alphanumeric code from the text in the format YYYY-NNN where YYYY is the year and NNN is a three-digit bylaw number (e.g., 2015-001).",
         "bylawYear": "Extract the bylaw year from the text.",
         "bylawType": "Analyze the bylaw number and content to determine the type. Bylaws are numbered in a unique way. Ending with ZO could be zoning order, AP could be appointment, FI could be financial. Use your reasoning skills to define the type. Do not abbreviate.",
         "bylawHeader": "Extract the bolded text at the top of the document that forms part of the contiguous text that follows.",
