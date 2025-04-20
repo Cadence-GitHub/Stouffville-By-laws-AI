@@ -185,7 +185,7 @@ def main():
                 # Small delay to avoid overwhelming the server
                 time.sleep(0.5)
             
-                print(f"Initialization complete. Added/updated {total_bylaws} bylaws in ChromaDB.")
+            print(f"Initialization complete. Added/updated {total_bylaws} bylaws in ChromaDB.")
         except Exception as e:
             print(f"Error adding documents to ChromaDB: {str(e)}")
     else:
