@@ -269,6 +269,7 @@ def main():
     parser.add_argument('--model', '-m', default='gemini-2.0-flash', help='Gemini model to use')
     parser.add_argument('--limit', '-l', type=int, help='Limit number of bylaws to process')
     parser.add_argument('--env-file', '-e', help='Path to .env file (defaults to .env in current directory)')
+    parser.add_argument('--api-key', '-k', help='Google API key (overrides the key in .env file if provided)')
     args = parser.parse_args()
     
     # Load environment variables from custom .env file if specified
@@ -276,11 +277,16 @@ def main():
         load_dotenv(args.env_file)
         logger.info(f"Loaded environment variables from {args.env_file}")
     
-    # Get API key from environment
-    api_key = os.environ.get("GOOGLE_API_KEY")
+    # Get API key from command line argument or environment
+    api_key = args.api_key or os.environ.get("GOOGLE_API_KEY")
     if not api_key:
-        logger.error("GOOGLE_API_KEY environment variable is not set. Add it to your .env file.")
+        logger.error("No API key provided. Either use --api-key option or set GOOGLE_API_KEY in your .env file.")
         return 1
+    
+    if args.api_key:
+        logger.info("Using API key provided via command line")
+    else:
+        logger.info("Using API key from environment variables")
         
     # Get input file and create output file paths
     input_file = args.input
