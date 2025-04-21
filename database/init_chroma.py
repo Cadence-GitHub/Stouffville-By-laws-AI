@@ -67,7 +67,7 @@ def main():
             collection_name=args.collection,
             embedding_function=embedding_function,
             client=chroma_client,
-            collection_metadata={"hnsw:M": args.hnsw_M, "hnsw:construction_ef": args.hnsw_construction_ef, "hnsw:search_ef": args.hnsw_search_ef}
+            collection_metadata={"hnsw:M": int(args.hnsw_M), "hnsw:construction_ef": int(args.hnsw_construction_ef), "hnsw:search_ef": int(args.hnsw_search_ef)}
         )
         
         # If reset flag is set, clear the collection
@@ -78,7 +78,8 @@ def main():
             vector_store = Chroma(
                 collection_name=args.collection,
                 embedding_function=embedding_function,
-                client=chroma_client
+                client=chroma_client,
+                collection_metadata={"hnsw:M": int(args.hnsw_M), "hnsw:construction_ef": int(args.hnsw_construction_ef), "hnsw:search_ef": int(args.hnsw_search_ef)}
             )
             
         print(f"Successfully connected to ChromaDB collection '{args.collection}'!")
@@ -111,7 +112,9 @@ def main():
     # Process each file
     total_bylaws = 0
     documents = []
-    document_ids = []
+    
+    # Track bylaws found in the current run to avoid duplicates in batch processing
+    processed_bylaws = set()
     
     for json_file in json_files:
         print(f"Processing {os.path.basename(json_file)}...")
@@ -125,6 +128,12 @@ def main():
         for bylaw in bylaws:
             # Use bylawNumber directly as the document ID
             bylaw_id = bylaw.get("bylawNumber", "unknown")
+            
+            # Skip if we've already processed this bylaw in the current run
+            # or if it already exists in the database (unless we're resetting)
+            if bylaw_id in processed_bylaws or (bylaw_id in existing_bylaws and not args.reset):
+                print(f"  Skipping bylaw {bylaw_id} - already processed or exists in collection")
+                continue
             
             # Extract the text to be embedded - only the extractedText field
             if "extractedText" in bylaw:
@@ -158,11 +167,9 @@ def main():
                     metadata=metadata
                 )
                 
-                if bylaw_id in existing_bylaws:
-                    print(f"  Skipping bylaw {bylaw_id} - already exists in collection")
-                    continue
-                
                 documents.append(document)
+                # Mark this bylaw as processed
+                processed_bylaws.add(bylaw_id)
                 total_bylaws += 1
             else:
                 print(f"  Warning: Bylaw {bylaw_id} has no extractedText field, skipping")
@@ -178,7 +185,6 @@ def main():
         try:
             for i in range(0, len(documents), batch_size):
                 batch = documents[i:i+batch_size]
-                batch_ids = document_ids[i:i+batch_size]
                 batch_num = (i // batch_size) + 1
                 print(f"  Processing batch {batch_num}/{total_batches} ({len(batch)} documents)...")
                 vector_store.add_documents(batch)
