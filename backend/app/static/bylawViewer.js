@@ -241,6 +241,10 @@ function displayBylaw(bylaw) {
     // Money and Categories section
     const moneySection = createSection('Money and Categories', bylaw.moneyAndCategories);
     if (moneySection) container.appendChild(moneySection);
+
+    // Keywords section
+    const keywordsSection = createSection('Keywords', bylaw.keywords);
+    if (keywordsSection) container.appendChild(keywordsSection);
     
     // Other Details section
     const otherDetailsSection = createSection('Other Details', bylaw.otherDetails);
