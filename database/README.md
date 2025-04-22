@@ -185,6 +185,49 @@ Options:
 
 If no keyword is provided, the script will ask if you want to include all by-laws.
 
+
+### Bylaw Expiry Analyzer
+
+The `bylaw_expiry_analyzer.py` script uses the Gemini API to analyze bylaws and determine whether they are still active or have expired based on their content.
+
+Key features:
+- Reads bylaw data from JSON files created by the `prepare_json_bylaws_for_db.py` script
+- Uses Gemini AI via Langchain to analyze the bylaw text for expiration information
+- Adds `isActive` and `whyNotActive` fields to each bylaw
+- Separates bylaws into active and inactive output files
+- Resumes processing from where it left off if interrupted
+
+Workflow:
+1. First use `prepare_json_bylaws_for_db.py` to create a consolidated JSON file of bylaws
+2. Then run `bylaw_expiry_analyzer.py` on this file to analyze and classify bylaws
+3. The tool produces two output files:
+   - `[input_filename].ACTIVE_ONLY.json` containing bylaws that are still active
+   - `[input_filename].NOT_ACTIVE_ONLY.json` containing expired bylaws with reasons
+
+Usage:
+```bash
+python bylaw_expiry_analyzer.py --input [JSON_FILE] [OPTIONS]
+```
+
+Options:
+- `--input` or `-i`: Input JSON file containing bylaws (required)
+- `--model` or `-m`: Gemini model to use (default: gemini-2.0-flash)
+- `--limit` or `-l`: Limit number of bylaws to process
+- `--env-file` or `-e`: Path to .env file with your GOOGLE_API_KEY
+
+Example:
+```bash
+python bylaw_expiry_analyzer.py --input parking_related_by-laws.json --model gemini-2.0-flash
+```
+
+The script includes safeguards:
+- Rate limiting with pauses between API calls
+- Skipping already processed bylaws
+- Comprehensive error logging
+- JSON response cleaning to handle Markdown formatting
+
+This tool helps build a more accurate bylaw database by identifying which bylaws are still applicable and which have expired.
+
 The script validates each bylaw number against the standard format (YYYY-NNN) where YYYY is a year and NNN is a three-digit number. If an invalid format is detected, it attempts to auto-fix it using several strategies:
 - Adding "19" prefix to two-digit years (71-99)
 - Converting space-separated formats (YYYY NNN) to dash format
