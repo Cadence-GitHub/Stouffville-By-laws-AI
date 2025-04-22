@@ -169,6 +169,9 @@ Key features:
 - Filter and collect relevant by-laws into a single output file
 - Calculate token usage and estimated LLM costs
 - Option to include all by-laws regardless of keywords
+- Validate bylaw numbers to ensure they follow the YYYY-NNN format
+- Auto-fix invalid bylaw numbers using various correction scenarios
+- Generate detailed reports on validation and correction outcomes
 
 Usage:
 ```bash
@@ -181,6 +184,7 @@ Options:
 - `--output`: Output file name (default: {keyword}_related_by-laws.json or all_by-laws.json)
 
 If no keyword is provided, the script will ask if you want to include all by-laws.
+
 
 ### Bylaw Expiry Analyzer
 
@@ -223,6 +227,19 @@ The script includes safeguards:
 - JSON response cleaning to handle Markdown formatting
 
 This tool helps build a more accurate bylaw database by identifying which bylaws are still applicable and which have expired.
+
+The script validates each bylaw number against the standard format (YYYY-NNN) where YYYY is a year and NNN is a three-digit number. If an invalid format is detected, it attempts to auto-fix it using several strategies:
+- Adding "19" prefix to two-digit years (71-99)
+- Converting space-separated formats (YYYY NNN) to dash format
+- Padding numbers with leading zeros to ensure three digits
+- Removing spaces in bylaw numbers
+- Removing invalid suffixes after the YYYY-NNN format
+
+The script provides a detailed report of the validation results, including:
+- Files with missing bylaw numbers
+- Files with parse errors
+- Files with auto-fixed bylaw numbers (showing original and corrected versions)
+- Files with invalid bylaw numbers that couldn't be automatically fixed
 
 ### Search Tool
 
