@@ -29,6 +29,143 @@ def count_tokens(text):
     return len(encoding.encode(text))
 
 
+def validate_bylaw_number(bylaw_number):
+    """
+    Validate that the bylaw number follows the format YYYY-NNN
+    where YYYY is a year and NNN is a number from 001 to 999.
+    
+    Args:
+        bylaw_number (str): The bylaw number to validate
+        
+    Returns:
+        bool: True if the format is valid, False otherwise
+    """
+    # Regex pattern for YYYY-NNN format
+    pattern = r'^(\d{4})-([0-9]{3})$'
+    match = re.match(pattern, bylaw_number)
+    
+    if not match:
+        return False
+    
+    # Check if the numeric part is between 001-999
+    numeric_part = int(match.group(2))
+    if numeric_part < 1 or numeric_part > 999:
+        return False
+        
+    return True
+
+
+def attempt_fix_bylaw_number(bylaw_number):
+    """
+    Attempt to fix a bylaw number that doesn't match the required format.
+    Tries various scenarios to convert the given bylaw number to the correct format.
+    Scenarios are applied additively (changes from one scenario are kept for the next).
+    
+    Args:
+        bylaw_number (str): The invalid bylaw number to fix
+        
+    Returns:
+        tuple: (fixed_bylaw_number, is_valid, scenario_applied)
+            - fixed_bylaw_number: The potentially fixed bylaw number
+            - is_valid: Whether the fixed bylaw number is now valid
+            - scenario_applied: Description of the scenario that was applied, or None if no fix worked
+    """
+    original_bylaw_number = bylaw_number
+    applied_scenarios = []
+    
+    # Scenario 1: Handle two-digit years (71-99) by adding "19" prefix
+    if len(bylaw_number) >= 2:
+        match = re.match(r'^([7-9][0-9])[^a-zA-Z0-9]', bylaw_number)
+        if match:
+            year_prefix = match.group(1)
+            bylaw_number = "19" + bylaw_number
+            applied_scenarios.append(f"Scenario 1: Added '19' to two-digit year '{year_prefix}'")
+            
+            # Check if the fix worked
+            if validate_bylaw_number(bylaw_number):
+                return bylaw_number, True, ", ".join(applied_scenarios)
+    
+    # Scenario 1b: Replace space with dash in "YYYY N", "YYYY NN", or "YYYY NNN" formats
+    space_pattern = r'^(\d{4})\s+(\d{1,3})$'
+    space_match = re.match(space_pattern, bylaw_number)
+    if space_match:
+        year = space_match.group(1)
+        number = space_match.group(2)
+        
+        # Pad the number with leading zeros if needed
+        if len(number) == 1:
+            padded_number = "00" + number
+            applied_scenarios.append(f"Scenario 1b: Replaced space with dash and padded '{number}' to '{padded_number}'")
+        elif len(number) == 2:
+            padded_number = "0" + number
+            applied_scenarios.append(f"Scenario 1b: Replaced space with dash and padded '{number}' to '{padded_number}'")
+        else:
+            padded_number = number
+            applied_scenarios.append(f"Scenario 1b: Replaced space with dash")
+        
+        bylaw_number = f"{year}-{padded_number}"
+        
+        # Check if the fix worked
+        if validate_bylaw_number(bylaw_number):
+            return bylaw_number, True, ", ".join(applied_scenarios)
+    
+    # Scenario 2: Remove spaces
+    if ' ' in bylaw_number:
+        bylaw_number = bylaw_number.replace(' ', '')
+        applied_scenarios.append("Scenario 2: Removed spaces")
+        
+        # Check if the fix worked
+        if validate_bylaw_number(bylaw_number):
+            return bylaw_number, True, ", ".join(applied_scenarios)
+    
+    # Scenario 3: Pad numbers with leading zeros for various formats
+    # Handle any pattern with a 4-digit year followed by a 1 or 2 digit number
+    number_format_pattern = r'^(\d{4})-(\d{1,3})(.*)$'
+    match = re.match(number_format_pattern, bylaw_number)
+    if match:
+        year = match.group(1)
+        number = match.group(2)
+        remainder = match.group(3) or ""
+        
+        # Only pad the number if it's 1 or 2 digits
+        if len(number) == 1:
+            padded_number = "00" + number
+            bylaw_number = f"{year}-{padded_number}{remainder}"
+            applied_scenarios.append(f"Scenario 3: Padded single digit '{number}' to '{padded_number}'")
+        elif len(number) == 2:
+            padded_number = "0" + number
+            bylaw_number = f"{year}-{padded_number}{remainder}"
+            applied_scenarios.append(f"Scenario 3: Padded double digit '{number}' to '{padded_number}'")
+        # Don't modify 3-digit numbers
+        
+        # Check if the fix worked
+        if validate_bylaw_number(bylaw_number):
+            return bylaw_number, True, ", ".join(applied_scenarios)
+    
+    # Scenario 4: Remove any suffix after YYYY-NNN format (including non-ASCII characters)
+    # First check for exact YYYY-NNN pattern at the start
+    basic_pattern = r'^(\d{4})-([0-9]{3})'
+    basic_match = re.match(basic_pattern, bylaw_number)
+    if basic_match and len(bylaw_number) > 8:  # 8 chars is exactly YYYY-NNN
+        # Extract the year and number parts
+        year = basic_match.group(1)
+        number = basic_match.group(2)
+        removed_part = bylaw_number[8:]  # Everything after YYYY-NNN
+        bylaw_number = f"{year}-{number}"
+        applied_scenarios.append(f"Scenario 4: Removed suffix '{removed_part}'")
+        
+        # Check if the fix worked
+        if validate_bylaw_number(bylaw_number):
+            return bylaw_number, True, ", ".join(applied_scenarios)
+    
+    # If we've applied any scenarios but still failed, return the last attempt
+    if applied_scenarios:
+        return bylaw_number, False, ", ".join(applied_scenarios) + " (still invalid)"
+    
+    # No scenarios applied, return the original with failure status
+    return original_bylaw_number, False, None
+
+
 def search_bylaws_by_keyword(base_dir, keyword, output_file, include_all=False):
     """
     Search through all JSON files in the base_dir for a specific keyword in the 'keywords' list.
@@ -51,6 +188,11 @@ def search_bylaws_by_keyword(base_dir, keyword, output_file, include_all=False):
     matching_files = []
     total_source_tokens = 0
     total_source_files = 0
+    files_with_missing_bylaw_number = []
+    files_with_parse_errors = []
+    files_with_invalid_bylaw_format = []
+    files_with_fixed_bylaw_format = []
+    files_with_valid_bylaw_format = []
 
     # Walk through all JSON files in the directory and subdirectories
     for json_file in base_path.glob('**/*.json'):
@@ -74,29 +216,114 @@ def search_bylaws_by_keyword(base_dir, keyword, output_file, include_all=False):
 
                 # If including all bylaws or if the keyword matches, add the file
                 if include_all:
-                    print(f"\nIncluding: {json_file}")
-                    if 'keywords' in bylaw_data and isinstance(bylaw_data['keywords'], list):
-                        print(f"Keywords: {bylaw_data['keywords']}")
+                    if 'bylawNumber' not in bylaw_data or not bylaw_data['bylawNumber']:
+                        print(f"Error: Missing bylawNumber in {json_file}")
+                        files_with_missing_bylaw_number.append(str(json_file))
+                        continue
+                    
+                    # Validate bylaw number format
+                    bylaw_format_valid = validate_bylaw_number(bylaw_data['bylawNumber'])
+                    
+                    # If not valid, attempt to fix it
+                    if not bylaw_format_valid:
+                        fixed_bylaw, is_fixed, scenario = attempt_fix_bylaw_number(bylaw_data['bylawNumber'])
+                        
+                        if is_fixed:
+                            print(f"Including: {json_file}   (bylawNumber: {bylaw_data['bylawNumber']} → {fixed_bylaw}) OK (Fixed)")
+                            print(f"Fixed with {scenario}")
+                            files_with_fixed_bylaw_format.append((str(json_file), bylaw_data['bylawNumber'], fixed_bylaw, scenario))
+                            # Update the bylaw number to the fixed version
+                            bylaw_data['bylawNumber'] = fixed_bylaw
+                        else:
+                            format_status = "FAIL"
+                            print(f"Including: {json_file}   (bylawNumber: {bylaw_data['bylawNumber']}) {format_status}")
+                            warning_msg = f"Warning: Invalid bylawNumber format '{bylaw_data['bylawNumber']}' in {json_file} - Couldn't auto-fix"
+                            print(warning_msg)
+                            # Store the scenario if any was applied but failed
+                            fix_attempt = scenario if scenario else "No applicable fix scenario"
+                            files_with_invalid_bylaw_format.append((str(json_file), bylaw_data['bylawNumber'], fix_attempt))
+                    else:
+                        format_status = "OK"
+                        files_with_valid_bylaw_format.append(str(json_file))
+                        print(f"Including: {json_file}   (bylawNumber: {bylaw_data['bylawNumber']}) {format_status}")
+                    
                     matching_files.append(str(json_file))
                     output_data.append(bylaw_data)
                 # Otherwise check for keyword matches
                 elif keyword and 'keywords' in bylaw_data and isinstance(bylaw_data['keywords'], list):
                     # Look for keyword in the keywords list (case-insensitive)
                     if any(keyword.lower() in kw.lower() for kw in bylaw_data['keywords']):
-                        print(f"\nFound match in: {json_file}")
+                        if 'bylawNumber' not in bylaw_data or not bylaw_data['bylawNumber']:
+                            print(f"Error: Missing bylawNumber in {json_file}")
+                            files_with_missing_bylaw_number.append(str(json_file))
+                            continue
+                        
+                        # Validate bylaw number format
+                        bylaw_format_valid = validate_bylaw_number(bylaw_data['bylawNumber'])
+                        
+                        # If not valid, attempt to fix it
+                        if not bylaw_format_valid:
+                            fixed_bylaw, is_fixed, scenario = attempt_fix_bylaw_number(bylaw_data['bylawNumber'])
+                            
+                            if is_fixed:
+                                print(f"\nFound match in: {json_file}   (bylawNumber: {bylaw_data['bylawNumber']} → {fixed_bylaw}) OK (Fixed)")
+                                print(f"Fixed with {scenario}")
+                                files_with_fixed_bylaw_format.append((str(json_file), bylaw_data['bylawNumber'], fixed_bylaw, scenario))
+                                # Update the bylaw number to the fixed version
+                                bylaw_data['bylawNumber'] = fixed_bylaw
+                            else:
+                                format_status = "FAIL"
+                                print(f"\nFound match in: {json_file}   (bylawNumber: {bylaw_data['bylawNumber']}) {format_status}")
+                                warning_msg = f"Warning: Invalid bylawNumber format '{bylaw_data['bylawNumber']}' in {json_file} - Couldn't auto-fix"
+                                print(warning_msg)
+                                # Store the scenario if any was applied but failed
+                                fix_attempt = scenario if scenario else "No applicable fix scenario"
+                                files_with_invalid_bylaw_format.append((str(json_file), bylaw_data['bylawNumber'], fix_attempt))
+                        else:
+                            format_status = "OK"
+                            files_with_valid_bylaw_format.append(str(json_file))
+                            print(f"\nFound match in: {json_file}   (bylawNumber: {bylaw_data['bylawNumber']}) {format_status}")
+                        
                         print(f"Keywords: {bylaw_data['keywords']}")
                         matching_files.append(str(json_file))
                         output_data.append(bylaw_data)
         except (json.JSONDecodeError, UnicodeDecodeError) as e:
             print(f"Error processing {json_file}: {e}")
+            files_with_parse_errors.append((str(json_file), str(e)))
 
     # Write the output data to the output file
     with open(output_file, 'w', encoding='utf-8') as f:
         json.dump(output_data, f, indent=2, ensure_ascii=False)
 
+    if files_with_missing_bylaw_number:
+        print("\nFiles with missing bylawNumber:")
+        for file in files_with_missing_bylaw_number:
+            print(f"  - {file}")
+    
+    if files_with_parse_errors:
+        print("\nFiles with parse errors:")
+        for file, error in files_with_parse_errors:
+            print(f"  - {file}: {error}")
+    
+    if files_with_fixed_bylaw_format:
+        print("\nFiles with auto-fixed bylawNumber format:")
+        for file, original, fixed, scenario in files_with_fixed_bylaw_format:
+            print(f"  - {file}: '{original}' → '{fixed}' ({scenario})")
+
+    if files_with_invalid_bylaw_format:
+        print("\nFiles with invalid bylawNumber format (couldn't fix):")
+        for file, bylaw_number, fix_attempt in files_with_invalid_bylaw_format:
+            print(f"  - {file}: '{bylaw_number}' (Fix attempt: {fix_attempt})")
+    
     print(f"\nTotal source files processed: {total_source_files}")
     print(f"Total matching files: {len(matching_files)}")
-    print(f"Results saved to: {output_file}")
+    print(f"Total files with valid bylawNumber format (originally valid): {len(files_with_valid_bylaw_format)}")
+    print(f"Total files with invalid bylawNumber format (couldn't fix): {len(files_with_invalid_bylaw_format)}")
+    print(f"Total files with auto-fixed bylawNumber format: {len(files_with_fixed_bylaw_format)}")
+    print(f"Sum of valid, fixed, and invalid bylawNumbers: {len(files_with_valid_bylaw_format) + len(files_with_fixed_bylaw_format) + len(files_with_invalid_bylaw_format)}")
+    print(f"Total files with missing bylawNumber: {len(files_with_missing_bylaw_number)}")
+    print(f"Total files with parse errors: {len(files_with_parse_errors)}")
+    print(f"\nResults saved to: {output_file}")
     print(f"Output file size: {os.path.getsize(output_file) / 1024 / 1024:.2f} MB")
 
     # Calculate token count for output data extractedText fields
