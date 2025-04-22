@@ -52,69 +52,48 @@ signal.signal(signal.SIGINT, signal_handler)
 
 # Define the prompt template for checking if a bylaw is active
 EXPIRY_CHECK_PROMPT = ChatPromptTemplate.from_template("""
-You are a meticulous legal analyst specializing in Canadian municipal bylaws. Your task is to analyze the text of a bylaw and determine if it is currently active or has expired based on today's date: **{current_date}**.
+You are a legal expert in Canadian municipal bylaws. Your task is to analyze the text of a bylaw
+and determine if it has expired based on today's date: **{current_date}**.
 
 Here is the bylaw text to analyze:
 <bylaw_text>
 {bylaw_text}
 </bylaw_text>
 
-Consider the following information during your analysis:
-- Bylaw Number: {bylaw_number}
-- Bylaw Year: {bylaw_year}
-- Bylaw Type: {bylaw_type}
-- Today's Date: {current_date}
+First, carefully search for any expiration date, sunset clause, repeal notice, or any indication
+that would limit the time validity or current effect of this bylaw. Look for phrases like:
+- "This by-law shall be in effect until..."
+- "This by-law expires on..."
+- "This by-law is repealed on..." or "repealed by bylaw X"
+- "This by-law is valid for a period of..."
+- Terms linked to council periods (e.g., "for the 2022-2026 term")
+- Terms linked to specific events (e.g., "for the 2026 election")
+- Conditions for becoming null/void (e.g., "null and void if not registered", "until successor appointed")
+- Any specific end dates mentioned
 
-**Follow these steps precisely:**
+IMPORTANT: Consider bylaw number: {bylaw_number}, bylaw year: {bylaw_year}, and bylaw type: {bylaw_type} in your analysis.
 
-1.  **Identify Potential Expiry or Repeal Conditions:** Carefully scan the `<bylaw_text>` for any clauses, phrases, specific dates, terms of office, event dependencies, repeal notices, or sunset clauses that limit the bylaw's duration or define when it ceases to be in effect. Look for indicators like:
-    *   "This by-law shall be in effect until..."
-    *   "This by-law expires on..."
-    *   "This by-law is repealed on..." or "repealed by bylaw X"
-    *   "This by-law is valid for a period of..." (calculate end date based on enactment date if available)
-    *   Specific end dates (e.g., "December 31, 2024", "November 30, 2026")
-    *   Terms tied to events (e.g., "for the 2026 Municipal Election")
-    *   Terms tied to council periods (e.g., "for the 2022-2026 Term of Council")
-    *   Conditions for becoming null/void (e.g., "shall become null and void if...", "expires upon appointment of successor", "until completion of works")
+**Key Rules for Determining Status:**
 
-2.  **Determine the Expiry Point and Verification Status:**
-    *   For each condition found in Step 1, determine the potential Expiry Point (a specific date, end of a term, occurrence of an event).
-    *   **Crucially, assess if the expiry condition is:**
-        *   **(a) Stated definitively and verifiably within the text:** (e.g., a specific date, a completed term based on {current_date}, a notice of repeal *within the text*). This is a **Verified Expiry**.
-        *   **(b) Dependent on an external condition or future event not confirmed within the text:** (e.g., "null and void *if* not registered", "expires upon appointment of successor", "until completion of works", a future election date, a future term end date). This is an **Unverified or Future Expiry**.
-    *   If **no** potential expiry conditions are found, assume the bylaw is active.
-    *   If **only** Unverified or Future Expiry conditions are found, assume the bylaw is currently active.
+1.  **Temporal Check:** If you find a specific expiry date, end-of-period date, or event date, you **MUST** compare it against today's date: **{current_date}**. The bylaw is only inactive due to time expiration if that date is definitively **BEFORE** {current_date}. An expiry date that is *on* or *after* {current_date} means the bylaw is currently active.
+2.  **Conditional Check:** If expiry depends on a condition (e.g., registration, appointment of a successor, completion of an action) and the `<bylaw_text>` does **NOT** provide confirmation that the condition causing expiry *has actually occurred*, then you must treat the bylaw as **active**. Do not assume the condition was met unless the text confirms it.
+3.  **Repeal Check:** If the text explicitly states the bylaw has been repealed (e.g., "repealed by bylaw X"), then it is inactive.
 
-3.  **Compare Verified Expiry Point with Today's Date:**
-    *   **Only if** a **Verified Expiry** point (type 2a) was determined **AND** its associated date is clearly identifiable, compare that date **strictly** against **{current_date}**.
+If, applying the rules above, the bylaw has clearly and verifiably expired or been repealed based *only* on the provided text and the comparison with {current_date}, respond with:
+{{
+  "isActive": false,
+  "whyNotActive": "[Provide the specific, verifiable reason based *only* on the text. Cite the exact clause, date, or repeal notice identified. Do NOT mention assumptions about unverified conditions. Do NOT mention today's date or the comparison logic in this explanation.]"
+}}
+*Example: "Section 5 states the by-law expires on December 31, 2023."*
+*Example: "The text indicates this bylaw was repealed by bylaw number XXXX."*
 
-4.  **Decide Activation Status:**
-    *   **IF** a Verified Expiry Point (type 2a) was found **AND** its date is **BEFORE** {current_date}, the bylaw is **inactive**.
-    *   **ELSE (including cases where the Verified Expiry Point is ON or AFTER {current_date}, OR only Unverified/Future Expiry Points were found, OR no expiry points were found)**, the bylaw is **active**.
+If, applying the rules above, the bylaw appears to still be active (no expiry found, expiry is in the future, or expiry condition is unverified in the text), respond with:
+{{
+  "isActive": true,
+  "whyNotActive": null
+}}
 
-5.  **Format the Output:** Respond ONLY with the JSON format below.
-
-    *   If the bylaw is **inactive** (Verified Expiry Point's date is before {current_date}):
-        ```json
-        {{
-          "isActive": false,
-          "whyNotActive": "[Provide the specific reason based *only* on the confirmed expiry condition stated in the text. Reference the exact clause, date, or repeal notice from the bylaw text. Do NOT speculate or mention unverified conditions. Do NOT mention today's date or the comparison logic in this explanation.]"
-        }}
-        ```
-        *Example whyNotActive: "Section 5 states the by-law expires on December 31, 2023."*
-        *Example whyNotActive: "The bylaw appoints members for the 2018-2022 Term of Council, which concluded in 2022."*
-        *Example whyNotActive: "The text indicates this bylaw was repealed by bylaw number XXXX."*
-        *Example whyNotActive: "Section 10.1 states: 'This By-law will expire at 12:01 AM on September 1st, 2009'."*
-
-    *   If the bylaw is **active**:
-        ```json
-        {{
-          "isActive": true,
-          "whyNotActive": null
-        }}
-        ```
-
-Respond ONLY with the specified JSON format and nothing else.
+Respond ONLY with this JSON format and nothing else.
 """)
 
 def load_json_file(file_path):
