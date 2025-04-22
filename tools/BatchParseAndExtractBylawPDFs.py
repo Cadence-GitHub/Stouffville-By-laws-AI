@@ -500,7 +500,7 @@ def extract_structured_data(api_key, file_uri, model="gemini-2.0-flash", rate_li
 
     prompt = """You are a fantastic parser of legal documents. You excel at reasoning while parsing and extracting. You follow instructions like a robot. You will validate the json produced against the PDF and the instructions provided before responding. For PDF file attached, produce a json file that has the below information
 
-bylawNumber: Bylaw alphanumeric code
+bylawNumber: Bylaw alphanumeric code in the format YYYY-NNN where YYYY is the year and NNN is a three-digit bylaw number (e.g., 2015-139)
 bylawYear: Bylaw year
 bylawType: Bylaws are numbered in a unique way. Ending with ZO could be zoning order, AP could be appointment, FI could be financial. Use your reasoning skills to define the type. Do not abbreviate.
 bylawHeader: The bolded text at the top of the document that forms part of the contiguous text that follows.
