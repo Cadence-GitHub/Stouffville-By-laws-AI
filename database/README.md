@@ -172,6 +172,7 @@ Key features:
 - Validate bylaw numbers to ensure they follow the YYYY-NNN format
 - Auto-fix invalid bylaw numbers using various correction scenarios
 - Generate detailed reports on validation and correction outcomes
+- Support for files containing both single bylaw objects and arrays of multiple bylaws
 
 Usage:
 ```bash
@@ -185,6 +186,11 @@ Options:
 
 If no keyword is provided, the script will ask if you want to include all by-laws.
 
+The script will process both individual bylaw JSON files and files containing arrays of bylaws, tracking and reporting on:
+- Total source files processed
+- Total individual bylaws processed
+- Number of files containing multiple bylaws
+- Detailed validation statistics for all processed bylaws
 
 ### Bylaw Expiry Analyzer
 

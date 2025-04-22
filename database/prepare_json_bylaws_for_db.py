@@ -170,7 +170,7 @@ def search_bylaws_by_keyword(base_dir, keyword, output_file, include_all=False):
     """
     Search through all JSON files in the base_dir for a specific keyword in the 'keywords' list.
     Print matching filenames and their keywords list, and append the entire JSON content
-    to the output file.
+    to the output file. Handles both single bylaw objects and arrays of bylaws in a file.
 
     Args:
         base_dir (str): The directory to search in (and its subdirectories)
@@ -188,73 +188,64 @@ def search_bylaws_by_keyword(base_dir, keyword, output_file, include_all=False):
     matching_files = []
     total_source_tokens = 0
     total_source_files = 0
+    total_bylaws_processed = 0
     files_with_missing_bylaw_number = []
     files_with_parse_errors = []
     files_with_invalid_bylaw_format = []
     files_with_fixed_bylaw_format = []
     files_with_valid_bylaw_format = []
+    multi_bylaw_files = []
 
     # Walk through all JSON files in the directory and subdirectories
     for json_file in base_path.glob('**/*.json'):
         try:
             with open(json_file, 'r', encoding='utf-8') as f:
-                bylaw_data = json.load(f)
+                file_data = json.load(f)
                 total_source_files += 1
-
-                # Count tokens from the extractedText field (which can be a list or string)
-                if 'extractedText' in bylaw_data:
-                    if isinstance(bylaw_data['extractedText'], list):
-                        # Join all text segments if it's a list
-                        extracted_text = " ".join(bylaw_data['extractedText'])
-                        file_tokens = count_tokens(extracted_text)
-                    elif isinstance(bylaw_data['extractedText'], str):
-                        file_tokens = count_tokens(bylaw_data['extractedText'])
-                    else:
-                        file_tokens = 0
-
-                    total_source_tokens += file_tokens
-
-                # If including all bylaws or if the keyword matches, add the file
-                if include_all:
-                    if 'bylawNumber' not in bylaw_data or not bylaw_data['bylawNumber']:
-                        print(f"Error: Missing bylawNumber in {json_file}")
-                        files_with_missing_bylaw_number.append(str(json_file))
-                        continue
-                    
-                    # Validate bylaw number format
-                    bylaw_format_valid = validate_bylaw_number(bylaw_data['bylawNumber'])
-                    
-                    # If not valid, attempt to fix it
-                    if not bylaw_format_valid:
-                        fixed_bylaw, is_fixed, scenario = attempt_fix_bylaw_number(bylaw_data['bylawNumber'])
-                        
-                        if is_fixed:
-                            print(f"Including: {json_file}   (bylawNumber: {bylaw_data['bylawNumber']} → {fixed_bylaw}) OK (Fixed)")
-                            print(f"Fixed with {scenario}")
-                            files_with_fixed_bylaw_format.append((str(json_file), bylaw_data['bylawNumber'], fixed_bylaw, scenario))
-                            # Update the bylaw number to the fixed version
-                            bylaw_data['bylawNumber'] = fixed_bylaw
+                
+                # Determine if the file contains a single bylaw or multiple bylaws
+                bylaws_list = []
+                if isinstance(file_data, list):
+                    bylaws_list = file_data
+                    multi_bylaw_files.append(str(json_file))
+                    print(f"Found file with multiple bylaws: {json_file} ({len(bylaws_list)} bylaws)")
+                else:
+                    bylaws_list = [file_data]
+                
+                total_bylaws_processed += len(bylaws_list)
+                file_tokens = 0
+                
+                # Process each bylaw in the file
+                for bylaw_data in bylaws_list:
+                    # Count tokens from the extractedText field (which can be a list or string)
+                    if 'extractedText' in bylaw_data:
+                        if isinstance(bylaw_data['extractedText'], list):
+                            # Join all text segments if it's a list
+                            extracted_text = " ".join(bylaw_data['extractedText'])
+                            bylaw_tokens = count_tokens(extracted_text)
+                        elif isinstance(bylaw_data['extractedText'], str):
+                            bylaw_tokens = count_tokens(bylaw_data['extractedText'])
                         else:
-                            format_status = "FAIL"
-                            print(f"Including: {json_file}   (bylawNumber: {bylaw_data['bylawNumber']}) {format_status}")
-                            warning_msg = f"Warning: Invalid bylawNumber format '{bylaw_data['bylawNumber']}' in {json_file} - Couldn't auto-fix"
-                            print(warning_msg)
-                            # Store the scenario if any was applied but failed
-                            fix_attempt = scenario if scenario else "No applicable fix scenario"
-                            files_with_invalid_bylaw_format.append((str(json_file), bylaw_data['bylawNumber'], fix_attempt))
-                    else:
-                        format_status = "OK"
-                        files_with_valid_bylaw_format.append(str(json_file))
-                        print(f"Including: {json_file}   (bylawNumber: {bylaw_data['bylawNumber']}) {format_status}")
+                            bylaw_tokens = 0
+
+                        file_tokens += bylaw_tokens
+
+                    # Process bylaw based on include_all flag or keyword matching
+                    should_include = False
                     
-                    matching_files.append(str(json_file))
-                    output_data.append(bylaw_data)
-                # Otherwise check for keyword matches
-                elif keyword and 'keywords' in bylaw_data and isinstance(bylaw_data['keywords'], list):
-                    # Look for keyword in the keywords list (case-insensitive)
-                    if any(keyword.lower() in kw.lower() for kw in bylaw_data['keywords']):
+                    # If including all bylaws
+                    if include_all:
+                        should_include = True
+                    # Otherwise check for keyword matches
+                    elif keyword and 'keywords' in bylaw_data and isinstance(bylaw_data['keywords'], list):
+                        # Look for keyword in the keywords list (case-insensitive)
+                        if any(keyword.lower() in kw.lower() for kw in bylaw_data['keywords']):
+                            should_include = True
+                    
+                    if should_include:
+                        # Check if bylaw has a valid bylaw number
                         if 'bylawNumber' not in bylaw_data or not bylaw_data['bylawNumber']:
-                            print(f"Error: Missing bylawNumber in {json_file}")
+                            print(f"Error: Missing bylawNumber in {json_file} for bylaw: {bylaw_data.get('title', 'Unknown title')}")
                             files_with_missing_bylaw_number.append(str(json_file))
                             continue
                         
@@ -266,14 +257,16 @@ def search_bylaws_by_keyword(base_dir, keyword, output_file, include_all=False):
                             fixed_bylaw, is_fixed, scenario = attempt_fix_bylaw_number(bylaw_data['bylawNumber'])
                             
                             if is_fixed:
-                                print(f"\nFound match in: {json_file}   (bylawNumber: {bylaw_data['bylawNumber']} → {fixed_bylaw}) OK (Fixed)")
+                                status_msg = "Including" if include_all else "Found match in"
+                                print(f"\n{status_msg}: {json_file}   (bylawNumber: {bylaw_data['bylawNumber']} → {fixed_bylaw}) OK (Fixed)")
                                 print(f"Fixed with {scenario}")
                                 files_with_fixed_bylaw_format.append((str(json_file), bylaw_data['bylawNumber'], fixed_bylaw, scenario))
                                 # Update the bylaw number to the fixed version
                                 bylaw_data['bylawNumber'] = fixed_bylaw
                             else:
                                 format_status = "FAIL"
-                                print(f"\nFound match in: {json_file}   (bylawNumber: {bylaw_data['bylawNumber']}) {format_status}")
+                                status_msg = "Including" if include_all else "Found match in"
+                                print(f"\n{status_msg}: {json_file}   (bylawNumber: {bylaw_data['bylawNumber']}) {format_status}")
                                 warning_msg = f"Warning: Invalid bylawNumber format '{bylaw_data['bylawNumber']}' in {json_file} - Couldn't auto-fix"
                                 print(warning_msg)
                                 # Store the scenario if any was applied but failed
@@ -282,11 +275,20 @@ def search_bylaws_by_keyword(base_dir, keyword, output_file, include_all=False):
                         else:
                             format_status = "OK"
                             files_with_valid_bylaw_format.append(str(json_file))
-                            print(f"\nFound match in: {json_file}   (bylawNumber: {bylaw_data['bylawNumber']}) {format_status}")
+                            status_msg = "Including" if include_all else "Found match in"
+                            print(f"\n{status_msg}: {json_file}   (bylawNumber: {bylaw_data['bylawNumber']}) {format_status}")
                         
-                        print(f"Keywords: {bylaw_data['keywords']}")
-                        matching_files.append(str(json_file))
+                        if not include_all and 'keywords' in bylaw_data:
+                            print(f"Keywords: {bylaw_data['keywords']}")
+                        
+                        if str(json_file) not in matching_files:
+                            matching_files.append(str(json_file))
+                        
                         output_data.append(bylaw_data)
+                
+                # Add the file tokens to the total
+                total_source_tokens += file_tokens
+                
         except (json.JSONDecodeError, UnicodeDecodeError) as e:
             print(f"Error processing {json_file}: {e}")
             files_with_parse_errors.append((str(json_file), str(e)))
@@ -315,8 +317,15 @@ def search_bylaws_by_keyword(base_dir, keyword, output_file, include_all=False):
         for file, bylaw_number, fix_attempt in files_with_invalid_bylaw_format:
             print(f"  - {file}: '{bylaw_number}' (Fix attempt: {fix_attempt})")
     
+    if multi_bylaw_files:
+        print("\nFiles with multiple bylaws:")
+        for file in multi_bylaw_files:
+            print(f"  - {file}")
+    
     print(f"\nTotal source files processed: {total_source_files}")
+    print(f"Total bylaws processed: {total_bylaws_processed}")
     print(f"Total matching files: {len(matching_files)}")
+    print(f"Total files with multiple bylaws: {len(multi_bylaw_files)}")
     print(f"Total files with valid bylawNumber format (originally valid): {len(files_with_valid_bylaw_format)}")
     print(f"Total files with invalid bylawNumber format (couldn't fix): {len(files_with_invalid_bylaw_format)}")
     print(f"Total files with auto-fixed bylawNumber format: {len(files_with_fixed_bylaw_format)}")
