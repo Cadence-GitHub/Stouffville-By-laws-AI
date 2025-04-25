@@ -9,9 +9,9 @@ from app.prompts import (
 
 # Model pricing information (cost per 1M tokens)
 MODEL_PRICING = {
+    "gemini-mixed": {"input": 0.15, "output": 2.00},  # Estimated cost for gemini-mixed
     "gemini-2.0-flash": {"input": 0.10, "output": 0.40},
     "gemini-2.0-flash-lite": {"input": 0.07, "output": 0.30},
-    "gemini-2.0-flash-thinking-exp-01-21": {"input": 0.10, "output": 2.00},
     "gemini-2.5-pro-exp-03-25": {"input": 1.25, "output": 10.00}
 }
 
