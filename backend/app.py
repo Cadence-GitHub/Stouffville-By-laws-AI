@@ -266,7 +266,7 @@ def demo():
                 error_message = f"Error: ChromaDB retrieval failed: {str(e)}"
                 return render_template('demo.html', question=query, answer=error_message, model=model)
     
-    return render_template('demo.html', compare_mode=False, side_by_side=False, model="gemini-2.0-flash", bylaws_limit=10, enhanced_search=False)
+    return render_template('demo.html', compare_mode=False, side_by_side=False, model="gemini-mixed", bylaws_limit=10, enhanced_search=False)
 
 @app.route('/api/bylaw/<bylaw_number>')
 def get_bylaw_json(bylaw_number):

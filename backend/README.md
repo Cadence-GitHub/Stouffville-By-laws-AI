@@ -233,11 +233,17 @@ The system uses a cost-efficient multi-step approach for processing by-laws info
 
 The backend supports multiple Gemini model options:
 
+- `gemini-mixed`: Uses the best model for each query stage (default)
 - `gemini-2.0-flash-lite`: Fastest, lowest cost option
-- `gemini-2.0-flash`: Default model with balanced speed and quality
-- `gemini-2.0-flash-thinking-exp-01-21`: Better reasoning capabilities
+- `gemini-2.0-flash`: Balanced speed and quality
 - `gemini-2.5-flash-preview-04-17`: Fast, high quality option
 - `gemini-2.5-pro-exp-03-25`: Highest quality, but most expensive
+
+The gemini-mixed option selects different models for different processing stages:
+- Query transformation: Uses `gemini-2.0-flash` for efficient query enhancement
+- First query (bylaws): Uses `gemini-2.5-flash-preview-04-17` for highest quality initial response
+- Second query (filtered): Uses `gemini-2.0-flash` for efficient filtering of expired bylaws
+- Third query (layman's terms): Uses `gemini-2.0-flash` for balanced quality/speed in final simplification
 
 Each prompt type uses a specific temperature setting for optimal results:
 - Bylaws prompt: 0.0 (consistent, deterministic outputs)

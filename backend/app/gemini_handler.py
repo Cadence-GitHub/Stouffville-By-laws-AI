@@ -11,9 +11,9 @@ import time
 
 # Define allowed models
 ALLOWED_MODELS = [
+    "gemini-mixed",
     "gemini-2.0-flash",
     "gemini-2.0-flash-lite", 
-    "gemini-2.0-flash-thinking-exp-01-21",
     "gemini-2.5-flash-preview-04-17",
     "gemini-2.5-pro-exp-03-25"
 ]
@@ -80,35 +80,55 @@ def get_gemini_response(query, relevant_bylaws, model="gemini-2.0-flash"):
         return {"error": f"Invalid model: {model}. Only these models are allowed: {', '.join(ALLOWED_MODELS)}"}
     
     try:
-        # Create a model configuration
-        model_config = {
-            'model': model,
-            'api_key': api_key,
-            'timeout': 50
-        }
+        # Define models to use for each step based on selection
+        if model == "gemini-mixed":
+            # For gemini-mixed option, use specific models for each step
+            models = {
+                "bylaws": "gemini-2.5-flash-preview-04-17",  # Best model for first query
+                "filtered": "gemini-2.0-flash",              # Balanced model for second query
+                "laymans": "gemini-2.0-flash"                # Balanced model for third query
+            }
+        else:
+            # For all other options, use the selected model for all steps
+            models = {
+                "bylaws": model,
+                "filtered": model,
+                "laymans": model
+            }
         
         bylaws_content = json.dumps(relevant_bylaws, indent=2)
         
-        # 1. Get response with all bylaws (original behavior)
-        cleaned_full_response, first_prompt_time = invoke_model_with_timing(
+        # Helper function to perform a model invocation step
+        def run_model_step(prompt_type, prompt_template, prompt_args):
+            model_config = {
+                'model': models[prompt_type],
+                'api_key': api_key,
+                'timeout': 50
+            }
+            return invoke_model_with_timing(
+                prompt_type,
+                model_config,
+                prompt_template,
+                prompt_args
+            )
+        
+        # 1. Get response with all bylaws
+        cleaned_full_response, first_prompt_time = run_model_step(
             "bylaws",
-            model_config, 
-            BYLAWS_PROMPT_TEMPLATE, 
+            BYLAWS_PROMPT_TEMPLATE,
             {"bylaws_content": bylaws_content, "question": query}
         )
         
         # 2. Get filtered response using the first response as input
-        cleaned_filtered_response, second_prompt_time = invoke_model_with_timing(
+        cleaned_filtered_response, second_prompt_time = run_model_step(
             "filtered",
-            model_config,
             FILTERED_BYLAWS_PROMPT_TEMPLATE,
             {"first_response": cleaned_full_response, "question": query}
         )
         
         # 3. Get layman's terms response using the filtered response as input
-        laymans_response, third_prompt_time = invoke_model_with_timing(
+        laymans_response, third_prompt_time = run_model_step(
             "laymans",
-            model_config,
             LAYMANS_PROMPT_TEMPLATE,
             {"filtered_response": cleaned_filtered_response, "question": query}
         )
@@ -143,22 +163,22 @@ def transform_query_for_enhanced_search(query, model="gemini-2.0-flash"):
         return query, 0
     
     try:
-        # Create a model configuration
+        # For the gemini-mixed option, always use gemini-2.0-flash for query transformation
+        transform_model = "gemini-2.0-flash" if model == "gemini-mixed" else model
+        
         model_config = {
-            'model': model,
+            'model': transform_model,
             'api_key': api_key,
             'timeout': 30
         }
         
-        # Transform user query to formal bylaw language using the helper function
-        transformed_query, transform_time = invoke_model_with_timing(
+        # Transform user query to formal bylaw language
+        return invoke_model_with_timing(
             "enhanced_search",
             model_config,
             ENHANCED_SEARCH_PROMPT_TEMPLATE,
             {"question": query}
         )
-        
-        return transformed_query, transform_time
     except Exception as e:
         print(f"Query transformation failed: {str(e)}")
         # Fall back to original query if transformation fails
