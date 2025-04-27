@@ -1,7 +1,6 @@
 'use client'
 
-import styles from "./page.module.css";
-import DynamicInput from "@/components/DynamicInput";
+import DynamicForms from "@/components/DynamicForms";
 
 export default function Home() {
   
@@ -21,7 +20,7 @@ export default function Home() {
           </button>
         </div>
 
-        <DynamicInput/>
+        <DynamicForms/>
 
       </div>
     </div>
