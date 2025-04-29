@@ -1,6 +1,18 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Form submission loading
-    document.getElementById('queryForm').addEventListener('submit', function() {
+    document.getElementById('queryForm').addEventListener('submit', function(event) {
+        // Prevent multiple form submissions
+        var form = this;
+        
+        if (form.classList.contains('submitting')) {
+            event.preventDefault();
+            return false;
+        }
+        
+        // Mark form as submitting
+        form.classList.add('submitting');
+        
+        // Show loading message
         document.getElementById('loadingMessage').style.display = 'block';
         
         //Let's also clear out previous responses and statuses

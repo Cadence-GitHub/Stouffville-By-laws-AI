@@ -8,6 +8,7 @@
     <h1>Stouffville By-laws AI Demo</h1>
     
     <form id="queryForm" action="/api/demo" method="post">
+        <div class="form-overlay"></div>
         <label for="query">Ask a question:</label>
         <input type="text" id="query" name="query" required value="{{ question or '' }}">
         
