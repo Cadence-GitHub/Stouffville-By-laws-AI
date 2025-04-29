@@ -4,7 +4,7 @@ import Image from "next/image";
 import UserInput from "./UserInput";
 
 
-const DynamicForms = () => {
+const DynamicForms = ({startChat}) => {
     
     // Responsive UI interaction for the input fields (changes text on click)
     // Change the type of form being displayed when 
@@ -30,15 +30,30 @@ const DynamicForms = () => {
         useOfficerFlag(isOfficerFlag == false ? true : false);  
     };
 
+    // TODO: Get the information the user has passed and pipe it to the backend for processing.
+    // TODO: Sanitize input as well.
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        startChat();
+    }
+
     
     return (
         <div style={{margin: 22.5}}>
-            <form>
-                
+            <form onSubmit={handleSubmit}>
                 
                 {!useAdvancedForm ? (<SimpleForm/>) : (<AdvancedForm/>)}
                 
-                {/* <Image src={searchIcon} alt="search" width={20} height={20}/> */}
+                <div className="input-wrapper">
+                    <button className="submitButtonQuery" style={{left: "120px", bottom: "75px"}}>
+                        <Image 
+                            src="/assets/images/search.png" 
+                            alt="search" 
+                            width={15} 
+                            height={15}
+                        />
+                    </button>
+                </div>
                 
                 {/* TODO-feature: change user input to a form template onClick*/}
                 <p className="clickable-text" style={{fontSize: "15px", color: "#0060A1", fontWeight: "550", margin: 22.5}} onClick={handleSwitch}>{useFormLabel}</p>
@@ -50,7 +65,7 @@ const DynamicForms = () => {
                     <input name="officerFlag" type="checkbox" className="custom-checkbox" checked={isOfficerFlag} readOnly />
                 </button>
             
-                <button style={{margin: 22.5}} className="buttonSubmit">Search</button>
+                <button type="submit" style={{margin: 22.5}} className="buttonSubmit">Search</button>
             </form>
         </div>
     );
