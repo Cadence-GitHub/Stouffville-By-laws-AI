@@ -16,6 +16,7 @@ A Flask-based backend service that provides AI-powered responses to questions ab
 - Simple web-based demo interface for testing without the frontend
 - Interactive bylaw viewer with detailed information about specific bylaws
 - Direct bylaw linking and sidebar viewing from AI responses
+- One-click bug reporting system with automatic context capture for GitHub Issues
 - CORS support for frontend integration
 - 50-second timeout protection for AI queries
 - Customizable temperature settings for different prompt types
@@ -106,6 +107,7 @@ The demo page includes:
 - Performance metrics showing retrieval and processing times
 - Visualization of bylaws found specifically by enhanced search
 - Interactive sidebar to view full bylaw details directly from hyperlinks
+- "Problem? Log a bug!" buttons under each answer type that capture complete context for GitHub Issues
 
 ## Setup for Frontend Developers
 
@@ -162,7 +164,7 @@ Frontend developers can directly use this production backend if they don't want 
     - `demo.html`: Enhanced demo page with improved UI, model selection, and comparison features
   - `static/`: Static assets for web interfaces
     - `demo.css`: CSS styling for the demo interface
-    - `demo.js`: JavaScript for the demo interface
+    - `demo.js`: JavaScript for the demo interface, including bug report functionality
     - `bylawViewer.html`: Bylaw viewer interface
     - `bylawViewer.css`: CSS styling for the bylaw viewer
     - `bylawViewer.js`: JavaScript for the bylaw viewer
@@ -214,6 +216,25 @@ The application includes an interactive bylaw viewer that:
    - Legal topics and related legislation
    - Entity and designation information
    - And many more fields when available
+
+## Bug Reporting System
+
+The application includes a streamlined bug reporting system:
+
+1. Each answer container has a "Problem? Log a bug!" button
+2. When clicked, the button automatically:
+   - Captures the user's query
+   - Records the selected Gemini model
+   - Notes the bylaws limit setting
+   - Identifies if enhanced search was enabled
+   - Captures the transformed query (if applicable)
+   - Lists all retrieved bylaws
+   - Records enhanced search bylaws (if applicable)
+   - Captures timing information for all processing steps
+   - Includes the specific answer content
+3. This information is formatted as Markdown for clear, readable display in GitHub Issues
+4. The user is directed to the GitHub issue creation page with all context data pre-populated
+5. This helps to accurately track and resolve issues with the AI responses
 
 ## Optimized Three-Step Prompt System
 

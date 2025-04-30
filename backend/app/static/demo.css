@@ -123,6 +123,29 @@ body.sidebar-open .container {
     border-radius: 4px;
 }
 
+.bug-report-btn {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 5px 10px;
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    font-size: 0.9em;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.bug-report-btn:hover {
+    background-color: #f1b0b7;
+    text-decoration: none;
+}
+
 @media (max-width: 768px) {
     .bylaw-sidebar {
         display: none;
