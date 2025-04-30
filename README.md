@@ -149,6 +149,7 @@ Dependencies for AI integration:
 - **Direct Bylaw Linking**: AI responses include hyperlinks to specific bylaws that open in the bylaw viewer (either in a new tab or sidebar).
 - **Intelligent Bylaw Number Matching**: The system can match bylaw numbers even with different formatting variations (spacing, dashes, etc.).
 - **Visual UI Improvements**: Enhanced demo interface with better layout and formatting options.
+- **Bug Reporting System**: Each answer type includes a "Problem? Log a bug!" button that automatically captures query details, model information, retrieved bylaws, timing data, and the response content, formatting it as Markdown for clear reporting in GitHub Issues.
 
 ### Bylaw Viewer Feature
 
@@ -326,5 +327,6 @@ The system implements a Retrieval-Augmented Generation (RAG) architecture with t
    - Option to compare all three versions of the answer (complete, filtered active only, and layman's terms)
    - Interactive bylaw viewer for exploring specific bylaws in detail
    - Sidebar integration that allows viewing bylaws without leaving the main interface
+   - One-click bug reporting that generates formatted GitHub issues with complete context information
 
 This architecture ensures that the system can accurately respond to user queries about Stouffville by-laws by finding the most semantically relevant information and presenting it in a natural, conversational format.

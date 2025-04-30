@@ -60,6 +60,157 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // Initialize bug report buttons
+    function initBugReportButtons() {
+        // Get all bug report buttons
+        const bugButtons = document.querySelectorAll('.bug-report-btn');
+        
+        // Add click event listeners to each button
+        bugButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const answerType = this.getAttribute('data-answer-type');
+                console.log('Bug report clicked for:', answerType);
+                
+                try {
+                    const url = createBugReportUrl(answerType);
+                    console.log('Opening URL:', url);
+                    window.open(url, '_blank');
+                } catch (error) {
+                    console.error('Error creating bug report URL:', error);
+                    alert('Error creating bug report: ' + error.message);
+                }
+            });
+        });
+        
+        console.log('Bug report buttons initialized:', bugButtons.length);
+    }
+    
+    // Bug report function - Create GitHub issue URL with context data
+    function createBugReportUrl(answerType) {
+        console.log('Creating bug report for answer type:', answerType);
+        
+        // Get query and settings
+        const query = document.getElementById('query').value;
+        const model = document.getElementById('model').value;
+        const bylawsLimit = document.getElementById('bylaws_limit').value;
+        const enhancedSearch = document.getElementById('enhanced_search').checked;
+        
+        // Get transformed query if available
+        let transformedQuery = '';
+        const transformedQuerySection = document.querySelector('.transformed-query');
+        if (transformedQuerySection) {
+            const transformedQueryParagraph = transformedQuerySection.querySelector('p:last-child');
+            if (transformedQueryParagraph) {
+                transformedQuery = transformedQueryParagraph.textContent.replace('Transformed for Legal Search:', '').trim();
+            }
+        }
+        
+        // Get bylaw IDs and enhanced search bylaws
+        let bylawIds = '';
+        let enhancedBylaws = '';
+        
+        const footerElement = document.querySelector('.answer-container small i');
+        if (footerElement) {
+            // Get all lines from the footer
+            const footerLines = footerElement.innerHTML.split('<br>');
+            
+            // Find bylaw IDs
+            const bylawInfoLine = footerLines.find(line => line.startsWith('Retrieved By-laws:'));
+            if (bylawInfoLine) {
+                bylawIds = bylawInfoLine.replace('Retrieved By-laws:', '').trim();
+            }
+            
+            // Find enhanced search bylaws if applicable
+            if (enhancedSearch) {
+                const enhancedBylawsLine = footerLines.find(line => line.includes('Bylaws found by Enhanced Search:'));
+                if (enhancedBylawsLine) {
+                    enhancedBylaws = enhancedBylawsLine.replace('Bylaws found by Enhanced Search:', '').trim();
+                }
+            }
+        }
+        
+        // Get timing info
+        let timingInfo = '';
+        if (footerElement) {
+            const timingInfoLine = Array.from(footerElement.innerHTML.split('<br>')).find(line => line.startsWith('Timings:'));
+            if (timingInfoLine) {
+                timingInfo = timingInfoLine.replace('Timings:', '').trim();
+            }
+        }
+        
+        // Get the specific answer content
+        let answerContent = '';
+        
+        if (answerType === 'complete') {
+            // Handle complete answer (first container in compare mode)
+            const completeContainer = document.querySelector('.answers-wrapper.side-by-side .answer-container:nth-child(1) div:nth-child(3), .answer-container:nth-child(1) div:nth-child(3)');
+            if (completeContainer) {
+                answerContent = completeContainer.innerHTML;
+            } else {
+                console.warn('Complete answer container not found');
+            }
+        } else if (answerType === 'filtered') {
+            // Handle filtered answer (second container in compare mode)
+            const filteredContainer = document.querySelector('.answers-wrapper.side-by-side .answer-container:nth-child(2) div:nth-child(3), .answer-container:nth-child(2) div:nth-child(3)');
+            if (filteredContainer) {
+                answerContent = filteredContainer.innerHTML;
+            } else {
+                console.warn('Filtered answer container not found');
+            }
+        } else if (answerType === 'simplified') {
+            // For simplified, we need to check if we're in compare mode or regular mode
+            const isCompareMode = document.querySelector('.answer-container:nth-child(3)') !== null;
+            
+            let simplifiedContainer = null;
+            if (isCompareMode) {
+                // Third container in compare mode
+                simplifiedContainer = document.querySelector('.answer-container:nth-child(3) div:nth-child(3)');
+            } else {
+                // Only container in regular mode
+                simplifiedContainer = document.querySelector('.answer-container div:nth-child(2)');
+            }
+            
+            if (simplifiedContainer) {
+                // Copy the HTML but exclude the hr and everything after it
+                answerContent = simplifiedContainer.innerHTML.split('<hr>')[0];
+            } else {
+                console.warn('Simplified answer container not found');
+            }
+        }
+        
+        // Format the context data as Markdown
+        const markdownContext = `## Bug Report Details
+
+### Query Information
+- **User Query:** ${query}
+- **Gemini Model:** ${model}
+- **Bylaws Limit:** ${bylawsLimit}
+- **Enhanced Search:** ${enhancedSearch ? 'On' : 'Off'}
+${transformedQuery ? `- **Transformed Query:** ${transformedQuery}` : ''}
+
+### System Information
+- **Retrieved By-laws:** ${bylawIds}
+${enhancedBylaws ? `- **Bylaws found by Enhanced Search:** ${enhancedBylaws}` : ''}
+- **Timing:** ${timingInfo}
+- **Answer Type:** ${answerType}
+
+### Response Content
+\`\`\`html
+${answerContent}
+\`\`\`
+`;
+
+        // Log the formatted markdown for debugging
+        console.log('Bug report markdown:', markdownContext);
+        
+        // Encode the markdown as a URL-safe string
+        const encodedContext = encodeURIComponent(markdownContext);
+        
+        // Create the GitHub issue URL
+        return `https://github.com/Cadence-GitHub/Stouffville-By-laws-AI/issues/new?template=bug_report.yml&additional_context=${encodedContext}`;
+    }
+    
     // Initialize form controls
     if (document.getElementById('filter_expired')) {
         document.getElementById('filter_expired').addEventListener('change', toggleComparisonOption);
@@ -175,6 +326,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Watch for new content
     const observer = new MutationObserver(function() {
         handleBylawLinks();
+        initBugReportButtons(); // Initialize bug report buttons when content changes
     });
     
     observer.observe(document.body, {
@@ -184,5 +336,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initial setup
     handleBylawLinks();
+    initBugReportButtons(); // Initialize bug report buttons on page load
     console.log('Bylaw sidebar initialized');
 }); 
