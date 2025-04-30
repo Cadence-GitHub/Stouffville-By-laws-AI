@@ -1,6 +1,5 @@
 name: Bug report
 description: Create a report to help us improve
-title: ''
 labels: [bug]
 assignees: []
 body:
@@ -9,7 +8,8 @@ body:
     attributes:
       label: Describe the bug
       description: A clear and concise description of what the bug is.
-      placeholder: e.g., "Search results do not load when clicking the submit button"
+      placeholder: "Search crashes on empty input"
+    validations:
       required: true
 
   - type: textarea
@@ -22,6 +22,7 @@ body:
         2. Click on '...'
         3. Scroll down to '...'
         4. See error
+    validations:
       required: true
 
   - type: textarea
@@ -29,18 +30,19 @@ body:
     attributes:
       label: Expected behavior
       description: What you expected to happen.
-      placeholder: A clear and concise description of what you expected to happen.
+      placeholder: "The page should not crash."
 
   - type: textarea
     id: screenshots
     attributes:
       label: Screenshots
       description: If applicable, add screenshots to help explain your problem.
-      placeholder: You can paste images directly here.
+      placeholder: You can paste screenshots here.
 
   - type: textarea
     id: additional_context
     attributes:
       label: Additional context
       description: Add any other context about the problem here.
-      placeholder: Logs, browser version, device type, etc.
+      placeholder: Browser info, logs, or error IDs.
+
