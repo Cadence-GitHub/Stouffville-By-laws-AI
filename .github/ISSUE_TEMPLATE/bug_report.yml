@@ -1,0 +1,46 @@
+name: Bug report
+description: Create a report to help us improve
+title: ''
+labels: [bug]
+assignees: []
+body:
+  - type: textarea
+    id: bug_description
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what the bug is.
+      placeholder: e.g., "Search results do not load when clicking the submit button"
+      required: true
+
+  - type: textarea
+    id: reproduction_steps
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior.
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. Scroll down to '...'
+        4. See error
+      required: true
+
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: Expected behavior
+      description: What you expected to happen.
+      placeholder: A clear and concise description of what you expected to happen.
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: If applicable, add screenshots to help explain your problem.
+      placeholder: You can paste images directly here.
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional context
+      description: Add any other context about the problem here.
+      placeholder: Logs, browser version, device type, etc.
