@@ -247,6 +247,52 @@ The script provides a detailed report of the validation results, including:
 - Files with auto-fixed bylaw numbers (showing original and corrected versions)
 - Files with invalid bylaw numbers that couldn't be automatically fixed
 
+### Bylaw Revocation Analyzer
+
+The `bylaw_revocation_analysis.py` script uses the Gemini API to analyze bylaws and identify those that revoke other bylaws.
+
+Key features:
+- Reads bylaw data from JSON files created by the `prepare_json_bylaws_for_db.py` script
+- Uses Gemini AI via Langchain to identify revocation language in bylaw text
+- Detects which bylaws fully revoke, repeal, or replace other bylaws
+- Updates the status of revoked bylaws with `isActive=false` and reasons
+- Maintains a list of processed bylaws to avoid duplicated work
+- Outputs revoked bylaws to a separate file for further processing
+
+Workflow:
+1. First use `prepare_json_bylaws_for_db.py` to create a consolidated JSON file of bylaws
+2. Then run `bylaw_revocation_analysis.py` on this file to analyze and identify revocation relationships
+3. The tool produces two output files:
+   - `[input_filename].PROCESSED_FOR_REVOCATION.json` containing bylaws that have been analyzed
+   - `[input_filename].REVOKED.json` containing bylaws that have been revoked with reasons
+
+Usage:
+```bash
+python bylaw_revocation_analysis.py --input [JSON_FILE] [OPTIONS]
+```
+
+Options:
+- `--input` or `-i`: Input JSON file containing bylaws (required)
+- `--model` or `-m`: Gemini model to use (default: gemini-2.0-flash)
+- `--limit` or `-l`: Limit number of bylaws to process
+- `--env-file` or `-e`: Path to .env file with your GOOGLE_API_KEY
+- `--api-key` or `-k`: Google API key (overrides the key in .env file if provided)
+
+Example:
+```bash
+python bylaw_revocation_analysis.py --input parking_related_by-laws.json --model gemini-2.0-flash
+```
+
+The script includes safeguards:
+- Rate limiting with pauses between API calls
+- Graceful handling of termination signals
+- Skipping already processed bylaws
+- Comprehensive error logging
+- JSON response cleaning to handle Markdown formatting
+- Standardized bylaw number format (YYYY-NNN)
+
+Combined with the Bylaw Expiry Analyzer, this tool creates a more complete picture of which bylaws are active by identifying both expired bylaws and those explicitly revoked by other bylaws.
+
 ### Search Tool
 
 The `search_bylaws.py` script allows you to search the ChromaDB database using semantic search, keyword search, or a combination of both.

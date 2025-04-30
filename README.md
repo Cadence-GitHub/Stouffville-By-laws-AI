@@ -236,6 +236,8 @@ graph TB
         PrepareByLaws["Prepare JSON Bylaws (prepare_json_bylaws_for_db.py)"]
         SearchBylaws["Search Bylaws (search_bylaws.py)"]
         InitChroma["Initialize ChromaDB (init_chroma.py)"]
+        BylawExpiryAnalyzer["Bylaw Expiry Analyzer (bylaw_expiry_analyzer.py)"]
+        BylawRevocationAnalysis["Bylaw Revocation Analysis (bylaw_revocation_analysis.py)"]
     end
 
     %% Data Storage
@@ -292,6 +294,8 @@ The system implements a Retrieval-Augmented Generation (RAG) architecture with t
 1. **Data Flow Pipeline**:
    - Raw by-law documents are processed and stored as JSON
    - `prepare_json_bylaws_for_db.py` creates subsets of bylaws by keyword for further processing
+   - `bylaw_expiry_analyzer.py` identifies expired bylaws based on their content
+   - `bylaw_revocation_analysis.py` identifies bylaws that revoke other bylaws
    - Voyage AI generates embeddings for these documents using the `voyage-3-large` model
    - ChromaDB indexes embeddings for efficient semantic retrieval using HNSW algorithm
    - When a query is received, relevant by-laws are retrieved and passed to Gemini AI
