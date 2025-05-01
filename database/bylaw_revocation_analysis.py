@@ -134,24 +134,28 @@ def load_json_file(file_path):
         logger.info(f"File not found: {file_path}, will create it if needed")
         return []
 
-def get_processed_bylaws(processed_file):
+def get_processed_bylaws(processed_file, errored_file):
     """
-    Get a set of bylaw numbers that have already been processed for revocation.
+    Get a set of bylaw numbers that have already been processed for revocation or errored.
     
     Args:
         processed_file: Path to the processed bylaws file
+        errored_file: Path to the errored bylaws file
         
     Returns:
-        set: Set of processed bylaw numbers
+        set: Set of processed and errored bylaw numbers
     """
     processed = set()
     
-    # Check processed bylaws file
-    if os.path.exists(processed_file):
-        processed_bylaws = load_json_file(processed_file)
-        for bylaw in processed_bylaws:
-            if 'bylawNumber' in bylaw:
-                processed.add(bylaw['bylawNumber'])
+    # Process both files using the same logic
+    for file_path in [processed_file, errored_file]:
+        if os.path.exists(file_path):
+            bylaws = load_json_file(file_path)
+            count_before = len(processed)
+            for bylaw in bylaws:
+                if 'bylawNumber' in bylaw:
+                    processed.add(bylaw['bylawNumber'])
+            logger.info(f"Loaded {len(processed) - count_before} bylaw numbers from {file_path}")
     
     return processed
 
@@ -355,6 +359,7 @@ def main():
     base_name = os.path.splitext(input_file)[0]
     processed_file = f"{base_name}.PROCESSED_FOR_REVOCATION.json"
     revoked_file = f"{base_name}.REVOKED.json"
+    errored_file = f"{base_name}.ERRORED.json"
     
     # Load input bylaws
     bylaws = load_json_file(input_file)
@@ -364,9 +369,9 @@ def main():
         
     logger.info(f"Loaded {len(bylaws)} bylaws from {input_file}")
     
-    # Get already processed bylaws
-    processed_bylaws = get_processed_bylaws(processed_file)
-    logger.info(f"Found {len(processed_bylaws)} already processed bylaws")
+    # Get already processed bylaws and errored bylaws
+    processed_bylaws = get_processed_bylaws(processed_file, errored_file)
+    logger.info(f"Found {len(processed_bylaws)} already processed or errored bylaws")
     
     # Apply the limit if specified
     if args.limit and args.limit > 0:
@@ -376,6 +381,7 @@ def main():
     # Process each bylaw
     processed_count = 0
     revoked_count = 0
+    errored_count = 0
     
     i = 0
     while i < len(bylaws):
@@ -393,9 +399,9 @@ def main():
             i += 1
             continue
             
-        # Skip already processed bylaws
+        # Skip already processed and errored bylaws
         if bylaw_number in processed_bylaws:
-            logger.info(f"Skipping already processed bylaw: {bylaw_number}")
+            logger.info(f"Skipping already processed or errored bylaw: {bylaw_number}")
             i += 1
             continue
             
@@ -448,6 +454,9 @@ def main():
                     logger.info(f"Added bylaw {bylaw_number} to processed file")
             else:
                 logger.warning(f"Not adding bylaw {bylaw_number} to processed file because some revoked bylaws were not found")
+                if append_to_json_file(errored_file, bylaw):
+                    logger.info(f"Added bylaw {bylaw_number} to errored file")
+                    errored_count += 1
             
             # Sleep for 5 seconds between calls to not hit rate limits
             logger.info("Pausing for 3 seconds to not hit rate limits...")
@@ -481,11 +490,12 @@ def main():
             
         # Log progress
         if processed_count % 10 == 0 and processed_count > 0:
-            logger.info(f"Processed {processed_count} bylaws so far, identified {revoked_count} revoked bylaws")
+            logger.info(f"Processed {processed_count} bylaws so far, identified {revoked_count} revoked bylaws, errored {errored_count} bylaws")
     
     # Log final summary
     logger.info(f"Processing complete: {processed_count} bylaws processed")
     logger.info(f"Revoked bylaws identified: {revoked_count} (saved to {revoked_file})")
+    logger.info(f"Errored bylaws: {errored_count} (saved to {errored_file})")
     logger.info(f"Total bylaws processed: {len(processed_bylaws) + processed_count}")
     
     return 0

@@ -262,9 +262,10 @@ Key features:
 Workflow:
 1. First use `prepare_json_bylaws_for_db.py` to create a consolidated JSON file of bylaws
 2. Then run `bylaw_revocation_analysis.py` on this file to analyze and identify revocation relationships
-3. The tool produces two output files:
-   - `[input_filename].PROCESSED_FOR_REVOCATION.json` containing bylaws that have been analyzed
+3. The tool produces three output files:
+   - `[input_filename].PROCESSED_FOR_REVOCATION.json` containing bylaws that have been successfully analyzed
    - `[input_filename].REVOKED.json` containing bylaws that have been revoked with reasons
+   - `[input_filename].ERRORED.json` containing bylaws that encountered errors during processing (such as when revoked bylaws were not found in the input file)
 
 Usage:
 ```bash
@@ -286,7 +287,8 @@ python bylaw_revocation_analysis.py --input parking_related_by-laws.json --model
 The script includes safeguards:
 - Rate limiting with pauses between API calls
 - Graceful handling of termination signals
-- Skipping already processed bylaws
+- Skipping already processed and errored bylaws
+- Tracking and separation of errored bylaws (when revoked bylaws are not found)
 - Comprehensive error logging
 - JSON response cleaning to handle Markdown formatting
 - Standardized bylaw number format (YYYY-NNN)
