@@ -166,7 +166,7 @@ def attempt_fix_bylaw_number(bylaw_number):
     return original_bylaw_number, False, None
 
 
-def search_bylaws_by_keyword(base_dir, keyword, output_file, include_all=False):
+def search_bylaws_by_keyword(base_dir, keyword, output_file, include_all=False, exclude_invalid=False):
     """
     Search through all JSON files in the base_dir for a specific keyword in the 'keywords' list.
     Print matching filenames and their keywords list, and append the entire JSON content
@@ -177,6 +177,7 @@ def search_bylaws_by_keyword(base_dir, keyword, output_file, include_all=False):
         keyword (str): The keyword to search for (partial matches are included)
         output_file (str): The file to append results to
         include_all (bool): Whether to include all bylaws regardless of keywords
+        exclude_invalid (bool): Whether to exclude bylaws with invalid bylaw numbers that can't be fixed
 
     Returns:
         tuple: (output tokens, source tokens) - token counts for output and source data
@@ -187,6 +188,7 @@ def search_bylaws_by_keyword(base_dir, keyword, output_file, include_all=False):
     total_source_tokens = 0
     total_source_files = 0
     total_bylaws_processed = 0
+    bylaws_excluded_invalid_number = 0
     files_with_missing_bylaw_number = []
     files_with_parse_errors = []
     files_with_invalid_bylaw_format = []
@@ -282,6 +284,12 @@ def search_bylaws_by_keyword(base_dir, keyword, output_file, include_all=False):
                                 # Store the scenario if any was applied but failed
                                 fix_attempt = scenario if scenario else "No applicable fix scenario"
                                 files_with_invalid_bylaw_format.append((str(json_file), bylaw_data['bylawNumber'], fix_attempt))
+                                
+                                # Skip adding this bylaw to output_data if exclude_invalid is True
+                                if exclude_invalid:
+                                    print(f"Excluding bylaw with invalid number format: {bylaw_data['bylawNumber']}")
+                                    bylaws_excluded_invalid_number += 1
+                                    continue
                         else:
                             format_status = "OK"
                             files_with_valid_bylaw_format.append(str(json_file))
@@ -338,6 +346,8 @@ def search_bylaws_by_keyword(base_dir, keyword, output_file, include_all=False):
     print(f"Total files with multiple bylaws: {len(multi_bylaw_files)}")
     print(f"Total files with valid bylawNumber format (originally valid): {len(files_with_valid_bylaw_format)}")
     print(f"Total files with invalid bylawNumber format (couldn't fix): {len(files_with_invalid_bylaw_format)}")
+    if exclude_invalid:
+        print(f"Total bylaws excluded due to invalid bylaw numbers: {bylaws_excluded_invalid_number}")
     print(f"Total files with auto-fixed bylawNumber format: {len(files_with_fixed_bylaw_format)}")
     print(f"Sum of valid, fixed, and invalid bylawNumbers: {len(files_with_valid_bylaw_format) + len(files_with_fixed_bylaw_format) + len(files_with_invalid_bylaw_format)}")
     print(f"Total files with missing bylawNumber: {len(files_with_missing_bylaw_number)}")
@@ -405,6 +415,8 @@ def main():
                         help='Directory to search in or a specific JSON file (default: Stouffville_AI/database/By-laws-by-year)')
     parser.add_argument('--output', default=None,
                         help='Output file name (default: {keyword}_related_by-laws.json or all_by-laws.json)')
+    parser.add_argument('--exclude-invalid', action='store_true', 
+                        help='Exclude bylaws with invalid bylaw numbers that cannot be fixed')
 
     args = parser.parse_args()
 
@@ -430,7 +442,8 @@ def main():
     if args.output is None:
         args.output = f"{args.keyword}_related_by-laws.json"
 
-    output_tokens, source_tokens = search_bylaws_by_keyword(args.input, args.keyword, args.output, include_all)
+    output_tokens, source_tokens = search_bylaws_by_keyword(
+        args.input, args.keyword, args.output, include_all, args.exclude_invalid)
 
     # Display token count and cost information for both source and output
     print_token_info(source_tokens, "Source Data")

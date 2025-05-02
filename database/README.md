@@ -183,6 +183,7 @@ Options:
 - `KEYWORD`: The keyword to search for in by-laws' keywords field
 - `--input`: Directory to search in or a specific JSON file (default: Stouffville_AI/database/By-laws-by-year)
 - `--output`: Output file name (default: {keyword}_related_by-laws.json or all_by-laws.json)
+- `--exclude-invalid`: Exclude bylaws with invalid bylaw numbers that cannot be fixed
 
 If no keyword is provided, the script will ask if you want to include all by-laws.
 
