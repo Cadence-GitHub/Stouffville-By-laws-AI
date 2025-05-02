@@ -181,7 +181,7 @@ python prepare_json_bylaws_for_db.py [KEYWORD] [OPTIONS]
 
 Options:
 - `KEYWORD`: The keyword to search for in by-laws' keywords field
-- `--dir`: Directory to search in (default: Stouffville_AI/database/By-laws-by-year)
+- `--input`: Directory to search in or a specific JSON file (default: Stouffville_AI/database/By-laws-by-year)
 - `--output`: Output file name (default: {keyword}_related_by-laws.json or all_by-laws.json)
 
 If no keyword is provided, the script will ask if you want to include all by-laws.

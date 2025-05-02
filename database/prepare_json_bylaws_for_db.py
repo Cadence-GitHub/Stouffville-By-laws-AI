@@ -173,7 +173,7 @@ def search_bylaws_by_keyword(base_dir, keyword, output_file, include_all=False):
     to the output file. Handles both single bylaw objects and arrays of bylaws in a file.
 
     Args:
-        base_dir (str): The directory to search in (and its subdirectories)
+        base_dir (str): The directory to search in (and its subdirectories) or a specific JSON file
         keyword (str): The keyword to search for (partial matches are included)
         output_file (str): The file to append results to
         include_all (bool): Whether to include all bylaws regardless of keywords
@@ -184,8 +184,6 @@ def search_bylaws_by_keyword(base_dir, keyword, output_file, include_all=False):
     # Always start with fresh output data
     output_data = []
 
-    base_path = Path(base_dir)
-    matching_files = []
     total_source_tokens = 0
     total_source_files = 0
     total_bylaws_processed = 0
@@ -195,9 +193,21 @@ def search_bylaws_by_keyword(base_dir, keyword, output_file, include_all=False):
     files_with_fixed_bylaw_format = []
     files_with_valid_bylaw_format = []
     multi_bylaw_files = []
+    matching_files = []
 
-    # Walk through all JSON files in the directory and subdirectories
-    for json_file in base_path.glob('**/*.json'):
+    # Check if base_dir is a file or directory
+    base_path = Path(base_dir)
+    if base_path.is_file() and base_path.suffix.lower() == '.json':
+        # Process a single JSON file
+        json_files = [base_path]
+        print(f"Processing single JSON file: {base_path}")
+    else:
+        # Walk through all JSON files in the directory and subdirectories
+        json_files = list(base_path.glob('**/*.json'))
+        print(f"Processing {len(json_files)} JSON files in directory: {base_path}")
+
+    # Process each JSON file
+    for json_file in json_files:
         try:
             with open(json_file, 'r', encoding='utf-8') as f:
                 file_data = json.load(f)
@@ -391,8 +401,8 @@ def print_token_info(token_count, label=""):
 def main():
     parser = argparse.ArgumentParser(description='Search bylaws by keyword')
     parser.add_argument('keyword', nargs='?', help='Keyword to search for in bylaw keywords (optional)')
-    parser.add_argument('--dir', default='Stouffville_AI/database/By-laws-by-year',
-                        help='Directory to search in (default: Stouffville_AI/database/By-laws-by-year)')
+    parser.add_argument('--input', default='Stouffville_AI/database/By-laws-by-year',
+                        help='Directory to search in or a specific JSON file (default: Stouffville_AI/database/By-laws-by-year)')
     parser.add_argument('--output', default=None,
                         help='Output file name (default: {keyword}_related_by-laws.json or all_by-laws.json)')
 
@@ -420,7 +430,7 @@ def main():
     if args.output is None:
         args.output = f"{args.keyword}_related_by-laws.json"
 
-    output_tokens, source_tokens = search_bylaws_by_keyword(args.dir, args.keyword, args.output, include_all)
+    output_tokens, source_tokens = search_bylaws_by_keyword(args.input, args.keyword, args.output, include_all)
 
     # Display token count and cost information for both source and output
     print_token_info(source_tokens, "Source Data")
