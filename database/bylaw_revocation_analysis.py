@@ -336,6 +336,7 @@ def main():
     parser.add_argument('--limit', '-l', type=int, help='Limit number of bylaws to process')
     parser.add_argument('--env-file', '-e', help='Path to .env file (defaults to .env in current directory)')
     parser.add_argument('--api-key', '-k', help='Google API key (overrides the key in .env file if provided)')
+    parser.add_argument('--filter-file', '-f', help='JSON file containing a list of specific bylaw numbers to process')
     args = parser.parse_args()
     
     # Load environment variables from custom .env file if specified
@@ -368,6 +369,22 @@ def main():
         return 1
         
     logger.info(f"Loaded {len(bylaws)} bylaws from {input_file}")
+    
+    # Filter bylaws if a filter file is provided
+    if args.filter_file:
+        filter_bylaws = load_json_file(args.filter_file)
+        if filter_bylaws:
+            # Extract the bylaw numbers to filter by
+            filter_numbers = set(item.get("bylawNumber") for item in filter_bylaws if "bylawNumber" in item)
+            if filter_numbers:
+                # Keep only the bylaws with numbers in the filter set
+                filtered_bylaws = [bylaw for bylaw in bylaws if bylaw.get("bylawNumber") in filter_numbers]
+                logger.info(f"Filtered down to {len(filtered_bylaws)} bylaws based on filter file {args.filter_file}")
+                bylaws = filtered_bylaws
+            else:
+                logger.warning(f"No valid bylaw numbers found in filter file {args.filter_file}")
+        else:
+            logger.warning(f"Filter file {args.filter_file} is empty or invalid")
     
     # Get already processed bylaws and errored bylaws
     processed_bylaws = get_processed_bylaws(processed_file, errored_file)
