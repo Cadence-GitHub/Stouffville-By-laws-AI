@@ -33,6 +33,7 @@ def validate_bylaw_number(bylaw_number):
     """
     Validate that the bylaw number follows the format YYYY-NNN
     where YYYY is a year and NNN is a number from 001 to 999.
+    Also accepts YYYY-NNNA and YYYY-NNNB formats.
     
     Args:
         bylaw_number (str): The bylaw number to validate
@@ -41,14 +42,25 @@ def validate_bylaw_number(bylaw_number):
         bool: True if the format is valid, False otherwise
     """
     # Regex pattern for YYYY-NNN format
-    pattern = r'^(\d{4})-([0-9]{3})$'
-    match = re.match(pattern, bylaw_number)
+    standard_pattern = r'^(\d{4})-([0-9]{3})$'
+    # Regex pattern for YYYY-NNNA or YYYY-NNNB format
+    ab_suffix_pattern = r'^(\d{4})-([0-9]{3})([AB])$'
     
-    if not match:
+    standard_match = re.match(standard_pattern, bylaw_number)
+    ab_suffix_match = re.match(ab_suffix_pattern, bylaw_number)
+    
+    if ab_suffix_match:
+        # If it matches the YYYY-NNNA or YYYY-NNNB pattern, check numeric part
+        numeric_part = int(ab_suffix_match.group(2))
+        if numeric_part < 1 or numeric_part > 999:
+            return False
+        return True
+    
+    if not standard_match:
         return False
     
     # Check if the numeric part is between 001-999
-    numeric_part = int(match.group(2))
+    numeric_part = int(standard_match.group(2))
     if numeric_part < 1 or numeric_part > 999:
         return False
         
@@ -70,6 +82,10 @@ def attempt_fix_bylaw_number(bylaw_number):
             - is_valid: Whether the fixed bylaw number is now valid
             - scenario_applied: Description of the scenario that was applied, or None if no fix worked
     """
+    # First check if the bylaw number is already valid
+    if validate_bylaw_number(bylaw_number):
+        return bylaw_number, True, "Already valid"
+        
     original_bylaw_number = bylaw_number
     applied_scenarios = []
     
@@ -143,7 +159,16 @@ def attempt_fix_bylaw_number(bylaw_number):
             return bylaw_number, True, ", ".join(applied_scenarios)
     
     # Scenario 4: Remove any suffix after YYYY-NNN format (including non-ASCII characters)
-    # First check for exact YYYY-NNN pattern at the start
+    # But don't remove A or B suffixes in YYYY-NNNA or YYYY-NNNB formats
+    
+    # First check for YYYY-NNNA or YYYY-NNNB pattern
+    ab_suffix_pattern = r'^(\d{4})-([0-9]{3})([AB])$'
+    ab_suffix_match = re.match(ab_suffix_pattern, bylaw_number)
+    if ab_suffix_match:
+        # This is already in the YYYY-NNNA or YYYY-NNNB format, which is now considered valid
+        return bylaw_number, True, "Valid with A/B suffix"
+    
+    # For other suffixes, check for exact YYYY-NNN pattern at the start
     basic_pattern = r'^(\d{4})-([0-9]{3})'
     basic_match = re.match(basic_pattern, bylaw_number)
     if basic_match and len(bylaw_number) > 8:  # 8 chars is exactly YYYY-NNN
