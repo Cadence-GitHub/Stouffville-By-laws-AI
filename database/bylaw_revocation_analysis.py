@@ -371,6 +371,7 @@ def main():
     logger.info(f"Loaded {len(bylaws)} bylaws from {input_file}")
     
     # Filter bylaws if a filter file is provided
+    bylaws_to_process = bylaws  # By default, process all bylaws
     if args.filter_file:
         filter_bylaws = load_json_file(args.filter_file)
         if filter_bylaws:
@@ -380,7 +381,7 @@ def main():
                 # Keep only the bylaws with numbers in the filter set
                 filtered_bylaws = [bylaw for bylaw in bylaws if bylaw.get("bylawNumber") in filter_numbers]
                 logger.info(f"Filtered down to {len(filtered_bylaws)} bylaws based on filter file {args.filter_file}")
-                bylaws = filtered_bylaws
+                bylaws_to_process = filtered_bylaws
             else:
                 logger.warning(f"No valid bylaw numbers found in filter file {args.filter_file}")
         else:
@@ -392,7 +393,7 @@ def main():
     
     # Apply the limit if specified
     if args.limit and args.limit > 0:
-        bylaws = bylaws[:args.limit]
+        bylaws_to_process = bylaws_to_process[:args.limit]
         logger.info(f"Limited processing to {args.limit} bylaws")
     
     # Process each bylaw
@@ -401,13 +402,13 @@ def main():
     errored_count = 0
     
     i = 0
-    while i < len(bylaws):
+    while i < len(bylaws_to_process):
         # Check if termination was requested
         if terminate:
             logger.info("Termination requested. Exiting cleanly...")
             break
         
-        bylaw = bylaws[i]
+        bylaw = bylaws_to_process[i]
         
         # Get bylaw number or skip if not present
         bylaw_number = bylaw.get("bylawNumber")
@@ -446,7 +447,7 @@ def main():
                         logger.warning(f"Bylaw {revoked_number} is already in the revoked file. Skipping.")
                         continue
                     
-                    # Find the revoked bylaw in the input data
+                    # Find the revoked bylaw in the full input data
                     revoked_bylaw = find_bylaw_by_number(bylaws, revoked_number)
                     
                     if revoked_bylaw:
