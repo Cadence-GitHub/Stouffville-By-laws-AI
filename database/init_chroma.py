@@ -161,7 +161,7 @@ def main():
                     if k != "extractedText": #Do not add embedded text to metadata
                         # Convert lists to strings for metadata
                         if isinstance(v, list):
-                            metadata[k] = " ".join(str(item) for item in v)
+                            metadata[k] = "\n".join(str(item) for item in v)
                         elif isinstance(v, (str, int, float, bool)) or v is None:
                             metadata[k] = v
                         else:
