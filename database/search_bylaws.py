@@ -6,6 +6,7 @@ This script connects to a ChromaDB instance and allows searching by-laws using:
 1. Semantic search with natural language queries
 2. Keyword search within metadata fields
 3. Combined search with both methods
+4. Search by bylaw number (case insensitive)
 
 Results are displayed with relevance scores and can be saved to a JSON file.
 
@@ -13,6 +14,7 @@ Usage:
     python search_bylaws.py --query "parking regulations" --output results.json
     python search_bylaws.py --keyword "parking" --output results.json
     python search_bylaws.py --query "parking regulations" --keyword "parking" --output results.json
+    python search_bylaws.py --bylaw-number "33" --output results.json
 
 Requirements:
     - langchain-chroma
@@ -159,19 +161,26 @@ def search_bylaws(args):
             metadata = metadatas[i]
             found_match = False
             
-            # Check in keywords list
-            if "keywords" in metadata and isinstance(metadata["keywords"], list):
-                for kw in metadata["keywords"]:
-                    if isinstance(kw, str) and keyword_lower in kw.lower():
+            # Check in keywords field - handle both list and string formats
+            if "keywords" in metadata:
+                # Handle keywords as a list
+                if isinstance(metadata["keywords"], list):
+                    for kw in metadata["keywords"]:
+                        if isinstance(kw, str) and keyword_lower in kw.lower():
+                            found_match = True
+                            break
+                # Handle keywords as a space-separated string
+                elif isinstance(metadata["keywords"], str):
+                    if keyword_lower in metadata["keywords"].lower():
                         found_match = True
-                        break
             
             # Check in other text fields
-            for field in ["bylawHeader", "bylawType", "condtionsAndClauses"]:
-                if field in metadata and isinstance(metadata[field], str):
-                    if keyword_lower in metadata[field].lower():
-                        found_match = True
-                        break
+            if not found_match:
+                for field in ["bylawHeader", "bylawType", "condtionsAndClauses"]:
+                    if field in metadata and isinstance(metadata[field], str):
+                        if keyword_lower in metadata[field].lower():
+                            found_match = True
+                            break
             
             if found_match:
                 keyword_matches.append({
@@ -206,6 +215,61 @@ def search_bylaws(args):
                     print(f"Keywords: {match['metadata'].get('keywords', [])}")
         else:
             print("No matches found for the keyword search.")
+    
+    # Perform bylaw number search if a bylaw number string is provided
+    if args.bylaw_number:
+        print(f"\nPerforming bylaw number search for: '{args.bylaw_number}'")
+        
+        # Retrieve all documents and filter locally
+        print("Retrieving documents from ChromaDB to perform bylaw number search...")
+        all_results = vector_store.get()
+        
+        bylaw_number_matches = []
+        docs = all_results.get("documents", [])
+        metadatas = all_results.get("metadatas", [])
+        ids = all_results.get("ids", [])
+        
+        bylaw_number_lower = args.bylaw_number.lower()
+        
+        # Manually filter documents based on bylaw number
+        for i in range(len(docs)):
+            metadata = metadatas[i]
+            
+            # Check if bylawNumber contains the search string (case insensitive)
+            if "bylawNumber" in metadata and isinstance(metadata["bylawNumber"], str):
+                if bylaw_number_lower in metadata["bylawNumber"].lower():
+                    bylaw_number_matches.append({
+                        "document": docs[i],
+                        "metadata": metadata,
+                        "id": ids[i]
+                    })
+        
+        # Process the bylaw number matches
+        if bylaw_number_matches:
+            # Limit the number of results if necessary
+            bylaw_number_matches = bylaw_number_matches[:args.limit]
+            print(f"Found {len(bylaw_number_matches)} documents matching the bylaw number")
+            
+            for match in bylaw_number_matches:
+                # Create a document with metadata
+                bylaw_data = {
+                    "page_content": match["document"],
+                    "metadata": match["metadata"],
+                    "id": match["id"]
+                }
+                
+                # Only add if not already in results (to avoid duplicates when using multiple search methods)
+                if not any(b.get("metadata", {}).get("id") == match["metadata"].get("id") for b in matching_bylaws):
+                    matching_bylaws.append(bylaw_data)
+                    
+                    # Display some information about the match
+                    bylaw_id = match["metadata"].get("bylawNumber", "Unknown ID")
+                    bylaw_type = match["metadata"].get("bylawType", "Unknown Type")
+                    
+                    print(f"\nFound match: {bylaw_id} ({bylaw_type})")
+                    print(f"Keywords: {match['metadata'].get('keywords', [])}")
+        else:
+            print("No matches found for the bylaw number search.")
     
     # Write results to the output file
     if matching_bylaws:
@@ -321,6 +385,7 @@ def main():
     search_group = parser.add_argument_group('Search Parameters')
     search_group.add_argument('--query', help='Natural language query for semantic search')
     search_group.add_argument('--keyword', help='Keyword to search for in bylaw metadata')
+    search_group.add_argument('--bylaw-number', help='Search for bylaws containing this string in their bylaw number (case insensitive)')
     search_group.add_argument('--limit', type=int, default=10, help='Maximum number of results to return (default: 10)')
     search_group.add_argument('--output', default='search_results.json', help='Output file name (default: search_results.json)')
     
@@ -338,8 +403,8 @@ def main():
     args = parser.parse_args()
     
     # Check if at least one search parameter or --stats is provided
-    if not (args.query or args.keyword or args.stats):
-        parser.error("At least one of --query, --keyword, or --stats is required")
+    if not (args.query or args.keyword or args.bylaw_number or args.stats):
+        parser.error("At least one of --query, --keyword, --bylaw-number, or --stats is required")
     
     # Show database statistics if requested
     if args.stats:

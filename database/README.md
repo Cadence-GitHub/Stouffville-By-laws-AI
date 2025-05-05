@@ -305,6 +305,7 @@ The `search_bylaws.py` script allows you to search the ChromaDB database using s
 Key features:
 - Semantic search using natural language queries
 - Keyword search within by-law metadata fields
+- Search by-laws by their bylaw number (case insensitive)
 - Display database statistics including by-law types and years
 - Calculate token usage and estimated LLM costs
 - Save search results to a JSON file
@@ -317,6 +318,7 @@ python search_bylaws.py [OPTIONS]
 Options:
 - `--query`: Natural language query for semantic search
 - `--keyword`: Keyword to search for in by-law metadata
+- `--bylaw-number`: Search for bylaws containing this string in their bylaw number (case insensitive)
 - `--limit`: Maximum number of results to return (default: 10)
 - `--output`: Output file name (default: search_results.json)
 - `--api-key`: Voyage AI API key (can also be set in .env file)
@@ -325,7 +327,7 @@ Options:
 - `--collection`: Collection name (default: by-laws)
 - `--stats`: Display database statistics
 
-At least one of `--query`, `--keyword`, or `--stats` is required.
+At least one of `--query`, `--keyword`, `--bylaw-number`, or `--stats` is required.
 
 ## Integration with the Application
 
