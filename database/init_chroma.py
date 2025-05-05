@@ -160,9 +160,11 @@ def main():
                 for k, v in bylaw.items():
                     if k != "extractedText": #Do not add embedded text to metadata
                         # Convert lists to strings for metadata
-                        if isinstance(v, list):
+                        if v is None:
+                            metadata[k] = "None"  # Convert any null to string "None"
+                        elif isinstance(v, list):
                             metadata[k] = "\n".join(str(item) for item in v)
-                        elif isinstance(v, (str, int, float, bool)) or v is None:
+                        elif isinstance(v, (str, int, float, bool)):
                             metadata[k] = v
                         else:
                             # Convert other complex types to strings
