@@ -123,6 +123,7 @@ Transform this into formal, structured language that:
 3. References specific bylaw domains that may govern this issue (e.g., animal control, property rights, waste management, public health, zoning ordinances)
 4. Structures the query as a comprehensive formal inquiry about regulatory compliance, obligations, permissions, and prohibitions
 5. Incorporates standard legal phrasings that would appear in official bylaw documents
+6. References temporal aspects that would prioritize current and recently enacted regulations over outdated ones
 
 Your transformation should:
 - Maintain the core intent of the original question
