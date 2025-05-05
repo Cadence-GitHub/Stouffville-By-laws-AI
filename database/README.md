@@ -1,168 +1,29 @@
 # ChromaDB Initialization for Stouffville By-laws
 
-This document explains how the `init_chroma.py` script works to initialize the ChromaDB vector database for the Stouffville By-laws AI application.
+This document explains how to process and initialize the ChromaDB vector database for the Stouffville By-laws AI application.
 
 ## Overview
 
-The `init_chroma.py` script converts by-law documents from JSON files into a vector database that enables semantic search capabilities. It uses Voyage AI embeddings to create high-quality vector representations of each by-law, allowing the application to find relevant by-laws based on natural language queries.
+The database initialization process involves several scripts that process by-law documents from raw JSON files into a structured vector database that enables semantic search capabilities. The process follows these steps:
+
+1. Data preparation with `prepare_json_bylaws_for_db.py` 
+2. Expiry analysis with `bylaw_expiry_analyzer.py`
+3. Revocation analysis with `bylaw_revocation_analysis.py`
+4. Final data enrichment with `prepare_final_json.py`
+5. Vector database initialization with `init_chroma.py`
 
 ## Prerequisites
 
 - A running ChromaDB instance (version 0.6.3 via Docker)
 - Voyage AI API key for generating embeddings
+- Google API key for Gemini AI (for analysis scripts)
 - JSON files containing by-law data in the database directory
 
-## Key Components
-
-### Embedding Model
-
-The script uses Voyage AI's `voyage-3-large` model to generate high-quality embeddings for the by-law text. These embeddings capture the semantic meaning of the text, allowing for more intelligent retrieval than simple keyword matching.
-
-### Document Processing
-
-For each by-law document:
-1. The script extracts the text content from the `extractedText` field
-2. All other fields are preserved as metadata
-3. A unique LangChain Document is created with the text content and metadata
-4. The document is added to the ChromaDB collection
-
-### ChromaDB Integration
-
-The script connects to a running ChromaDB instance (by default at localhost:8000) and:
-- Creates or uses an existing collection named "by-laws"
-- Uses the Voyage AI embeddings for vector representation
-- Stores the complete document metadata for retrieval
-- Checks for existing by-laws to avoid duplicates
-
-## Usage
-
-```bash
-python init_chroma.py [OPTIONS]
-```
-
-### Options
-
-- `--api-key`: Voyage AI API key (alternatively, set in .env file as VOYAGE_API_KEY)
-- `--chroma-host`: ChromaDB host (default: localhost)
-- `--chroma-port`: ChromaDB port (default: 8000)
-- `--collection`: Collection name (default: by-laws)
-- `--reset`: Reset collection if it exists
-- `--json-dir`: Directory containing by-laws JSON files (default: current directory)
-- `--hnsw-M`: Maximum number of neighbour connections (default: 16)
-- `--hnsw-construction_ef`: Number of neighbours in the HNSW graph to explore when adding new vectors (default: 100)
-- `--hnsw-search_ef`: Number of neighbours in the HNSW graph to explore when searching (default: 10)
-
-### Examples
-
-Basic usage with defaults:
-```bash
-python init_chroma.py
-```
-
-Reset existing collection and specify JSON directory:
-```bash
-python init_chroma.py --reset --json-dir ./bylaws_data
-```
-
-Connect to remote ChromaDB instance:
-```bash
-python init_chroma.py --chroma-host chroma.example.com --chroma-port 8000
-```
-
-## Expected Output
-
-The script will:
-1. Connect to the ChromaDB instance
-2. Find all JSON files in the specified directory
-3. Check existing by-laws in the collection to avoid duplicates
-4. Process each by-law document, skipping those already in the database
-5. Create embeddings and store only new by-laws in ChromaDB
-6. Process documents in batches to avoid memory issues
-7. Report the total number of by-laws processed and added
-8. Display database statistics including total documents, unique bylaws, bylaw types, and years
-
-Example output:
-```
-Initializing embedding function...
-Connecting to ChromaDB at localhost:8000...
-Successfully connected to ChromaDB collection 'by-laws'!
-Found 2 existing bylaws in the collection
-Found 3 JSON files
-Processing parking_related_by-laws.json...
-  Creating document for bylaw 2015-139-RE...
-  Skipping bylaw 2015-04-RE - already exists in collection
-Adding 1 document to ChromaDB...
-Processing batch 1/1 (1 documents)...
-Initialization complete. Added/updated 1 bylaws in ChromaDB.
-Database Statistics:
-Total Documents: 3
-Unique Bylaws: 3
-Bylaw Types:
-  - PARKING: 2
-  - GENERAL: 1
-Bylaw Years:
-  - 2015: 2
-  - 2018: 1
-```
-
-## Troubleshooting
-
-If you encounter errors connecting to ChromaDB:
-1. Verify that the ChromaDB Docker container is running
-2. Check that port 8000 is properly exposed in docker-compose.yaml
-3. Ensure your Voyage AI API key is valid and has sufficient quota
-4. Verify you're using the correct ChromaDB version (0.6.3)
-
-## Direct Bylaw Retrieval
-
-The ChromaDB integration includes a robust function to retrieve specific bylaws by their number:
-
-```python
-def retrieve_bylaw_by_number(self, bylaw_number):
-    """
-    Retrieve a specific bylaw by its number, trying different format variations.
-    
-    Returns:
-        tuple: (bylaw document or None, retrieval_time in seconds, collection_exists)
-    """
-```
-
-This function:
-1. Attempts an exact match using the bylaw number as provided
-2. If no match is found, generates multiple format variations:
-   - Different spacing around dashes (e.g., "2015-139-RE", "2015 - 139 - RE")
-   - Different dash placements for multi-part numbers
-   - Completely removing dashes or spaces
-3. Searches for each variation until a match is found
-4. Returns the complete bylaw metadata along with timing information
-
-This robust matching system ensures users can find bylaws regardless of formatting differences in how the bylaw number is entered.
-
-## Integration with the Application
-
-After initializing ChromaDB, the Flask application will automatically use it for queries. The application:
-1. Attempts to find relevant by-laws using vector search
-2. With enhanced search enabled, transforms the user query into legal language and performs dual searches
-3. Sends the retrieved by-laws to the Gemini AI model
-4. Generates complete, filtered, and layman's terms responses
-5. Provides options for users to compare these different responses
-6. Allows direct access to specific bylaws through the `/api/bylaw/<bylaw_number>` endpoint
-7. Integrates with an interactive bylaw viewer to display comprehensive bylaw information
-
-The bylaw viewer uses the direct retrieval function to fetch complete bylaw data and displays it in a user-friendly format with:
-- Comprehensive metadata display
-- Linked locations (Google Maps integration)
-- Original document links
-- Formatted content with proper spacing and structure
-- Dark mode support for better readability
-
-This approach improves response quality and provides users with the most relevant and up-to-date information about Stouffville's by-laws. 
-
-## Related Tools
+## Data Processing Tools
 
 ### Data Preparation Tool
 
-The `prepare_json_bylaws_for_db.py` script helps you prepare a subset of JSON by-law files for further processing by the `init_chroma.py` script.
+The `prepare_json_bylaws_for_db.py` script helps you prepare a subset of JSON by-law files for further processing.
 
 Key features:
 - Search by-laws by specific keywords in their metadata
@@ -173,6 +34,7 @@ Key features:
 - Auto-fix invalid bylaw numbers using various correction scenarios
 - Generate detailed reports on validation and correction outcomes
 - Support for files containing both single bylaw objects and arrays of multiple bylaws
+- Handle duplicate bylaws (preferring consolidated versions when available)
 
 Usage:
 ```bash
@@ -187,11 +49,12 @@ Options:
 
 If no keyword is provided, the script will ask if you want to include all by-laws.
 
-The script will process both individual bylaw JSON files and files containing arrays of bylaws, tracking and reporting on:
-- Total source files processed
-- Total individual bylaws processed
-- Number of files containing multiple bylaws
-- Detailed validation statistics for all processed bylaws
+The script validates each bylaw number against the standard format (YYYY-NNN) where YYYY is a year and NNN is a three-digit number. If an invalid format is detected, it attempts to auto-fix it using several strategies:
+- Adding "19" prefix to two-digit years (71-99)
+- Converting space-separated formats (YYYY NNN) to dash format
+- Padding numbers with leading zeros to ensure three digits
+- Removing spaces in bylaw numbers
+- Removing invalid suffixes after the YYYY-NNN format
 
 ### Bylaw Expiry Analyzer
 
@@ -227,26 +90,7 @@ Example:
 python bylaw_expiry_analyzer.py --input parking_related_by-laws.json --model gemini-2.0-flash
 ```
 
-The script includes safeguards:
-- Rate limiting with pauses between API calls
-- Skipping already processed bylaws
-- Comprehensive error logging
-- JSON response cleaning to handle Markdown formatting
-
 This tool helps build a more accurate bylaw database by identifying which bylaws are still applicable and which have expired.
-
-The script validates each bylaw number against the standard format (YYYY-NNN) where YYYY is a year and NNN is a three-digit number. If an invalid format is detected, it attempts to auto-fix it using several strategies:
-- Adding "19" prefix to two-digit years (71-99)
-- Converting space-separated formats (YYYY NNN) to dash format
-- Padding numbers with leading zeros to ensure three digits
-- Removing spaces in bylaw numbers
-- Removing invalid suffixes after the YYYY-NNN format
-
-The script provides a detailed report of the validation results, including:
-- Files with missing bylaw numbers
-- Files with parse errors
-- Files with auto-fixed bylaw numbers (showing original and corrected versions)
-- Files with invalid bylaw numbers that couldn't be automatically fixed
 
 ### Bylaw Revocation Analyzer
 
@@ -285,16 +129,174 @@ Example:
 python bylaw_revocation_analysis.py --input parking_related_by-laws.json --model gemini-2.0-flash
 ```
 
-The script includes safeguards:
-- Rate limiting with pauses between API calls
-- Graceful handling of termination signals
-- Skipping already processed and errored bylaws
-- Tracking and separation of errored bylaws (when revoked bylaws are not found)
-- Comprehensive error logging
-- JSON response cleaning to handle Markdown formatting
-- Standardized bylaw number format (YYYY-NNN)
-
 Combined with the Bylaw Expiry Analyzer, this tool creates a more complete picture of which bylaws are active by identifying both expired bylaws and those explicitly revoked by other bylaws.
+
+### Final JSON Preparation Tool
+
+The `prepare_final_json.py` script processes bylaws JSON file and enriches it with status data from auxiliary JSON files created by the previous analysis tools.
+
+Key features:
+- Takes the main bylaws JSON file as input
+- Loads auxiliary files created by the expiry and revocation analyzers
+- Enriches each bylaw with status information (isActive, whyNotActive)
+- Creates a final JSON file ready for database import
+- Provides a detailed summary of the processing results
+
+Workflow:
+1. After running the expiry analyzer and revocation analyzer, run this script to consolidate all information
+2. The script reads from these auxiliary files:
+   - `[input_filename].NOT_ACTIVE_ONLY.json` (from expiry analyzer)
+   - `[input_filename].REVOKED.json` (from revocation analyzer) 
+   - `[input_filename].ACTIVE_ONLY.json` (from expiry analyzer)
+   - `[input_filename].PROCESSED_FOR_REVOCATION.json` (from revocation analyzer)
+3. The script produces one final output file:
+   - `[input_filename].FOR_DB.json` containing all bylaws with their complete status information
+
+Usage:
+```bash
+python prepare_final_json.py [INPUT_FILE]
+```
+
+Example:
+```bash
+python prepare_final_json.py parking_related_by-laws.json
+```
+
+The script will generate a summary after completion, showing:
+- Total bylaws processed
+- Number of bylaws found in each auxiliary file
+- Any errors encountered (bylaws not found in auxiliary files)
+
+This tool creates the final data file that should be used for the ChromaDB import process.
+
+## ChromaDB Integration
+
+### Database Initialization
+
+The `init_chroma.py` script converts by-law documents from JSON files into a vector database that enables semantic search capabilities. It uses Voyage AI embeddings to create high-quality vector representations of each by-law, allowing the application to find relevant by-laws based on natural language queries.
+
+Key Components:
+
+#### Embedding Model
+
+The script uses Voyage AI's `voyage-3-large` model to generate high-quality embeddings for the by-law text. These embeddings capture the semantic meaning of the text, allowing for more intelligent retrieval than simple keyword matching.
+
+#### Document Processing
+
+For each by-law document:
+1. The script extracts the text content from the `extractedText` field
+2. All other fields are preserved as metadata
+3. A unique LangChain Document is created with the text content and metadata
+4. The document is added to the ChromaDB collection
+
+#### ChromaDB Integration
+
+The script connects to a running ChromaDB instance (by default at localhost:8000) and:
+- Creates or uses an existing collection named "by-laws"
+- Uses the Voyage AI embeddings for vector representation
+- Stores the complete document metadata for retrieval
+- Checks for existing by-laws to avoid duplicates
+
+Usage:
+
+```bash
+python init_chroma.py [OPTIONS]
+```
+
+Options:
+
+- `--api-key`: Voyage AI API key (alternatively, set in .env file as VOYAGE_API_KEY)
+- `--chroma-host`: ChromaDB host (default: localhost)
+- `--chroma-port`: ChromaDB port (default: 8000)
+- `--collection`: Collection name (default: by-laws)
+- `--reset`: Reset collection if it exists
+- `--input-file`: Single JSON file to process (like the .FOR_DB.json file from prepare_final_json.py)
+- `--json-dir`: Directory containing by-laws JSON files (default: current directory, not used if --input-file is specified)
+- `--hnsw-M`: Maximum number of neighbour connections (default: 16)
+- `--hnsw-construction_ef`: Number of neighbours in the HNSW graph to explore when adding new vectors (default: 100)
+- `--hnsw-search_ef`: Number of neighbours in the HNSW graph to explore when searching (default: 10)
+
+Examples:
+
+Basic usage with the consolidated FOR_DB.json file:
+```bash
+python init_chroma.py --input-file parking_related_by-laws.FOR_DB.json
+```
+
+Reset existing collection and use the consolidated .FOR_DB.json file:
+```bash
+python init_chroma.py --reset --input-file parking_related_by-laws.FOR_DB.json
+```
+
+For backward compatibility, you can still process a directory of JSON files:
+```bash
+python init_chroma.py --json-dir ./bylaws_data
+```
+
+Connect to remote ChromaDB instance:
+```bash
+python init_chroma.py --chroma-host chroma.example.com --chroma-port 8000 --input-file parking_related_by-laws.FOR_DB.json
+```
+
+Expected Output:
+
+The script will:
+1. Connect to the ChromaDB instance
+2. Load the specified input file or scan the directory for JSON files
+3. Check existing by-laws in the collection to avoid duplicates
+4. Process each by-law document, skipping those already in the database
+5. Create embeddings and store only new by-laws in ChromaDB
+6. Process documents in batches to avoid memory issues
+7. Report the total number of by-laws processed and added
+8. Display database statistics including total documents, unique bylaws, bylaw types, and years
+
+Example output:
+```
+Initializing embedding function...
+Connecting to ChromaDB at localhost:8000...
+Successfully connected to ChromaDB collection 'by-laws'!
+Found 2 existing bylaws in the collection
+Processing single input file: parking_related_by-laws.FOR_DB.json...
+  Creating document for bylaw 2015-139-RE...
+  Skipping bylaw 2015-04-RE - already exists in collection
+Adding 1 document to ChromaDB...
+Processing batch 1/1 (1 documents)...
+Initialization complete. Added/updated 1 bylaws in ChromaDB.
+Database Statistics:
+Total Documents: 3
+Unique Bylaws: 3
+Bylaw Types:
+  - PARKING: 2
+  - GENERAL: 1
+Bylaw Years:
+  - 2015: 2
+  - 2018: 1
+```
+
+### Direct Bylaw Retrieval
+
+The ChromaDB integration includes a robust function to retrieve specific bylaws by their number:
+
+```python
+def retrieve_bylaw_by_number(self, bylaw_number):
+    """
+    Retrieve a specific bylaw by its number, trying different format variations.
+    
+    Returns:
+        tuple: (bylaw document or None, retrieval_time in seconds, collection_exists)
+    """
+```
+
+This function:
+1. Attempts an exact match using the bylaw number as provided
+2. If no match is found, generates multiple format variations:
+   - Different spacing around dashes (e.g., "2015-139-RE", "2015 - 139 - RE")
+   - Different dash placements for multi-part numbers
+   - Completely removing dashes or spaces
+3. Searches for each variation until a match is found
+4. Returns the complete bylaw metadata along with timing information
+
+This robust matching system ensures users can find bylaws regardless of formatting differences in how the bylaw number is entered.
 
 ### Search Tool
 
@@ -323,4 +325,32 @@ Options:
 - `--collection`: Collection name (default: by-laws)
 - `--stats`: Display database statistics
 
-At least one of `--query`, `--keyword`, or `--stats` is required. 
+At least one of `--query`, `--keyword`, or `--stats` is required.
+
+## Integration with the Application
+
+After initializing ChromaDB, the Flask application will automatically use it for queries. The application:
+1. Attempts to find relevant by-laws using vector search
+2. With enhanced search enabled, transforms the user query into legal language and performs dual searches
+3. Sends the retrieved by-laws to the Gemini AI model
+4. Generates complete, filtered, and layman's terms responses
+5. Provides options for users to compare these different responses
+6. Allows direct access to specific bylaws through the `/api/bylaw/<bylaw_number>` endpoint
+7. Integrates with an interactive bylaw viewer to display comprehensive bylaw information
+
+The bylaw viewer uses the direct retrieval function to fetch complete bylaw data and displays it in a user-friendly format with:
+- Comprehensive metadata display
+- Linked locations (Google Maps integration)
+- Original document links
+- Formatted content with proper spacing and structure
+- Dark mode support for better readability
+
+This approach improves response quality and provides users with the most relevant and up-to-date information about Stouffville's by-laws.
+
+## Troubleshooting
+
+If you encounter errors connecting to ChromaDB:
+1. Verify that the ChromaDB Docker container is running
+2. Check that port 8000 is properly exposed in docker-compose.yaml
+3. Ensure your Voyage AI API key is valid and has sufficient quota
+4. Verify you're using the correct ChromaDB version (0.6.3) 

@@ -222,6 +222,11 @@ def search_bylaws_by_keyword(base_dir, keyword, output_file, include_all=False, 
     multi_bylaw_files = []
     matching_files = []
 
+    # For tracking all bylaws
+    all_bylaws = []
+    consolidated_preferred = []
+    all_duplicates = {}  # Track all duplicates
+
     # Check if base_dir is a file or directory
     base_path = Path(base_dir)
     if base_path.is_file() and base_path.suffix.lower() == '.json':
@@ -235,6 +240,10 @@ def search_bylaws_by_keyword(base_dir, keyword, output_file, include_all=False, 
 
     # Process each JSON file
     for json_file in json_files:
+        # Skip status.json files
+        if json_file.name == "status.json":
+            continue
+            
         try:
             with open(json_file, 'r', encoding='utf-8') as f:
                 file_data = json.load(f)
@@ -254,6 +263,10 @@ def search_bylaws_by_keyword(base_dir, keyword, output_file, include_all=False, 
                 
                 # Process each bylaw in the file
                 for bylaw_data in bylaws_list:
+                    # Store source file and create a copy to avoid reference issues
+                    bylaw_data = bylaw_data.copy()  # Create a copy
+                    bylaw_data['_source_file'] = str(json_file)
+                    
                     # Count tokens from the extractedText field (which can be a list or string)
                     if 'extractedText' in bylaw_data:
                         if isinstance(bylaw_data['extractedText'], list):
@@ -295,7 +308,7 @@ def search_bylaws_by_keyword(base_dir, keyword, output_file, include_all=False, 
                             
                             if is_fixed:
                                 status_msg = "Including" if include_all else "Found match in"
-                                print(f"\n{status_msg}: {json_file}   (bylawNumber: {bylaw_data['bylawNumber']} → {fixed_bylaw}) OK (Fixed)")
+                                print(f"{status_msg}: {json_file}   (bylawNumber: {bylaw_data['bylawNumber']} → {fixed_bylaw}) OK (Fixed)")
                                 print(f"Fixed with {scenario}")
                                 files_with_fixed_bylaw_format.append((str(json_file), bylaw_data['bylawNumber'], fixed_bylaw, scenario))
                                 # Update the bylaw number to the fixed version
@@ -303,7 +316,7 @@ def search_bylaws_by_keyword(base_dir, keyword, output_file, include_all=False, 
                             else:
                                 format_status = "FAIL"
                                 status_msg = "Including" if include_all else "Found match in"
-                                print(f"\n{status_msg}: {json_file}   (bylawNumber: {bylaw_data['bylawNumber']}) {format_status}")
+                                print(f"{status_msg}: {json_file}   (bylawNumber: {bylaw_data['bylawNumber']}) {format_status}")
                                 warning_msg = f"Warning: Invalid bylawNumber format '{bylaw_data['bylawNumber']}' in {json_file} - Couldn't auto-fix"
                                 print(warning_msg)
                                 # Store the scenario if any was applied but failed
@@ -319,7 +332,7 @@ def search_bylaws_by_keyword(base_dir, keyword, output_file, include_all=False, 
                             format_status = "OK"
                             files_with_valid_bylaw_format.append(str(json_file))
                             status_msg = "Including" if include_all else "Found match in"
-                            print(f"\n{status_msg}: {json_file}   (bylawNumber: {bylaw_data['bylawNumber']}) {format_status}")
+                            print(f"{status_msg}: {json_file}   (bylawNumber: {bylaw_data['bylawNumber']}) {format_status}")
                         
                         if not include_all and 'keywords' in bylaw_data:
                             print(f"Keywords: {bylaw_data['keywords']}")
@@ -327,7 +340,15 @@ def search_bylaws_by_keyword(base_dir, keyword, output_file, include_all=False, 
                         if str(json_file) not in matching_files:
                             matching_files.append(str(json_file))
                         
-                        output_data.append(bylaw_data)
+                        # Add to our all_bylaws list
+                        all_bylaws.append(bylaw_data)
+                        
+                        # Track duplicates
+                        if 'bylawNumber' in bylaw_data and bylaw_data['bylawNumber']:
+                            bylaw_number = bylaw_data['bylawNumber']
+                            if bylaw_number not in all_duplicates:
+                                all_duplicates[bylaw_number] = []
+                            all_duplicates[bylaw_number].append(str(json_file))
                 
                 # Add the file tokens to the total
                 total_source_tokens += file_tokens
@@ -336,10 +357,100 @@ def search_bylaws_by_keyword(base_dir, keyword, output_file, include_all=False, 
             print(f"Error processing {json_file}: {e}")
             files_with_parse_errors.append((str(json_file), str(e)))
 
+    # Process duplicates and consolidate versions
+    final_bylaws = []
+    handled_sources = set()  # Track which source files we've already handled
+    
+    # Find duplicates (bylaws with same number but different source files)
+    duplicate_numbers = {num: files for num, files in all_duplicates.items() if len(files) > 1}
+    
+    # First handle consolidated versions
+    for bylaw in all_bylaws:
+        bylaw_number = bylaw.get('bylawNumber')
+        source_file = bylaw.get('_source_file', '')
+        
+        # Skip if we've already handled this source file
+        if source_file in handled_sources:
+            continue
+            
+        # Check if this bylaw has duplicates
+        if bylaw_number in duplicate_numbers:
+            # Get all duplicates for this bylaw number
+            duplicate_files = duplicate_numbers[bylaw_number]
+            
+            # Check if any duplicates have "consolidated" in the name
+            consolidated_files = [f for f in duplicate_files if "consolidated" in f.lower()]
+            non_consolidated_files = [f for f in duplicate_files if "consolidated" not in f.lower()]
+            
+            if consolidated_files and non_consolidated_files:
+                # We have both consolidated and non-consolidated versions
+                # For each consolidated file, add to final_bylaws and track
+                for consol_file in consolidated_files:
+                    # Find the bylaw with this source file
+                    for b in all_bylaws:
+                        if b.get('_source_file') == consol_file and b.get('bylawNumber') == bylaw_number:
+                            final_bylaws.append(b)
+                            handled_sources.add(consol_file)
+                            # Log the consolidation preference
+                            for non_consol_file in non_consolidated_files:
+                                consolidated_preferred.append((bylaw_number, consol_file, non_consol_file))
+                            break
+                
+                # Mark all non-consolidated files as handled
+                for f in non_consolidated_files:
+                    handled_sources.add(f)
+            elif bylaw_number in duplicate_numbers:
+                # No consolidation preference, use filenames as bylaw numbers
+                for dup_file in duplicate_files:
+                    # Find the bylaw with this source file
+                    for b in all_bylaws:
+                        if b.get('_source_file') == dup_file and b.get('bylawNumber') == bylaw_number:
+                            # Make a copy to avoid modifying the original
+                            b_copy = b.copy()
+                            
+                            # Use filename as bylaw number
+                            filename = os.path.basename(dup_file)
+                            if filename.endswith('.json'):
+                                filename = filename[:-5]  # Remove .json extension
+                            
+                            print(f"\nRenaming duplicate bylawNumber for file {dup_file}:")
+                            print(f"  - Original bylawNumber: {bylaw_number}")
+                            print(f"  - New bylawNumber: {filename}")
+                            
+                            b_copy['bylawNumber'] = filename
+                            final_bylaws.append(b_copy)
+                            handled_sources.add(dup_file)
+                            break
+        
+    # Add all non-duplicate bylaws
+    for bylaw in all_bylaws:
+        source_file = bylaw.get('_source_file', '')
+        if source_file not in handled_sources:
+            final_bylaws.append(bylaw)
+            handled_sources.add(source_file)
+    
+    # Set output_data to our final_bylaws list
+    output_data = final_bylaws
+    
+    # Verify counts
+    print(f"\nAfter duplicate processing:")
+    print(f"Total bylaws in final output: {len(output_data)}")
+    print(f"Total source bylaws processed: {len(all_bylaws)}")
+    print(f"Total unique source files: {len(handled_sources)}")
+
     # Write the output data to the output file
     with open(output_file, 'w', encoding='utf-8') as f:
-        json.dump(output_data, f, indent=2, ensure_ascii=False)
+        # Remove temporary _source_file field before saving
+        output_data_clean = []
+        for bylaw in output_data:
+            bylaw_copy = bylaw.copy()
+            if '_source_file' in bylaw_copy:
+                del bylaw_copy['_source_file']
+            output_data_clean.append(bylaw_copy)
+        json.dump(output_data_clean, f, indent=2, ensure_ascii=False)
 
+    # Print reports
+    
     if files_with_missing_bylaw_number:
         print("\nFiles with missing bylawNumber:")
         for file in files_with_missing_bylaw_number:
@@ -365,10 +476,21 @@ def search_bylaws_by_keyword(base_dir, keyword, output_file, include_all=False, 
         for file in multi_bylaw_files:
             print(f"  - {file}")
     
+    if consolidated_preferred:
+        print("\nConsolidated versions preferred for duplicate bylaws:")
+        for bylaw_number, kept_file, skipped_file in consolidated_preferred:
+            print(f"  - {bylaw_number}:")
+            print(f"    * Kept: {kept_file}")
+            print(f"    * Skipped: {skipped_file}")
+    
     print(f"\nTotal source files processed: {total_source_files}")
     print(f"Total bylaws processed: {total_bylaws_processed}")
     print(f"Total matching files: {len(matching_files)}")
     print(f"Total files with multiple bylaws: {len(multi_bylaw_files)}")
+    if all_duplicates:
+        print(f"Total bylaws with duplicate numbers (before consolidation): {len(all_duplicates)}")
+    if consolidated_preferred:
+        print(f"Total bylaws where consolidated version was preferred: {len(consolidated_preferred)}")
     print(f"Total files with valid bylawNumber format (originally valid): {len(files_with_valid_bylaw_format)}")
     print(f"Total files with invalid bylawNumber format (couldn't fix): {len(files_with_invalid_bylaw_format)}")
     if exclude_invalid:
@@ -431,6 +553,38 @@ def print_token_info(token_count, label=""):
     costs = calculate_llm_costs(token_count)
     for model, cost in costs.items():
         print(f"  {model} (${costs[model]:.2f}/million tokens): ${cost:.4f}")
+
+
+def check_duplicate_bylaw_numbers(bylaws_data):
+    """
+    Check for duplicate bylaw numbers in the processed data.
+    
+    Args:
+        bylaws_data (list): List of bylaw objects
+        
+    Returns:
+        tuple: (duplicates_dict, consolidated_preferred_count)
+            - duplicates_dict: Dictionary with bylaw numbers as keys and lists of file paths as values for duplicates
+            - consolidated_preferred_count: Count of bylaws where consolidated version was preferred
+    """
+    bylaw_number_map = {}
+    duplicates = {}
+    consolidated_preferred_count = 0
+    
+    for bylaw in bylaws_data:
+        if 'bylawNumber' in bylaw and bylaw.get('_source_file'):
+            bylaw_number = bylaw['bylawNumber']
+            source_file = bylaw['_source_file']
+            
+            if bylaw_number in bylaw_number_map:
+                # Add to duplicates if this is the first duplicate found
+                if bylaw_number not in duplicates:
+                    duplicates[bylaw_number] = [bylaw_number_map[bylaw_number]]
+                duplicates[bylaw_number].append(source_file)
+            else:
+                bylaw_number_map[bylaw_number] = source_file
+                
+    return duplicates, consolidated_preferred_count
 
 
 def main():
