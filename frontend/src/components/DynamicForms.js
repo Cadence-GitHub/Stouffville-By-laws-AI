@@ -1,7 +1,9 @@
 'use Client'
 import { useState } from "react";
 import Image from "next/image";
-import UserInput from "./UserInput";
+import MyUserInput from "./MyUserInput";
+import MyTextArea from "./MyTextArea";
+import MyPlaceHolders from "./MyPlaceHolders";
 
 
 const DynamicForms = ({startChat}) => {
@@ -32,6 +34,7 @@ const DynamicForms = ({startChat}) => {
 
     // TODO: Get the information the user has passed and pipe it to the backend for processing.
     // TODO: Sanitize input as well.
+    // TODO: Disable submitting after user has submitted query, then re-enable after backend has reponded.
     const handleSubmit = (e) => {
         e.preventDefault();
         startChat();
@@ -42,30 +45,25 @@ const DynamicForms = ({startChat}) => {
         <div style={{margin: 22.5}}>
             <form onSubmit={handleSubmit}>
                 
-                {!useAdvancedForm ? (<SimpleForm/>) : (<AdvancedForm/>)}
+                {!useAdvancedForm ? (<SimpleForm placeholder={MyPlaceHolders()} />) : (<AdvancedForm placeholder={MyPlaceHolders()}/>)}
                 
-                <div className="input-wrapper">
-                    <button className="submitButtonQuery" style={{left: "120px", bottom: "75px"}}>
-                        <Image 
-                            src="/assets/images/search.png" 
-                            alt="search" 
-                            width={15} 
-                            height={15}
-                        />
+                <div>
+                    <p 
+                        className="clickable-text" 
+                        style={{fontSize: "15px", color: "#0060A1", fontWeight: "550", margin: 22.5}} 
+                        onClick={handleSwitch}>
+                            {useFormLabel}
+                    </p>
+                
+                    {/* This element is a flag that changes the output that tailored to law enforcement officer language*/}
+                    <button type="button" style={{margin: 22.5}} className="buttonState" onClick={HandleClick}>
+                        Im an Officer
+                        
+                        <input name="officerFlag" type="checkbox" className="custom-checkbox" checked={isOfficerFlag} readOnly />
                     </button>
-                </div>
                 
-                {/* TODO-feature: change user input to a form template onClick*/}
-                <p className="clickable-text" style={{fontSize: "15px", color: "#0060A1", fontWeight: "550", margin: 22.5}} onClick={handleSwitch}>{useFormLabel}</p>
-            
-                {/* This element is a flag that changes the output that tailored to law enforcement officer language*/}
-                <button type="button" style={{margin: 22.5}} className="buttonState" onClick={HandleClick}>
-                    Im an Officer
-                    
-                    <input name="officerFlag" type="checkbox" className="custom-checkbox" checked={isOfficerFlag} readOnly />
-                </button>
-            
-                <button type="submit" style={{margin: 22.5}} className="buttonSubmit">Search</button>
+                    <button type="submit" style={{margin: 22.5}} className="buttonSubmit">Search</button>
+                </div>
             </form>
         </div>
     );
@@ -73,19 +71,23 @@ const DynamicForms = ({startChat}) => {
 
 export default DynamicForms;
 
-const SimpleForm = () => {
+const SimpleForm = ({placeholder}) => {
+    
     return (
-        <UserInput displayValue={''}/>
+        <div className="input-wrapper">
+           <MyTextArea placeholder={placeholder}/>
+        </div>
     );
 };
 
 
-const AdvancedForm = () => {
+const AdvancedForm = ({placeholder}) => {
+    
     return (
         <div className="form">
-            <UserInput displayValue={"Category"}/>
-            <UserInput displayValue={"Keywords"}/>
-            <UserInput displayValue={''}/>
+            <MyUserInput displayValue={"Category"}/>
+            <MyUserInput displayValue={"Keywords"}/>
+            <MyTextArea placeholder={placeholder}/>
         </div>
     );
 };

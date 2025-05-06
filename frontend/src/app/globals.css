@@ -13,17 +13,19 @@ body {
   font-family: 'Poppins', sans-serif;
 }
 
-/* textarea {
-  width: 325px;
-  height: 95px;
-  border: 1.5px solid #444444;
-  border-radius: 1vw;
-  padding: 1vw;
-  text-align: left;
-  text-wrap: unset;
+.textarea-input{
+  font-family: 'Poppins', sans-serif;
+  font-size: clamp(13px, 5vw, 13px);
   resize: none;
-  bottom: 85px;
-} */
+  height: 35px;
+  width: 330px;
+  border-radius: 0.3vw;
+  overflow: hidden;
+  /* T R B L */
+  padding: 1.1vh; 
+  line-height: 1.8vh;
+  box-sizing: border-box;
+}
 
 .headerContainer {
   display: flex;
@@ -44,16 +46,17 @@ body {
   height: 550px;
 }
 
-.chatBoxContainer {
-  position: inherit;
+.centerItems {
   display: flex;
-  border-color: black;
-  border-width: thin;
+  width: 100%;
+  text-align: center;
   justify-content: center;
+  flex-direction: column;
 }
 
 .chat-textarea {
-  width: 325px;
+  position: inherit;
+  width: 330px;
   height: 95px;
   padding: 10px;
   padding-right: 56px; /* Make space for the send button */
@@ -64,41 +67,29 @@ body {
   outline: none;
 }
 
+.chatBoxContainer {
+  position: inherit;
+  display: flex;
+  border-color: black;
+  border-width: thin;
+  justify-content: center;
+}
+
 .input-wrapper {
-  position: relative;
+  position: inherit;
   width: 100%;
-  max-width: 700px;
-  padding: 24px;
-  border-radius: 12px;
+  height: 35px;
+  margin-bottom: 50px;
 }
 
 .submitButtonQuery {
   position: relative;
-  background: none;
+  top: 3px;
+  right: 30px;
   border: none;
-  cursor: pointer;
+  background: none;
   padding: 0;
-}
-
-/* .chatBoxInput {
-  position: relative;
-  border-radius: 5px;
-  border: 1.5px solid;
-  width: 90vw;  
-  height: 95px;
-  padding: 1vw;
-  left: 15px;
-  
-  box-sizing: border-box;
-  outline: none;  
-  color: rgba(0, 0, 0, 0.5);
-} */
-
-.centerItems {
-  display: flex;
-  text-align: center;
-  justify-content: center;
-  flex-direction: column;
+  cursor: pointer;
 }
 
 /* ButtonRoute are buttons that redirect to another page*/
@@ -184,16 +175,18 @@ body {
   padding: 1vw;
   margin-bottom: 25px;
   box-sizing: border-box;
-  outline: none;  
-  /* background-image:url("/src/assets/images/search.png");
-  background-position: 10px 10px;  */
+  outline: #333;  
   color: rgba(0, 0, 0, 0.5);
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  
 }
 
 .form {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
 }
 
 .clickable-text {
@@ -227,6 +220,10 @@ body {
   }
 
   .input[type=text] {
+    border-radius: 0.8vw;
+  }
+
+  .textarea-input {
     border-radius: 0.8vw;
   }
 

@@ -46,7 +46,7 @@ const ChatBox = () => {
           <div className="input-wrapper">
             <textarea className="chat-textarea" placeholder="Ask Anything">
             </textarea>
-            <button className="submitButtonQuery" style={{right: "35px", bottom: "5px"}}>
+            <button className="submitButtonQuery" style={{right: "10px", bottom: "435px"}}>
               <Image 
                 src="/assets/images/Send-button.svg" 
                 alt="send button" 
