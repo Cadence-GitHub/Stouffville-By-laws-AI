@@ -298,6 +298,37 @@ def get_bylaw_json(bylaw_number):
     except Exception as e:
         return jsonify({"error": f"Error retrieving bylaw information: {str(e)}"}), 500
 
+@app.route('/api/autocomplete', methods=['POST'])
+def autocomplete():
+    """
+    API endpoint that returns autocomplete suggestions for a partial query.
+    """
+    data = request.get_json()
+    partial_query = data.get('query', '')
+    
+    if not partial_query or len(partial_query) < 3:
+        return jsonify({"suggestions": []}), 200
+    
+    # Try to use ChromaDB to find similar questions
+    try:
+        suggestions, retrieval_time, collection_exists = chroma_retriever.autocomplete_query(
+            partial_query, limit=5)
+        
+        # If collection doesn't exist, return appropriate message
+        if not collection_exists:
+            return jsonify({
+                "error": "Questions collection does not exist. Run ingest_questions.py first."
+            }), 500
+        
+        # Return suggestions
+        return jsonify({
+            "suggestions": suggestions,
+            "retrieval_time": retrieval_time
+        })
+            
+    except Exception as e:
+        return jsonify({"error": f"Autocomplete failed: {str(e)}"}), 500
+
 if __name__ == '__main__':
     # Run in debug mode for development
     # In production, we should set debug=False and configure a proper WSGI server

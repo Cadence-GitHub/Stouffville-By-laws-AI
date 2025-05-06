@@ -221,6 +221,165 @@ ${answerContent}
         document.getElementById('enhanced_search').addEventListener('change', updateBylawsLimitOptions);
         updateBylawsLimitOptions();
     }
+
+    /* Auto Suggest begins*/
+
+    // Get the query input element
+    const queryInput = document.getElementById('query');
+    
+    // Create autocomplete container
+    const autocompleteContainer = document.createElement('div');
+    autocompleteContainer.className = 'autocomplete-container';
+    autocompleteContainer.style.display = 'none';
+    
+    // Insert the autocomplete container after the query input
+    queryInput.parentNode.insertBefore(autocompleteContainer, queryInput.nextSibling);
+    
+    // Track current autocomplete state
+    let currentSuggestions = [];
+    let selectedIndex = -1;
+    let typingTimer;
+    const doneTypingInterval = 300; // Wait 300ms after user stops typing
+    
+    // Handle input changes
+    queryInput.addEventListener('input', function() {
+        // Clear any existing timer
+        clearTimeout(typingTimer);
+        
+        // Hide suggestions if input is empty or too short
+        if (!this.value.trim() || this.value.trim().length < 3) {
+            hideAutocomplete();
+            return;
+        }
+        
+        // Set a timer to fetch suggestions
+        typingTimer = setTimeout(() => fetchSuggestions(this.value), doneTypingInterval);
+    });
+    
+    // Handle keydown events for navigation
+    queryInput.addEventListener('keydown', function(e) {
+        if (!autocompleteContainer.children.length || autocompleteContainer.style.display === 'none') {
+            return;
+        }
+        
+        // Down arrow
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            selectedIndex = Math.min(selectedIndex + 1, autocompleteContainer.children.length - 1);
+            updateSelectedSuggestion();
+        } 
+        // Up arrow
+        else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            selectedIndex = Math.max(selectedIndex - 1, -1);
+            updateSelectedSuggestion();
+        }
+        // Enter
+        else if (e.key === 'Enter' && selectedIndex >= 0) {
+            e.preventDefault();
+            selectSuggestion(selectedIndex);
+        }
+        // Escape
+        else if (e.key === 'Escape') {
+            hideAutocomplete();
+        }
+    });
+    
+    // Hide autocomplete when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!queryInput.contains(e.target) && !autocompleteContainer.contains(e.target)) {
+            hideAutocomplete();
+        }
+    });
+    
+    // Fetch suggestions from the API
+    function fetchSuggestions(query) {
+        fetch('/api/autocomplete', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ query: query })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                console.error('Autocomplete error:', data.error);
+                return;
+            }
+            
+            // Update suggestions
+            currentSuggestions = data.suggestions || [];
+            displaySuggestions();
+        })
+        .catch(error => {
+            console.error('Error fetching autocomplete suggestions:', error);
+        });
+    }
+    
+    // Display suggestions in the DOM
+    function displaySuggestions() {
+        // Clear previous suggestions
+        autocompleteContainer.innerHTML = '';
+        selectedIndex = -1;
+        
+        // If no suggestions, hide the container
+        if (!currentSuggestions.length) {
+            hideAutocomplete();
+            return;
+        }
+        
+        // Add each suggestion to the container
+        currentSuggestions.forEach((suggestion, index) => {
+            const suggestionElement = document.createElement('div');
+            suggestionElement.className = 'autocomplete-suggestion';
+            suggestionElement.textContent = suggestion;
+            
+            // Handle click on suggestion
+            suggestionElement.addEventListener('click', () => {
+                selectSuggestion(index);
+            });
+            
+            // Handle mouseover
+            suggestionElement.addEventListener('mouseover', () => {
+                selectedIndex = index;
+                updateSelectedSuggestion();
+            });
+            
+            autocompleteContainer.appendChild(suggestionElement);
+        });
+        
+        // Show the container
+        autocompleteContainer.style.display = 'block';
+    }
+    
+    // Update the selected suggestion in the UI
+    function updateSelectedSuggestion() {
+        Array.from(autocompleteContainer.children).forEach((element, index) => {
+            if (index === selectedIndex) {
+                element.classList.add('selected');
+            } else {
+                element.classList.remove('selected');
+            }
+        });
+    }
+    
+    // Select a suggestion and fill the input
+    function selectSuggestion(index) {
+        if (index >= 0 && index < currentSuggestions.length) {
+            queryInput.value = currentSuggestions[index];
+            hideAutocomplete();
+            queryInput.focus();
+        }
+    }
+    
+    // Hide the autocomplete container
+    function hideAutocomplete() {
+        autocompleteContainer.style.display = 'none';
+        selectedIndex = -1;
+    }
+
+    /*Auto Suggest ends*/
     
     // Bylaw sidebar functionality
     console.log('DOM loaded, initializing bylaw sidebar');

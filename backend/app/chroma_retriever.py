@@ -195,3 +195,52 @@ class ChromaDBRetriever:
         except Exception as e:
             return None, 0, False
     
+    def autocomplete_query(self, partial_query, limit=10):
+        """
+        Find semantically similar questions to the partial query for autocomplete.
+        
+        Args:
+            partial_query (str): The partial query string typed by the user
+            limit (int): Maximum number of suggestions to return
+                
+        Returns:
+            tuple: (list of suggestion strings, retrieval_time in seconds, exists_status)
+        """
+        if not self.embedding_function:
+            print("Embedding function not available")
+            return [], 0, False
+                
+        try:
+            # Start timing the retrieval
+            start_time = time.time()
+            
+            # Create a client for the questions collection
+            chroma_client = chromadb.HttpClient(host=self.chroma_host, port=self.chroma_port)
+            
+            # Initialize vector store for questions collection
+            questions_store = Chroma(
+                collection_name="questions",  # Use a separate collection for questions
+                embedding_function=self.embedding_function,
+                client=chroma_client
+            )
+            
+            # Use the vector store as a retriever
+            retriever = questions_store.as_retriever(
+                search_type="similarity",
+                search_kwargs={"k": limit}
+            )
+            
+            # Retrieve similar questions
+            results = retriever.invoke(partial_query)
+            
+            # Extract questions from results
+            suggestions = [doc.metadata.get("question", "") for doc in results]
+            
+            # Calculate retrieval time
+            retrieval_time = time.time() - start_time
+            
+            return suggestions, retrieval_time, True
+            
+        except Exception as e:
+            print(f"Error retrieving autocomplete suggestions: {str(e)}")
+            return [], 0, False
