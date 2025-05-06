@@ -104,7 +104,7 @@ This project uses Docker to create a consistent development environment. The set
 
 This project uses Google's Gemini AI models through the LangChain framework. Make sure your `.env` file contains a valid Google API key to enable AI functionality.
 
-The application leverages ChromaDB (version 0.6.3) for vector search with Voyage AI embeddings to efficiently retrieve relevant by-laws based on semantic similarity.
+The application leverages ChromaDB (version 0.6.3) for vector search with Voyage AI embeddings to efficiently retrieve relevant by-laws based on semantic similarity. The system uses a direct similarity search with filtering for active bylaws only, and removes unnecessary metadata fields from results.
 
 Available Gemini models:
 - gemini-mixed (uses best model for each query stage)
@@ -139,7 +139,7 @@ Dependencies for AI integration:
 
 - **Enhanced Search**: Transforms user queries into formal, bylaw-oriented language to improve semantic search results, combining both original and transformed search results to maximize retrieval relevance.
 - **Token Counting and Cost Calculation**: Tracks token usage for both input and output, calculating costs based on model-specific pricing to provide transparency about API usage.
-- **Expired By-laws Filtering**: The system generates a complete response with all by-laws, then uses this response to create a filtered version showing only active by-laws. This two-step approach optimizes costs and speed by reducing the context size for the second prompt.
+- **Expired By-laws Filtering**: The system filters active bylaws directly in the vector search query, improving efficiency by only retrieving relevant, active bylaws.
 - **Layman's Terms Conversion**: After filtering active by-laws, a third prompt transforms the technical legal language into plain, everyday language without bylaw references, making information more accessible to residents.
 - **Comparison Mode**: Option to display all three versions of the answer (complete, filtered active only, and layman's terms) for comparison.
 - **Model Selection**: Users can select which Gemini model to use based on their requirements for speed, cost, and quality.
@@ -307,7 +307,7 @@ The system implements a Retrieval-Augmented Generation (RAG) architecture with t
 
 2. **Backend Core**:
    - Flask application handles HTTP routing and request processing
-   - ChromaDB Retriever manages vector database interactions
+   - ChromaDB Retriever manages vector database interactions and directly filters for active bylaws during retrieval
    - Gemini Handler orchestrates AI model interactions with multiple model options
    - Prompts Module contains templates that structure AI responses
    - Token Counter calculates token usage and associated costs

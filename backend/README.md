@@ -8,7 +8,7 @@ A Flask-based backend service that provides AI-powered responses to questions ab
 - Multiple Gemini model options for different performance/quality needs
 - Enhanced search capability that transforms user queries into legal language for better semantic search
 - Token counting and cost calculation for each query
-- Optimized expired by-laws filtering using a two-step prompting approach for cost efficiency and speed
+- Optimized vector search with direct filtering for active bylaws, improving efficiency
 - Layman's terms conversion that transforms legal language into plain, everyday language accessible to residents
 - Comparison mode to see differences between complete, filtered, and layman's terms versions
 - Performance metrics showing execution time for bylaw retrieval and each prompt (in demo interface)
@@ -157,7 +157,7 @@ Frontend developers can directly use this production backend if they don't want 
 - `app/`: Application package
   - `__init__.py`: Package initialization with simplified imports
   - `prompts.py`: AI prompt templates (including filtered version for active by-laws only, layman's terms conversion, and enhanced search)
-  - `chroma_retriever.py`: ChromaDB integration for vector search
+  - `chroma_retriever.py`: ChromaDB integration for vector search with direct active bylaw filtering
   - `gemini_handler.py`: Gemini AI model integration and response processing
   - `token_counter.py`: Token counting and cost calculation utilities
   - `templates/`: HTML templates for web interfaces
@@ -184,16 +184,18 @@ The application uses ChromaDB as the primary database for by-laws:
 The application uses ChromaDB and Voyage AI embeddings to provide intelligent retrieval:
 
 1. When a query is received, the system attempts to find relevant by-laws using vector search
-2. If enhanced search is enabled, the system:
+2. The vector search directly filters for active bylaws during retrieval
+3. Unnecessary metadata fields are removed from the results to streamline the response
+4. If enhanced search is enabled, the system:
    - Transforms the user query into formal, bylaw-oriented language
    - Performs two searches: one with the original query and one with the transformed query
    - Combines results, removing duplicates
-3. If relevant documents are found, those specific by-laws are sent to Gemini AI
-4. The system generates three different responses:
-   - A complete answer using all retrieved by-laws
-   - A filtered answer that removes expired by-laws from the first response
-   - A layman's terms answer that simplifies the language and removes bylaw references from the filtered response
-5. Demo interface provides options to compare all three responses
+5. If relevant documents are found, those specific by-laws are sent to Gemini AI
+6. The system generates three different responses:
+   - A complete answer using all retrieved by-laws (which are now pre-filtered for active status)
+   - A filtered answer (if still needed)
+   - A layman's terms answer that simplifies the language and removes bylaw references
+7. Demo interface provides options to compare all three responses
 
 ## Bylaw Viewer Feature
 
@@ -240,10 +242,11 @@ The application includes a streamlined bug reporting system:
 
 The system uses a cost-efficient multi-step approach for processing by-laws information:
 
-1. **First Prompt**: The complete by-laws content is sent to the Gemini model along with the user question to generate a comprehensive response
-2. **Second Prompt**: Instead of sending the by-laws content again, the system sends only the first response to a second prompt that filters out expired by-laws
-3. **Third Prompt**: The filtered response is sent to a third prompt that transforms the legal language into plain, everyday language and removes all bylaw references
-4. **Benefits**:
+1. **Vector Search Optimization**: The system directly filters for active bylaws during vector search
+2. **First Prompt**: The filtered active by-laws content is sent to the Gemini model along with the user question
+3. **Second Prompt**: If further filtering is needed, the first response is sent to a second prompt
+4. **Third Prompt**: The filtered response is sent to a third prompt that transforms the legal language into plain, everyday language and removes all bylaw references
+5. **Benefits**:
    - Significantly reduces token usage and API costs
    - Maintains quality by having each prompt focus on a specific task
    - Preserves formatting while transforming content appropriately at each step
