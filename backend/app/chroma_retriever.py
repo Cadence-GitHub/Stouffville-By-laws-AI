@@ -59,14 +59,12 @@ class ChromaDBRetriever:
             # Start timing the retrieval
             start_time = time.time()
             
-            # Use the vector store as a retriever
-            retriever = self.vector_store.as_retriever(
-                search_type="similarity",
-                search_kwargs={"k": limit}
+            # Use similarity_search directly instead of retriever
+            documents = self.vector_store.similarity_search(
+                query,
+                k=limit,
+                filter={"isActive": True}
             )
-            
-            # Retrieve relevant documents
-            documents = retriever.invoke(query)
             
             # Calculate retrieval time
             retrieval_time = time.time() - start_time
@@ -84,6 +82,23 @@ class ChromaDBRetriever:
                 if "keywords" in bylaw_data:
                     del bylaw_data["keywords"]
                 
+                # Remove isActive, whyNotActive, urlOriginalDocument, bylawHeader, newsSources, entityAndDesignation and bylawFileName fields from each bylaw
+                if "isActive" in bylaw_data:
+                    del bylaw_data["isActive"]
+                if "whyNotActive" in bylaw_data:
+                    del bylaw_data["whyNotActive"]
+                if "bylawFileName" in bylaw_data:
+                    del bylaw_data["bylawFileName"]
+                if "urlOriginalDocument" in bylaw_data:
+                    del bylaw_data["urlOriginalDocument"]
+                if "bylawHeader" in bylaw_data:
+                    del bylaw_data["bylawHeader"]
+                if "newsSources" in bylaw_data:
+                    del bylaw_data["newsSources"]
+                if "entityAndDesignation" in bylaw_data:
+                    del bylaw_data["entityAndDesignation"]
+
+
                 results.append(bylaw_data)
             
             # Return the results and a flag indicating the collection exists
