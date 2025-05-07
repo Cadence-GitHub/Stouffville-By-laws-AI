@@ -112,8 +112,20 @@ function displayBylaw(bylaw) {
     // Create the bylaw header
     const header = document.createElement('div');
     header.className = 'bylaw-header';
+    
+    // Use bylawFileName if available, otherwise fallback to bylawNumber
+    // Remove the '.json' extension if present
+    let displayTitle = bylaw.bylawNumber;
+    if (bylaw.bylawFileName) {
+        displayTitle = bylaw.bylawFileName;
+        // Remove .json extension if it exists
+        if (displayTitle.endsWith('.json')) {
+            displayTitle = displayTitle.slice(0, -5); // Remove last 5 characters ('.json')
+        }
+    }
+    
     header.innerHTML = `
-        <h2 class="bylaw-title">${bylaw.bylawNumber}</h2>
+        <h2 class="bylaw-title">${displayTitle}</h2>
         <h3 class="bylaw-subtitle">${bylaw.bylawType} (${bylaw.bylawYear})</h3>
     `;
     contentArea.appendChild(header);

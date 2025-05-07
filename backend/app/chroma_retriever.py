@@ -110,7 +110,7 @@ class ChromaDBRetriever:
     
     def retrieve_bylaw_by_number(self, bylaw_number):
         """
-        Retrieve a specific bylaw by its number, trying different format variations.
+        Retrieve a specific bylaw by its number.
         
         Returns:
             tuple: (bylaw document or None, retrieval_time in seconds, collection_exists)
@@ -124,13 +124,13 @@ class ChromaDBRetriever:
             # Get the direct collection access
             collection = self.vector_store._collection
             
-            # Try the original format first (fastest when it works)
+            # Get exact match only
             direct_match = collection.get(
                 where={"bylawNumber": bylaw_number},
                 limit=1
             )
             
-            # If exact match found, return it
+            # If match found, return it
             if direct_match and direct_match['metadatas'] and len(direct_match['metadatas']) > 0:
                 bylaw_data = direct_match['metadatas'][0]
                 if 'documents' in direct_match and direct_match['documents']:
@@ -138,73 +138,7 @@ class ChromaDBRetriever:
                     
                 return bylaw_data, time.time() - start_time, True
             
-            # Generate variations of the bylaw number format
-            variations = []
-            
-            # Check if we have multiple parts separated by dashes
-            if '-' in bylaw_number:
-                # Split on dash and clean up each part
-                parts = [part.strip() for part in bylaw_number.split('-')]
-                
-                # Handle both simple formats (like "72-17") and complex ones (like "2001-01-LI")
-                if len(parts) == 2:  # Simple case: number-number
-                    variations = [
-                        f"{parts[0]}-{parts[1]}",       # No spaces
-                        f"{parts[0]} -{parts[1]}",      # Space before dash
-                        f"{parts[0]}- {parts[1]}",      # Space after dash
-                        f"{parts[0]} - {parts[1]}"      # Spaces on both sides
-                    ]
-                elif len(parts) >= 3:  # Complex case: number-number-letter or more parts
-                    # For three parts (like "2001-01-LI")
-                    variations = [
-                        f"{parts[0]}-{parts[1]}-{parts[2]}",         # No spaces
-                        f"{parts[0]} - {parts[1]} - {parts[2]}",     # Spaces around dashes
-                        f"{parts[0]}-{parts[1]} - {parts[2]}",       # Mixed spaces
-                        f"{parts[0]} - {parts[1]}-{parts[2]}",       # Mixed spaces
-                        f"{parts[0]}-{parts[1]}-{parts[2]}",         # No spaces
-                        # Join all parts with spaces around dashes
-                        " - ".join(parts)
-                    ]
-                    
-                    # Also try without any dashes for cases where spaces are used instead
-                    variations.append(" ".join(parts))
-                    
-                # Add variations where all dashes are replaced by spaces
-                no_dash_version = bylaw_number.replace('-', ' ')
-                variations.append(no_dash_version)
-                
-                # Also try completely removing spaces and dashes
-                compact_version = bylaw_number.replace('-', '').replace(' ', '')
-                variations.append(compact_version)
-            else:
-                # If there are no dashes, try adding them between groups of numbers/letters
-                # For formats like "72 17" that might be in database as "72-17"
-                parts = bylaw_number.split()
-                if len(parts) == 2:
-                    variations = [
-                        f"{parts[0]}-{parts[1]}",       # With dash
-                        f"{parts[0]} - {parts[1]}"      # With dash and spaces
-                    ]
-            
-            # Try each variation
-            for variant in variations:
-                if variant == bylaw_number:  # Skip if already tried
-                    continue
-                    
-                variant_match = collection.get(
-                    where={"bylawNumber": variant},
-                    limit=1
-                )
-                
-                if variant_match and variant_match['metadatas'] and len(variant_match['metadatas']) > 0:
-                    bylaw_data = variant_match['metadatas'][0]
-                    if 'documents' in variant_match and variant_match['documents']:
-                        bylaw_data["content"] = variant_match['documents'][0]
-                        
-                    print(f"Found bylaw via variation match: '{bylaw_data.get('bylawNumber')}'")
-                    return bylaw_data, time.time() - start_time, True
-            
-            # If we got here, no match was found
+            # No match found
             return None, time.time() - start_time, True
             
         except Exception as e:
