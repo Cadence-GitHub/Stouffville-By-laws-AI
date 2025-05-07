@@ -59,12 +59,14 @@ class ChromaDBRetriever:
             # Start timing the retrieval
             start_time = time.time()
             
-            # Use similarity_search directly instead of retriever
-            documents = self.vector_store.similarity_search(
+            # Use similarity_search without filter to improve performance, then filter in memory
+            raw_documents = self.vector_store.similarity_search(
                 query,
-                k=limit,
-                filter={"isActive": True}
+                k=limit * 5  # Retrieve more documents than needed to ensure we have enough after filtering
             )
+            
+            # Filter documents in memory: include docs with isActive=True OR docs without isActive field
+            documents = [doc for doc in raw_documents if "isActive" not in doc.metadata or doc.metadata["isActive"]][:limit]
             
             # Calculate retrieval time
             retrieval_time = time.time() - start_time
