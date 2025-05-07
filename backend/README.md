@@ -13,6 +13,7 @@ A Flask-based backend service that provides AI-powered responses to questions ab
 - Comparison mode to see differences between complete, filtered, and layman's terms versions
 - Performance metrics showing execution time for bylaw retrieval and each prompt (in demo interface)
 - Configurable number of bylaws to retrieve (5, 10, 15, or 20) in the demo interface
+- Intelligent autocomplete feature that provides suggestions as users type their queries (minimum 3 characters)
 - Simple web-based demo interface for testing without the frontend
 - Interactive bylaw viewer with detailed information about specific bylaws
 - Direct bylaw linking and sidebar viewing from AI responses
@@ -91,6 +92,37 @@ Retrieves the full JSON data for a specific bylaw by its number. Intelligently h
 }
 ```
 
+### POST `/api/autocomplete`
+
+Returns autocomplete suggestions for a partial query, finding semantically similar questions.
+
+**Request Body:**
+```json
+{
+  "query": "can I park my car"
+}
+```
+
+**Response (Success):**
+```json
+{
+  "suggestions": [
+    "Can I park my car on the street overnight during the winter?",
+    "Where can I park my car during snow removal?"
+  ],
+  "retrieval_time": 0.15
+}
+```
+
+**Response (Error):**
+```json
+{
+  "error": "Questions collection does not exist. Run ingest_questions.py first."
+}
+```
+
+Note: This endpoint returns an empty array if the query is less than 3 characters long.
+
 ### GET/POST `/api/demo`
 
 A standalone web demo page with a simple form interface:
@@ -101,6 +133,7 @@ The demo page includes:
 - Model selection dropdown
 - Bylaw limit selection (5, 10, 15, or 20 bylaws)
 - Enhanced search option that transforms user queries into legal language
+- Intelligent autocomplete that suggests similar questions as you type
 - Token counting and cost calculation for input and output
 - Comparison mode to show all three versions of the response (complete, filtered, and layman's terms)
 - Side-by-side view option for easier comparison
@@ -163,8 +196,8 @@ Frontend developers can directly use this production backend if they don't want 
   - `templates/`: HTML templates for web interfaces
     - `demo.html`: Enhanced demo page with improved UI, model selection, and comparison features
   - `static/`: Static assets for web interfaces
-    - `demo.css`: CSS styling for the demo interface
-    - `demo.js`: JavaScript for the demo interface, including bug report functionality
+    - `demo.css`: CSS styling for the demo interface, including autocomplete styles
+    - `demo.js`: JavaScript for the demo interface, including autocomplete functionality and bug report generation
     - `bylawViewer.html`: Bylaw viewer interface
     - `bylawViewer.css`: CSS styling for the bylaw viewer
     - `bylawViewer.js`: JavaScript for the bylaw viewer
@@ -178,6 +211,7 @@ The application uses ChromaDB as the primary database for by-laws:
    - Uses Voyage AI embeddings for high-quality semantic understanding
    - Located in `../database/chroma-data/` directory
    - Initialized using `../database/init_chroma.py` script
+   - Contains a "questions" collection for autocomplete functionality, initialized using `../database/ingest_questions.py`
 
 ## Vector Search Functionality
 
@@ -196,6 +230,18 @@ The application uses ChromaDB and Voyage AI embeddings to provide intelligent re
    - A filtered answer (if still needed)
    - A layman's terms answer that simplifies the language and removes bylaw references
 7. Demo interface provides options to compare all three responses
+
+## Autocomplete Functionality
+
+The application includes an intelligent autocomplete feature that:
+
+1. Provides real-time suggestions as users type their queries
+2. Activates when the user has typed at least 3 characters
+3. Uses the ChromaDB "questions" collection to find semantically similar questions
+4. Displays suggestions in a dropdown below the search box
+5. Allows navigating suggestions with keyboard arrows or mouse hover
+6. Fills the input field with the selected suggestion when clicked or when Enter is pressed
+7. Shows no suggestions if the "questions" collection doesn't exist in ChromaDB
 
 ## Bylaw Viewer Feature
 
