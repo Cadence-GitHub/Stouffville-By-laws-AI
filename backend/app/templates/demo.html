@@ -8,10 +8,10 @@
 <body>
     <h1>Stouffville By-laws AI Demo</h1>
     
-    <form id="queryForm" action="/api/demo" method="post">
+    <form id="queryForm" action="/api/demo" method="post" autocomplete="off">
         <div class="form-overlay"></div>
         <label for="query">Ask a question:</label>
-        <input type="text" id="query" name="query" required value="{{ question or '' }}">
+        <input type="text" id="query" name="query" required value="{{ question or '' }}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
         
         <div style="margin: 15px 0;">
             <label for="model">Select model:</label>

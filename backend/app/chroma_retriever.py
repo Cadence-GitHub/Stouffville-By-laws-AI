@@ -19,25 +19,35 @@ class ChromaDBRetriever:
         # Initialize the embedding function - using the Voyage AI model
         self.embedding_function = VoyageAIEmbeddings(model="voyage-3-large")
         
-        # Collection name for by-laws
-        self.collection_name = "by-laws"
+        # Collection names
+        self.bylaw_collection_name = "by-laws"
+        self.questions_collection_name = "questions"
         
-        # Initialize vector store
+        # Initialize client and vector stores
         try:
-            # Create the ChromaDB client
-            chroma_client = chromadb.HttpClient(host=self.chroma_host, port=self.chroma_port)
+            # Create a single ChromaDB client to be reused
+            self.chroma_client = chromadb.HttpClient(host=self.chroma_host, port=self.chroma_port)
             
-            # Connect to the existing ChromaDB collection
+            # Connect to the existing ChromaDB by-laws collection
             self.vector_store = Chroma(
-                collection_name=self.collection_name,
+                collection_name=self.bylaw_collection_name,
                 embedding_function=self.embedding_function,
-                client=chroma_client
+                client=self.chroma_client
             )
-            print(f"Successfully connected to ChromaDB collection '{self.collection_name}'")
+            
+            # Connect to the questions collection for autocomplete
+            self.questions_store = Chroma(
+                collection_name=self.questions_collection_name,
+                embedding_function=self.embedding_function,
+                client=self.chroma_client
+            )
+            
+            print(f"Successfully connected to ChromaDB collections")
         except Exception as e:
             print(f"Error connecting to ChromaDB: {str(e)}")
-            # Create a fallback empty collection if needed
+            self.chroma_client = None
             self.vector_store = None
+            self.questions_store = None
     
     def retrieve_relevant_bylaws(self, query, limit=10):
         """
@@ -157,35 +167,22 @@ class ChromaDBRetriever:
         Returns:
             tuple: (list of suggestion strings, retrieval_time in seconds, exists_status)
         """
-        if not self.embedding_function:
-            print("Embedding function not available")
+        if not self.embedding_function or not self.questions_store:
+            print("Embedding function or questions store not available")
             return [], 0, False
                 
         try:
             # Start timing the retrieval
             start_time = time.time()
             
-            # Create a client for the questions collection
-            chroma_client = chromadb.HttpClient(host=self.chroma_host, port=self.chroma_port)
-            
-            # Initialize vector store for questions collection
-            questions_store = Chroma(
-                collection_name="questions",  # Use a separate collection for questions
-                embedding_function=self.embedding_function,
-                client=chroma_client
+            # Use similarity_search directly instead of retriever - consistent with retrieve_relevant_bylaws
+            documents = self.questions_store.similarity_search(
+                partial_query,
+                k=limit
             )
-            
-            # Use the vector store as a retriever
-            retriever = questions_store.as_retriever(
-                search_type="similarity",
-                search_kwargs={"k": limit}
-            )
-            
-            # Retrieve similar questions
-            results = retriever.invoke(partial_query)
             
             # Extract questions from results
-            suggestions = [doc.metadata.get("question", "") for doc in results]
+            suggestions = [doc.metadata.get("question", "") for doc in documents]
             
             # Calculate retrieval time
             retrieval_time = time.time() - start_time
