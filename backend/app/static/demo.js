@@ -310,7 +310,9 @@ ${answerContent}
             
             // Update suggestions
             currentSuggestions = data.suggestions || [];
-            displaySuggestions();
+            // Store retrieval time if available
+            retrievalTime = data.retrieval_time || 0;
+            displaySuggestions(retrievalTime);
         })
         .catch(error => {
             console.error('Error fetching autocomplete suggestions:', error);
@@ -318,7 +320,7 @@ ${answerContent}
     }
     
     // Display suggestions in the DOM
-    function displaySuggestions() {
+    function displaySuggestions(retrievalTime = 0) {
         // Clear previous suggestions
         autocompleteContainer.innerHTML = '';
         selectedIndex = -1;
@@ -333,7 +335,14 @@ ${answerContent}
         currentSuggestions.forEach((suggestion, index) => {
             const suggestionElement = document.createElement('div');
             suggestionElement.className = 'autocomplete-suggestion';
-            suggestionElement.textContent = suggestion;
+            
+            // Add timing info to the first suggestion
+            if (index === 0 && retrievalTime) {
+                const formattedTime = (retrievalTime * 1000).toFixed(2);
+                suggestionElement.innerHTML = `${suggestion} <span class="timing-info">(${formattedTime}ms)</span>`;
+            } else {
+                suggestionElement.textContent = suggestion;
+            }
             
             // Handle click on suggestion
             suggestionElement.addEventListener('click', () => {
