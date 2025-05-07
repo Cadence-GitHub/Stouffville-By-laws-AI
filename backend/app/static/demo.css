@@ -206,3 +206,9 @@ body.sidebar-open .container {
 .autocomplete-suggestion.selected {
     background-color: #f0f7ff;
 }
+
+.timing-info {
+    font-size: 0.8em;
+    color: #666;
+    margin-left: 5px;
+}
