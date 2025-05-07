@@ -66,6 +66,8 @@ This project uses Docker to create a consistent development environment. The set
   - `search_bylaws.py`: Utility script for searching and extracting by-laws by keyword
   - `init_chroma.py`: Script to initialize ChromaDB with by-laws data
   - `chroma-data/`: Directory containing ChromaDB vector database files
+  - `AI-generated_Q&A.json`: Contains sample questions and answers for autocomplete
+  - `ingest_questions.py`: Script to ingest questions into ChromaDB for autocomplete functionality
 
 - **Static Assets**: Frontend assets are in the `backend/app/static/` directory
   - `demo.css` and `demo.js`: Styling and functionality for the demo interface
@@ -99,6 +101,9 @@ This project uses Docker to create a consistent development environment. The set
   - Returns complete metadata and content for the requested bylaw
 - `GET /api/demo`: Returns a simple web interface for testing the AI functionality
 - `POST /api/demo`: Processes form submissions from the demo interface
+- `POST /api/autocomplete`: Returns autocomplete suggestions for partial queries
+  - Requires JSON with a 'query' field containing the partial query text
+  - Returns semantically similar questions when the query is at least 3 characters long
 
 ### AI Integration
 
@@ -150,6 +155,7 @@ Dependencies for AI integration:
 - **Intelligent Bylaw Number Matching**: The system can match bylaw numbers even with different formatting variations (spacing, dashes, etc.).
 - **Visual UI Improvements**: Enhanced demo interface with better layout and formatting options.
 - **Bug Reporting System**: Each answer type includes a "Problem? Log a bug!" button that automatically captures query details, model information, retrieved bylaws, timing data, and the response content, formatting it as Markdown for clear reporting in GitHub Issues.
+- **Autocomplete Feature**: The search interface provides intelligent autocomplete suggestions based on previously stored questions when the user types at least 3 characters, finding semantically similar questions using ChromaDB's vector search.
 
 ### Bylaw Viewer Feature
 
@@ -182,6 +188,15 @@ To initialize the ChromaDB vector database with by-laws data:
    ```bash
    cd database
    python init_chroma.py
+   ```
+
+To initialize the questions database for autocomplete functionality:
+
+1. Make sure the ChromaDB container is running (`docker-compose up -d`)
+2. Run the questions ingestion script:
+   ```bash
+   cd database
+   python ingest_questions.py
    ```
 
 ## Contributing
@@ -221,6 +236,7 @@ graph TB
         TokenCounter["Token Counter (token_counter.py)"]
         Demo["Web Demo (templates/demo.html)"]
         BylawViewer["Bylaw Viewer (static/bylawViewer.html)"]
+        Autocomplete["Autocomplete (static/demo.js)"]
 
         %% Subgraph for API Calls
         subgraph APICalls["API Endpoints"]
@@ -228,6 +244,7 @@ graph TB
             API2["/api/demo (GET/POST)"]
             API3["/api/hello (GET)"]
             API4["/api/bylaw/ (GET)"]
+            API5["/api/autocomplete (POST)"]
         end
     end
 
@@ -238,11 +255,13 @@ graph TB
         InitChroma["Initialize ChromaDB (init_chroma.py)"]
         BylawExpiryAnalyzer["Bylaw Expiry Analyzer (bylaw_expiry_analyzer.py)"]
         BylawRevocationAnalysis["Bylaw Revocation Analysis (bylaw_revocation_analysis.py)"]
+        IngestQuestions["Ingest Questions (ingest_questions.py)"]
     end
 
     %% Data Storage
     ByLawsData[("By-laws JSON Data")]
     ChromaDBData[("ChromaDB Vector Store")]
+    QuestionsData[("Questions JSON Data")]
 
 
     %% Connections between components
@@ -254,18 +273,25 @@ graph TB
     FlaskApp --> TokenCounter
     ChromaRetriever --> ChromaDB
     ChromaRetriever <--> BylawViewer
+    ChromaRetriever <--> Autocomplete
     GeminiHandler --> PromptsModule
     GeminiHandler --> GoogleAPI
     TokenCounter --> GeminiHandler
     InitChroma <--> VoyageAPI
     InitChroma --> ByLawsData
     InitChroma --> ChromaDB
+    IngestQuestions --> QuestionsData
+    IngestQuestions --> ChromaDB
+    IngestQuestions <--> VoyageAPI
     API1 --> FlaskApp
     API2 --> FlaskApp
     API3 --> FlaskApp
     API4 --> ChromaRetriever
     API4 --> BylawViewer
+    API5 --> ChromaRetriever
+    API5 --> Autocomplete
     Demo --> BylawViewer
+    Demo --> Autocomplete
     
     
     %% Container connections
@@ -275,14 +301,17 @@ graph TB
 
     %% Data flow for initialization
     ByLawsData --> InitChroma
+    QuestionsData --> IngestQuestions
     
     %% User interactions
     User(("User")) --> API1
     User --> API2
     User --> API3
     User --> API4
+    User --> API5
     User --> Demo
     User --> BylawViewer
+    User --> Autocomplete
     style GoogleAPI fill:#0CC0DF
     style VoyageAPI fill:#0CC0DF
 ```
@@ -298,6 +327,7 @@ The system implements a Retrieval-Augmented Generation (RAG) architecture with t
    - `bylaw_revocation_analysis.py` identifies bylaws that revoke other bylaws
    - Voyage AI generates embeddings for these documents using the `voyage-3-large` model
    - ChromaDB indexes embeddings for efficient semantic retrieval using HNSW algorithm
+   - Sample questions and answers are ingested using `ingest_questions.py` to enable autocomplete functionality
    - When a query is received, relevant by-laws are retrieved and passed to Gemini AI
    - If enhanced search is enabled, the system transforms the query into legal language and performs two searches
    - Gemini generates three different responses:
@@ -312,10 +342,12 @@ The system implements a Retrieval-Augmented Generation (RAG) architecture with t
    - Prompts Module contains templates that structure AI responses
    - Token Counter calculates token usage and associated costs
    - Bylaw Viewer provides an interactive interface to explore complete bylaw information
+   - Autocomplete feature provides intelligent suggestions as users type their queries
 
 3. **Database Tools**:
    - `init_chroma.py` converts JSON bylaws into vector embeddings stored in ChromaDB
    - `search_bylaws.py` allows semantic search, keyword search, or combinations of both
+   - `ingest_questions.py` loads sample questions into a "questions" collection in ChromaDB
    - Vector search is optimized with configurable HNSW parameters (M, construction_ef, search_ef)
    - Bylaw retrieval by number supports multiple format variations for flexible matching
 
@@ -326,6 +358,7 @@ The system implements a Retrieval-Augmented Generation (RAG) architecture with t
 5. **User Interface Options**:
    - Web demo interface with model selection and bylaw limit options
    - Enhanced search option for improved semantic retrieval
+   - Intelligent autocomplete that suggests similar questions as users type
    - Token usage and cost information
    - Performance metrics showing timing information for each processing step
    - Option to compare all three versions of the answer (complete, filtered active only, and layman's terms)

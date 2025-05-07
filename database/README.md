@@ -11,6 +11,7 @@ The database initialization process involves several scripts that process by-law
 3. Revocation analysis with `bylaw_revocation_analysis.py`
 4. Final data enrichment with `prepare_final_json.py`
 5. Vector database initialization with `init_chroma.py`
+6. Question ingestion for autocomplete with `ingest_questions.py`
 
 ## Prerequisites
 
@@ -18,6 +19,7 @@ The database initialization process involves several scripts that process by-law
 - Voyage AI API key for generating embeddings
 - Google API key for Gemini AI (for analysis scripts)
 - JSON files containing by-law data in the database directory
+- JSON file containing sample questions and answers for autocomplete functionality
 
 ## Data Processing Tools
 
@@ -169,6 +171,57 @@ The script will generate a summary after completion, showing:
 
 This tool creates the final data file that should be used for the ChromaDB import process.
 
+### Questions Ingestion Tool
+
+The `ingest_questions.py` script loads a set of questions and answers into ChromaDB for the autocomplete functionality.
+
+Key features:
+- Reads question and answer pairs from a JSON file
+- Creates vector embeddings using Voyage AI's `voyage-3-large` model
+- Stores questions in a separate "questions" collection in ChromaDB
+- Handles rate limits by processing in small batches with delays
+- Preserves both the question text and answer text as metadata
+- Enables semantic search for finding similar questions
+
+Workflow:
+1. Create or obtain a JSON file containing question and answer pairs (like `AI-generated_Q&A.json`)
+2. Run `ingest_questions.py` to process these questions and add them to ChromaDB
+3. The script connects to the ChromaDB instance and creates/updates a collection named "questions"
+4. Questions are processed in small batches to respect API rate limits
+5. The application's autocomplete endpoint can then use this collection to find semantically similar questions
+
+Usage:
+```bash
+python ingest_questions.py [OPTIONS]
+```
+
+Options:
+- `--input`: Input JSON file with questions (default: AI-generated_Q&A.json)
+- `--api-key`: Voyage AI API key (can also be set in .env file)
+- `--chroma-host`: ChromaDB host (default: localhost)
+- `--chroma-port`: ChromaDB port (default: 8000)
+- `--collection`: Collection name (default: questions)
+- `--reset`: Reset collection if it exists
+
+Example:
+```bash
+python ingest_questions.py --input AI-generated_Q&A.json --reset
+```
+
+Expected Output:
+```
+Initializing Voyage AI embedding function...
+Connecting to ChromaDB at localhost:8000...
+Resetting collection 'questions'...
+Loading questions from AI-generated_Q&A.json...
+Adding 4 questions to ChromaDB...
+Processing batch 1/1 (4 documents)...
+Successfully added batch 1
+Successfully added 4 questions to ChromaDB
+```
+
+This tool enables the autocomplete functionality in the application's search interface, which helps users discover relevant questions as they type.
+
 ## ChromaDB Integration
 
 ### Database Initialization
@@ -298,6 +351,34 @@ This function:
 
 This robust matching system ensures users can find bylaws regardless of formatting differences in how the bylaw number is entered.
 
+### Autocomplete Integration
+
+The ChromaDB retriever includes a function for autocomplete suggestions:
+
+```python
+def autocomplete_query(self, partial_query, limit=10):
+    """
+    Find semantically similar questions to the partial query for autocomplete.
+    
+    Args:
+        partial_query (str): The partial query string typed by the user
+        limit (int): Maximum number of suggestions to return
+            
+    Returns:
+        tuple: (list of suggestion strings, retrieval_time in seconds, exists_status)
+    """
+```
+
+This function:
+1. Takes a partial query string that the user is typing
+2. Requires at least 3 characters to activate
+3. Generates embeddings for the partial query using Voyage AI
+4. Searches the "questions" collection for semantically similar questions
+5. Returns a list of suggested complete questions sorted by relevance
+6. Returns timing information for performance monitoring
+
+This functionality powers the autocomplete feature in the application's search interface, helping users discover relevant questions as they type.
+
 ### Search Tool
 
 The `search_bylaws.py` script allows you to search the ChromaDB database using semantic search, keyword search, or a combination of both.
@@ -339,6 +420,7 @@ After initializing ChromaDB, the Flask application will automatically use it for
 5. Provides options for users to compare these different responses
 6. Allows direct access to specific bylaws through the `/api/bylaw/<bylaw_number>` endpoint
 7. Integrates with an interactive bylaw viewer to display comprehensive bylaw information
+8. Offers autocomplete suggestions as users type their queries using the "questions" collection
 
 The bylaw viewer uses the direct retrieval function to fetch complete bylaw data and displays it in a user-friendly format with:
 - Comprehensive metadata display
@@ -346,6 +428,8 @@ The bylaw viewer uses the direct retrieval function to fetch complete bylaw data
 - Original document links
 - Formatted content with proper spacing and structure
 - Dark mode support for better readability
+
+The autocomplete feature uses the questions collection in ChromaDB to provide intelligent suggestions as users type, improving the user experience and helping users discover relevant questions they might want to ask.
 
 This approach improves response quality and provides users with the most relevant and up-to-date information about Stouffville's by-laws.
 
@@ -356,3 +440,8 @@ If you encounter errors connecting to ChromaDB:
 2. Check that port 8000 is properly exposed in docker-compose.yaml
 3. Ensure your Voyage AI API key is valid and has sufficient quota
 4. Verify you're using the correct ChromaDB version (0.6.3) 
+
+If the autocomplete functionality is not working:
+1. Make sure you've run `ingest_questions.py` to populate the "questions" collection
+2. Check that the "questions" collection exists in ChromaDB
+3. Verify that your input has at least 3 characters (shorter queries return empty results) 
