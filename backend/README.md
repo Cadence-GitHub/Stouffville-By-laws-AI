@@ -21,7 +21,9 @@ A Flask-based backend service that provides AI-powered responses to questions ab
 - CORS support for frontend integration
 - 50-second timeout protection for AI queries
 - Customizable temperature settings for different prompt types
-- ChromaDB vector search integration with Voyage AI embeddings for intelligent retrieval
+- ChromaDB vector search integration with dual Voyage AI embedding models:
+  - `voyage-3-large` for the main by-laws collection for highest quality retrieval
+  - `voyage-3-lite` for the questions collection used in autocomplete functionality
 
 ## API Endpoints
 
@@ -231,6 +233,10 @@ The application uses ChromaDB and Voyage AI embeddings to provide intelligent re
    - A layman's terms answer that simplifies the language and removes bylaw references
 7. Demo interface provides options to compare all three responses
 
+The system uses different embedding models for different collections:
+- The main by-laws collection uses `voyage-3-large` for highest quality retrieval
+- The questions collection (used for autocomplete) uses `voyage-3-lite` for efficient retrieval of similar questions
+
 ## Autocomplete Functionality
 
 The application includes an intelligent autocomplete feature that:
@@ -238,10 +244,11 @@ The application includes an intelligent autocomplete feature that:
 1. Provides real-time suggestions as users type their queries
 2. Activates when the user has typed at least 3 characters
 3. Uses the ChromaDB "questions" collection to find semantically similar questions
-4. Displays suggestions in a dropdown below the search box
-5. Allows navigating suggestions with keyboard arrows or mouse hover
-6. Fills the input field with the selected suggestion when clicked or when Enter is pressed
-7. Shows no suggestions if the "questions" collection doesn't exist in ChromaDB
+4. Leverages the `voyage-3-lite` embedding model for efficient semantic matching
+5. Displays suggestions in a dropdown below the search box
+6. Allows navigating suggestions with keyboard arrows or mouse hover
+7. Fills the input field with the selected suggestion when clicked or when Enter is pressed
+8. Shows no suggestions if the "questions" collection doesn't exist in ChromaDB
 
 ## Bylaw Viewer Feature
 

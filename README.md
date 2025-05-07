@@ -325,7 +325,8 @@ The system implements a Retrieval-Augmented Generation (RAG) architecture with t
    - `prepare_json_bylaws_for_db.py` creates subsets of bylaws by keyword for further processing
    - `bylaw_expiry_analyzer.py` identifies expired bylaws based on their content
    - `bylaw_revocation_analysis.py` identifies bylaws that revoke other bylaws
-   - Voyage AI generates embeddings for these documents using the `voyage-3-large` model
+   - Voyage AI generates embeddings for by-law documents using the `voyage-3-large` model
+   - For the autocomplete questions collection, embeddings are generated using the `voyage-3-lite` model
    - ChromaDB indexes embeddings for efficient semantic retrieval using HNSW algorithm
    - Sample questions and answers are ingested using `ingest_questions.py` to enable autocomplete functionality
    - When a query is received, relevant by-laws are retrieved and passed to Gemini AI

@@ -33,7 +33,7 @@ def main():
         
     # Initialize embedding function
     print("Initializing Voyage AI embedding function...")
-    embedding_function = VoyageAIEmbeddings(model="voyage-3-large")
+    embedding_function = VoyageAIEmbeddings(model="voyage-3-lite")
     
     # Connect to ChromaDB
     print(f"Connecting to ChromaDB at {args.chroma_host}:{args.chroma_port}...")

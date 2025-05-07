@@ -177,7 +177,7 @@ The `ingest_questions.py` script loads a set of questions and answers into Chrom
 
 Key features:
 - Reads question and answer pairs from a JSON file
-- Creates vector embeddings using Voyage AI's `voyage-3-large` model
+- Creates vector embeddings using Voyage AI's `voyage-3-lite` model
 - Stores questions in a separate "questions" collection in ChromaDB
 - Handles rate limits by processing in small batches with delays
 - Preserves both the question text and answer text as metadata
@@ -372,7 +372,7 @@ def autocomplete_query(self, partial_query, limit=10):
 This function:
 1. Takes a partial query string that the user is typing
 2. Requires at least 3 characters to activate
-3. Generates embeddings for the partial query using Voyage AI
+3. Generates embeddings for the partial query using Voyage AI's `voyage-3-lite` model
 4. Searches the "questions" collection for semantically similar questions
 5. Returns a list of suggested complete questions sorted by relevance
 6. Returns timing information for performance monitoring

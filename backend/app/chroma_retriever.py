@@ -16,8 +16,9 @@ class ChromaDBRetriever:
         self.chroma_host = os.environ.get("CHROMA_HOST", "localhost")
         self.chroma_port = int(os.environ.get("CHROMA_PORT", "8000"))
         
-        # Initialize the embedding function - using the Voyage AI model
-        self.embedding_function = VoyageAIEmbeddings(model="voyage-3-large")
+        # Initialize the embedding functions
+        self.main_embedding_function = VoyageAIEmbeddings(model="voyage-3-large")
+        self.questions_embedding_function = VoyageAIEmbeddings(model="voyage-3-lite")
         
         # Collection names
         self.bylaw_collection_name = "by-laws"
@@ -31,14 +32,14 @@ class ChromaDBRetriever:
             # Connect to the existing ChromaDB by-laws collection
             self.vector_store = Chroma(
                 collection_name=self.bylaw_collection_name,
-                embedding_function=self.embedding_function,
+                embedding_function=self.main_embedding_function,
                 client=self.chroma_client
             )
             
-            # Connect to the questions collection for autocomplete
+            # Connect to the questions collection for autocomplete with different embedding model
             self.questions_store = Chroma(
                 collection_name=self.questions_collection_name,
-                embedding_function=self.embedding_function,
+                embedding_function=self.questions_embedding_function,
                 client=self.chroma_client
             )
             
@@ -167,7 +168,7 @@ class ChromaDBRetriever:
         Returns:
             tuple: (list of suggestion strings, retrieval_time in seconds, exists_status)
         """
-        if not self.embedding_function or not self.questions_store:
+        if not self.questions_embedding_function or not self.questions_store:
             print("Embedding function or questions store not available")
             return [], 0, False
                 
