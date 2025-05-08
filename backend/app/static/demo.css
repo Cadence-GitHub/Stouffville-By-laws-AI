@@ -25,16 +25,15 @@ body {
     margin-top: 0;
 }
 input[type="text"] {
-    width: 80%;
+    width: 100%;
     padding: 8px;
-    margin-right: 10px;
+    box-sizing: border-box;
 }
 select {
     padding: 8px;
     border: 1px solid #ccc;
     border-radius: 4px;
     background-color: white;
-    margin-left: 10px;
 }
 input[type="submit"] {
     padding: 8px 16px;

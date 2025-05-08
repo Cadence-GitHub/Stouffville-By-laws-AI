@@ -95,6 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const model = document.getElementById('model').value;
         const bylawsLimit = document.getElementById('bylaws_limit').value;
         const enhancedSearch = document.getElementById('enhanced_search').checked;
+        const bylawStatus = document.getElementById('bylaw_status').value;
         
         // Get transformed query if available
         let transformedQuery = '';
@@ -187,6 +188,7 @@ document.addEventListener('DOMContentLoaded', function() {
 - **Gemini Model:** ${model}
 - **Bylaws Limit:** ${bylawsLimit}
 - **Enhanced Search:** ${enhancedSearch ? 'On' : 'Off'}
+- **Bylaw Status Filter:** ${bylawStatus}
 ${transformedQuery ? `- **Transformed Query:** ${transformedQuery}` : ''}
 
 ### System Information

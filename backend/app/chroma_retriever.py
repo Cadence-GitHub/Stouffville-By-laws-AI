@@ -50,13 +50,14 @@ class ChromaDBRetriever:
             self.vector_store = None
             self.questions_store = None
     
-    def retrieve_relevant_bylaws(self, query, limit=10):
+    def retrieve_relevant_bylaws(self, query, limit=10, bylaw_status="active"):
         """
         Retrieve by-laws relevant to the query.
         
         Args:
             query (str): The search query
             limit (int): Maximum number of results to return
+            bylaw_status (str): "active" or "inactive" to filter bylaws by status
             
         Returns:
             tuple: (list of by-law documents with their metadata, retrieval_time in seconds, exists_status)
@@ -70,14 +71,22 @@ class ChromaDBRetriever:
             # Start timing the retrieval
             start_time = time.time()
             
-            # Use similarity_search without filter to improve performance, then filter in memory
-            raw_documents = self.vector_store.similarity_search(
-                query,
-                k=limit * 5  # Retrieve more documents than needed to ensure we have enough after filtering
-            )
-            
-            # Filter documents in memory: include docs with isActive=True OR docs without isActive field
-            documents = [doc for doc in raw_documents if "isActive" not in doc.metadata or doc.metadata["isActive"]][:limit]
+            if bylaw_status == "active":
+                # Use similarity_search without filter to improve performance, then filter in memory
+                raw_documents = self.vector_store.similarity_search(
+                    query,
+                    k=limit * 5  # Retrieve more documents than needed to ensure we have enough after filtering
+                )
+                
+                # Filter documents in memory: include docs with isActive=True OR docs without isActive field
+                documents = [doc for doc in raw_documents if "isActive" not in doc.metadata or doc.metadata["isActive"]][:limit]
+            else:
+                # For inactive bylaws, use ChromaDB's filter parameter to retrieve only inactive bylaws
+                documents = self.vector_store.similarity_search(
+                    query,
+                    k=limit,
+                    filter={"isActive": False}
+                )
             
             # Calculate retrieval time
             retrieval_time = time.time() - start_time
