@@ -121,12 +121,10 @@ Available Gemini models:
 When using the gemini-mixed option:
 - Query transformation uses gemini-2.0-flash
 - First query (bylaws) uses gemini-2.5-flash-preview-04-17
-- Second query (filtered) uses gemini-2.0-flash
-- Third query (layman's terms) uses gemini-2.0-flash
+- Second query (layman's terms) uses gemini-2.0-flash
 
 Each prompt type uses a specific temperature setting for optimal results:
 - Bylaws prompt: 0.0 (consistent, deterministic outputs)
-- Filtered prompt: 0.0 (consistent, deterministic outputs)
 - Layman's terms prompt: 0.7 (more creative, natural language)
 - Enhanced search prompt: 0.2 (slightly varied outputs while maintaining accuracy)
 
@@ -144,11 +142,12 @@ Dependencies for AI integration:
 
 - **Enhanced Search**: Transforms user queries into formal, bylaw-oriented language to improve semantic search results, combining both original and transformed search results to maximize retrieval relevance.
 - **Token Counting and Cost Calculation**: Tracks token usage for both input and output, calculating costs based on model-specific pricing to provide transparency about API usage.
-- **Expired By-laws Filtering**: The system filters active bylaws directly in the vector search query, improving efficiency by only retrieving relevant, active bylaws.
-- **Layman's Terms Conversion**: After filtering active by-laws, a third prompt transforms the technical legal language into plain, everyday language without bylaw references, making information more accessible to residents.
-- **Comparison Mode**: Option to display all three versions of the answer (complete, filtered active only, and layman's terms) for comparison.
+- **Bylaw Status Filtering**: The system allows filtering bylaws by status (active or inactive) through a dropdown selection, improving user control over search results.
+- **Direct Vector Search Filtering**: Active/inactive bylaw filtering is performed directly in the vector search query, improving efficiency.
+- **Layman's Terms Conversion**: After retrieving relevant bylaws, a second prompt transforms the technical legal language into plain, everyday language without bylaw references, making information more accessible to residents.
+- **Comparison Mode**: Option to display both versions of the answer (technical with bylaw references and layman's terms) for comparison.
 - **Model Selection**: Users can select which Gemini model to use based on their requirements for speed, cost, and quality.
-- **Performance Metrics**: The demo interface displays detailed timing information showing how long each step takes (by-law retrieval, first prompt execution, second prompt execution, and third prompt execution).
+- **Performance Metrics**: The demo interface displays detailed timing information showing how long each step takes (by-law retrieval, first prompt execution, second prompt execution).
 - **Bylaw Limit Selection**: In the demo interface, users can choose how many relevant bylaws to retrieve (5, 10, 15, or 20) for their queries.
 - **Interactive Bylaw Viewer**: A dedicated interface to view complete bylaw information with rich formatting, dark mode support, and detailed metadata display.
 - **Direct Bylaw Linking**: AI responses include hyperlinks to specific bylaws that open in the bylaw viewer (either in a new tab or sidebar).
@@ -331,9 +330,9 @@ The system implements a Retrieval-Augmented Generation (RAG) architecture with t
    - Sample questions and answers are ingested using `ingest_questions.py` to enable autocomplete functionality
    - When a query is received, relevant by-laws are retrieved and passed to Gemini AI
    - If enhanced search is enabled, the system transforms the query into legal language and performs two searches
-   - Gemini generates three different responses:
-     - Complete response with all retrieved by-laws
-     - Filtered response with only active by-laws
+   - Users can filter bylaws by status (active or inactive) through a dropdown selection
+   - Gemini generates two different responses:
+     - Complete response with bylaw references (includes XML tags that are converted to HTML links)
      - Layman's terms response with simplified language and no bylaw references
 
 2. **Backend Core**:
