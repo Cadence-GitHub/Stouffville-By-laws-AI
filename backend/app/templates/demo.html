@@ -72,15 +72,15 @@
     <div class="answers-wrapper {% if side_by_side %}side-by-side{% endif %}">
         {% if compare_mode %}
         <div class="answer-container">
-            <h3>Complete Answer (includes all by-laws)</h3>
-            <p class="explanation" style="font-style: italic; color: #666;">This answer includes all relevant by-laws, including those that have expired or are no longer in effect.</p>
+            <h3>Complete Answer (with XML tags)</h3>
+            <p class="explanation" style="font-style: italic; color: #666;">This is the raw response from the first model with bylaw references marked with XML tags.</p>
             <div>{{ full_answer | safe }}</div>
             <a class="bug-report-btn" data-answer-type="complete">Problem? Log a bug!</a>
         </div>
         
         <div class="answer-container">
-            <h3>Filtered Answer (active by-laws only)</h3>
-            <p class="explanation" style="font-style: italic; color: #666;">This answer only includes currently active by-laws. Expired, temporary, or obsolete by-laws have been filtered out.</p>
+            <h3>URL-Enhanced Answer (with bylaw links)</h3>
+            <p class="explanation" style="font-style: italic; color: #666;">This converts XML tags in the original response to proper HTML hyperlinks for better user experience when referencing bylaws.</p>
             <div>{{ filtered_answer | safe }}</div>
             <a class="bug-report-btn" data-answer-type="filtered">Problem? Log a bug!</a>
         </div>

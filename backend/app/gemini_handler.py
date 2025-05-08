@@ -151,13 +151,11 @@ def get_gemini_response(query, relevant_bylaws, model="gemini-2.0-flash"):
             {"bylaws_content": bylaws_content, "question": query}
         )
         
-        # 2. Process XML tags in the full response to convert them to HTML links
+        # Process XML tags in the full response to convert them to HTML links (non-LLM step)
         cleaned_filtered_response = convert_bylaw_tags_to_links(cleaned_full_response)
-        # Measure the time for this step (usually very small)
-        second_prompt_time = 0.001  # Nominal time value
         
-        # 3. Get layman's terms response using the filtered response as input
-        laymans_response, third_prompt_time = run_model_step(
+        # 2. Get layman's terms response using the filtered response as input
+        laymans_response, second_prompt_time = run_model_step(
             "laymans",
             LAYMANS_PROMPT_TEMPLATE,
             {"filtered_response": cleaned_filtered_response, "question": query}
@@ -169,8 +167,7 @@ def get_gemini_response(query, relevant_bylaws, model="gemini-2.0-flash"):
             "laymans_answer": laymans_response,
             "timings": {
                 "first_prompt": first_prompt_time,
-                "second_prompt": second_prompt_time,
-                "third_prompt": third_prompt_time
+                "second_prompt": second_prompt_time
             }
         }
     except Exception as e:

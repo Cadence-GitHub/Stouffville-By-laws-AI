@@ -191,13 +191,12 @@ def demo():
                 if 'timings' in response:
                     first_prompt_time = response['timings'].get('first_prompt', 0)
                     second_prompt_time = response['timings'].get('second_prompt', 0)
-                    third_prompt_time = response['timings'].get('third_prompt', 0)
                     
                     # Include transform time in enhanced search mode
                     if enhanced_search:
-                        timing_info = f"Timings: Transform: {transform_time:.2f}s, Original retrieval: {original_time:.2f}s, Enhanced retrieval: {transformed_time:.2f}s, First prompt: {first_prompt_time:.2f}s, Second prompt: {second_prompt_time:.2f}s, Third prompt: {third_prompt_time:.2f}s, Total processing: {pre_render_time:.2f}s"
+                        timing_info = f"Timings: Transform: {transform_time:.2f}s, Original retrieval: {original_time:.2f}s, Enhanced retrieval: {transformed_time:.2f}s, First prompt: {first_prompt_time:.2f}s, Second prompt: {second_prompt_time:.2f}s, Total processing: {pre_render_time:.2f}s"
                     else:
-                        timing_info = f"Timings: Retrieval: {retrieval_time:.2f}s, First prompt: {first_prompt_time:.2f}s, Second prompt: {second_prompt_time:.2f}s, Third prompt: {third_prompt_time:.2f}s, Total processing: {pre_render_time:.2f}s"
+                        timing_info = f"Timings: Retrieval: {retrieval_time:.2f}s, First prompt: {first_prompt_time:.2f}s, Second prompt: {second_prompt_time:.2f}s, Total processing: {pre_render_time:.2f}s"
                 else:
                     # If no detailed timings available, only show retrieval time (and transform time if applicable)
                     if enhanced_search:
@@ -266,7 +265,7 @@ def demo():
                 error_message = f"Error: ChromaDB retrieval failed: {str(e)}"
                 return render_template('demo.html', question=query, answer=error_message, model=model)
     
-    return render_template('demo.html', compare_mode=False, side_by_side=False, model="gemini-mixed", bylaws_limit=10, enhanced_search=False)
+    return render_template('demo.html', compare_mode=False, side_by_side=False, model="gemini-mixed", bylaws_limit=10, enhanced_search=True)
 
 @app.route('/api/bylaw/<bylaw_number>')
 def get_bylaw_json(bylaw_number):
