@@ -360,6 +360,17 @@ ${answerContent}
             autocompleteContainer.appendChild(suggestionElement);
         });
         
+        // Calculate position relative to the input field
+        const inputRect = queryInput.getBoundingClientRect();
+        const formRect = queryInput.parentNode.getBoundingClientRect();
+        const leftOffset = inputRect.left - formRect.left;
+        
+        // Position the container below the input field
+        autocompleteContainer.style.position = 'absolute';
+        autocompleteContainer.style.top = `${inputRect.height}px`;
+        autocompleteContainer.style.left = `${leftOffset}px`;
+        autocompleteContainer.style.width = `${inputRect.width}px`;
+        
         // Show the container
         autocompleteContainer.style.display = 'block';
     }

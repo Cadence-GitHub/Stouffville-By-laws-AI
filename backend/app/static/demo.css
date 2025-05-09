@@ -183,12 +183,9 @@ body.sidebar-open .container {
     border: 1px solid #ccc;
     border-radius: 4px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    width: 80%;
     max-height: 200px;
     overflow-y: auto;
-    margin-top: 2px;
     padding: 8px;
-    margin-left: 115px;
 }
 
 .autocomplete-suggestion {
