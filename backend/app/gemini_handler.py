@@ -3,11 +3,12 @@ import json
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.schema.output_parser import StrOutputParser
 from app.prompts import (
-    BYLAWS_PROMPT_TEMPLATE, FILTERED_BYLAWS_PROMPT_TEMPLATE, 
+    BYLAWS_PROMPT_TEMPLATE, 
     LAYMANS_PROMPT_TEMPLATE, ENHANCED_SEARCH_PROMPT_TEMPLATE,
     TEMPERATURES
 )
 import time
+import re
 
 # Define allowed models
 ALLOWED_MODELS = [
@@ -55,6 +56,37 @@ def invoke_model_with_timing(prompt_type, model_config, prompt_template, prompt_
     cleaned_response = clean_response(response)
     
     return cleaned_response, execution_time
+
+def convert_bylaw_tags_to_links(text):
+    """
+    Convert <BYLAW_URL> tags to proper HTML hyperlinks.
+    
+    Args:
+        text (str): Text with <BYLAW_URL> tags
+        
+    Returns:
+        str: Text with proper HTML hyperlinks
+    """
+    # Find all instances of <BYLAW_URL>...</BYLAW_URL>
+    pattern = r'<BYLAW_URL>(.*?)</BYLAW_URL>'
+    
+    def replace_with_link(match):
+        bylaw_text = match.group(1)
+        # Extract just the bylaw number for the URL parameter
+        # We need to handle various formats like "By-law 2024-103" or just "2024-103"
+        bylaw_number = bylaw_text
+        if "By-law" in bylaw_text:
+            bylaw_parts = bylaw_text.split("By-law")
+            if len(bylaw_parts) > 1:
+                bylaw_number = bylaw_parts[1].strip()
+        
+        # Create the HTML hyperlink
+        return f'<a href="/static/bylawViewer.html?bylaw={bylaw_number}" target="_blank" rel="noopener noreferrer">{bylaw_text}</a>'
+    
+    # Replace all instances of the pattern with proper hyperlinks
+    result = re.sub(pattern, replace_with_link, text)
+    
+    return result
 
 def get_gemini_response(query, relevant_bylaws, model="gemini-2.0-flash"):
     """
@@ -119,15 +151,11 @@ def get_gemini_response(query, relevant_bylaws, model="gemini-2.0-flash"):
             {"bylaws_content": bylaws_content, "question": query}
         )
         
-        # 2. Get filtered response using the first response as input
-        cleaned_filtered_response, second_prompt_time = run_model_step(
-            "filtered",
-            FILTERED_BYLAWS_PROMPT_TEMPLATE,
-            {"first_response": cleaned_full_response, "question": query}
-        )
+        # Process XML tags in the full response to convert them to HTML links (non-LLM step)
+        cleaned_filtered_response = convert_bylaw_tags_to_links(cleaned_full_response)
         
-        # 3. Get layman's terms response using the filtered response as input
-        laymans_response, third_prompt_time = run_model_step(
+        # 2. Get layman's terms response using the filtered response as input
+        laymans_response, second_prompt_time = run_model_step(
             "laymans",
             LAYMANS_PROMPT_TEMPLATE,
             {"filtered_response": cleaned_filtered_response, "question": query}
@@ -139,8 +167,7 @@ def get_gemini_response(query, relevant_bylaws, model="gemini-2.0-flash"):
             "laymans_answer": laymans_response,
             "timings": {
                 "first_prompt": first_prompt_time,
-                "second_prompt": second_prompt_time,
-                "third_prompt": third_prompt_time
+                "second_prompt": second_prompt_time
             }
         }
     except Exception as e:

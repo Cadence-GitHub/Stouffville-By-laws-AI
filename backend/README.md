@@ -8,15 +8,17 @@ A Flask-based backend service that provides AI-powered responses to questions ab
 - Multiple Gemini model options for different performance/quality needs
 - Enhanced search capability that transforms user queries into legal language for better semantic search
 - Token counting and cost calculation for each query
-- Optimized vector search with direct filtering for active bylaws, improving efficiency
+- Bylaw status filtering allowing users to search specifically for active or inactive bylaws
+- Optimized vector search with direct filtering for bylaw status (active/inactive)
 - Layman's terms conversion that transforms legal language into plain, everyday language accessible to residents
-- Comparison mode to see differences between complete, filtered, and layman's terms versions
+- Comparison mode to see differences between technical and layman's terms versions
 - Performance metrics showing execution time for bylaw retrieval and each prompt (in demo interface)
 - Configurable number of bylaws to retrieve (5, 10, 15, or 20) in the demo interface
 - Intelligent autocomplete feature that provides suggestions as users type their queries (minimum 3 characters)
 - Simple web-based demo interface for testing without the frontend
 - Interactive bylaw viewer with detailed information about specific bylaws
 - Direct bylaw linking and sidebar viewing from AI responses
+- XML tag processing for bylaw references that converts them to proper HTML hyperlinks
 - One-click bug reporting system with automatic context capture for GitHub Issues
 - CORS support for frontend integration
 - 50-second timeout protection for AI queries
@@ -46,15 +48,15 @@ Main endpoint for the React frontend to query the AI.
 ```json
 {
   "query": "What are the noise restrictions in Stouffville?",
-  "model": "gemini-2.0-flash"
+  "model": "gemini-2.0-flash",
+  "bylaw_status": "active"
 }
 ```
 
 **Response (Success):**
 ```json
 {
-  "answer": "The AI-generated response about all Stouffville by-laws",
-  "filtered_answer": "The AI-generated response about only active Stouffville by-laws",
+  "answer": "The AI-generated response about Stouffville by-laws with bylaw references",
   "laymans_answer": "The AI-generated response in simple, everyday language without bylaw references",
   "source": "ChromaDB",
   "bylaw_numbers": ["2015-139-RE", "2015-04-RE"],
@@ -72,7 +74,7 @@ Main endpoint for the React frontend to query the AI.
 
 ### GET `/api/bylaw/<bylaw_number>`
 
-Retrieves the full JSON data for a specific bylaw by its number. Intelligently handles different format variations of bylaw numbers.
+Retrieves the full JSON data for a specific bylaw by its number. Intelligently handles different format variations of bylaw numbers and automatically removes `-XX` pattern suffixes.
 
 **Response (Success):**
 ```json
@@ -133,11 +135,12 @@ A standalone web demo page with a simple form interface:
 
 The demo page includes:
 - Model selection dropdown
+- Bylaw status filter dropdown (active or inactive bylaws)
 - Bylaw limit selection (5, 10, 15, or 20 bylaws)
 - Enhanced search option that transforms user queries into legal language
 - Intelligent autocomplete that suggests similar questions as you type
 - Token counting and cost calculation for input and output
-- Comparison mode to show all three versions of the response (complete, filtered, and layman's terms)
+- Comparison mode to show both versions of the response (technical with bylaw references and layman's terms)
 - Side-by-side view option for easier comparison
 - Performance metrics showing retrieval and processing times
 - Visualization of bylaws found specifically by enhanced search
@@ -220,18 +223,17 @@ The application uses ChromaDB as the primary database for by-laws:
 The application uses ChromaDB and Voyage AI embeddings to provide intelligent retrieval:
 
 1. When a query is received, the system attempts to find relevant by-laws using vector search
-2. The vector search directly filters for active bylaws during retrieval
+2. The vector search directly filters by bylaw status (active or inactive) based on user selection during retrieval
 3. Unnecessary metadata fields are removed from the results to streamline the response
 4. If enhanced search is enabled, the system:
    - Transforms the user query into formal, bylaw-oriented language
    - Performs two searches: one with the original query and one with the transformed query
    - Combines results, removing duplicates
 5. If relevant documents are found, those specific by-laws are sent to Gemini AI
-6. The system generates three different responses:
-   - A complete answer using all retrieved by-laws (which are now pre-filtered for active status)
-   - A filtered answer (if still needed)
+6. The system generates two different responses:
+   - A technical answer with bylaw references (using XML tags that are converted to HTML links)
    - A layman's terms answer that simplifies the language and removes bylaw references
-7. Demo interface provides options to compare all three responses
+7. Demo interface provides options to compare both responses
 
 The system uses different embedding models for different collections:
 - The main by-laws collection uses `voyage-3-large` for highest quality retrieval
@@ -271,6 +273,7 @@ The application includes an interactive bylaw viewer that:
    - Legal topics and related legislation
    - Entity and designation information
    - And many more fields when available
+7. Improved bylaw number handling that automatically removes `-XX` pattern suffixes for better matching
 
 ## Bug Reporting System
 
@@ -291,19 +294,19 @@ The application includes a streamlined bug reporting system:
 4. The user is directed to the GitHub issue creation page with all context data pre-populated
 5. This helps to accurately track and resolve issues with the AI responses
 
-## Optimized Three-Step Prompt System
+## Optimized Two-Step Prompt System
 
 The system uses a cost-efficient multi-step approach for processing by-laws information:
 
-1. **Vector Search Optimization**: The system directly filters for active bylaws during vector search
-2. **First Prompt**: The filtered active by-laws content is sent to the Gemini model along with the user question
-3. **Second Prompt**: If further filtering is needed, the first response is sent to a second prompt
-4. **Third Prompt**: The filtered response is sent to a third prompt that transforms the legal language into plain, everyday language and removes all bylaw references
+1. **Vector Search with Status Filtering**: The system directly filters by bylaw status (active or inactive) during vector search based on user selection
+2. **First Prompt**: The filtered bylaws content is sent to the Gemini model along with the user question, generating a response with bylaw references in XML tags
+3. **XML Tag Processing**: The system converts `<BYLAW_URL>By-law 2023-060-RE</BYLAW_URL>` tags to proper HTML hyperlinks (non-LLM step)
+4. **Second Prompt**: The processed response with hyperlinks is sent to a second prompt that transforms the legal language into plain, everyday language and removes all bylaw references
 5. **Benefits**:
-   - Significantly reduces token usage and API costs
+   - Significantly reduces token usage and API costs by eliminating the separate filtering prompt
    - Maintains quality by having each prompt focus on a specific task
    - Preserves formatting while transforming content appropriately at each step
-   - Increases speed
+   - Increases speed with fewer LLM calls
    - Makes it possible to choose a more suitable model for each prompt to improve speed, accuracy, and cost
 
 ## Gemini AI Models
@@ -319,12 +322,10 @@ The backend supports multiple Gemini model options:
 The gemini-mixed option selects different models for different processing stages:
 - Query transformation: Uses `gemini-2.0-flash` for efficient query enhancement
 - First query (bylaws): Uses `gemini-2.5-flash-preview-04-17` for highest quality initial response
-- Second query (filtered): Uses `gemini-2.0-flash` for efficient filtering of expired bylaws
-- Third query (layman's terms): Uses `gemini-2.0-flash` for balanced quality/speed in final simplification
+- Second query (layman's terms): Uses `gemini-2.0-flash` for balanced quality/speed in final simplification
 
 Each prompt type uses a specific temperature setting for optimal results:
 - Bylaws prompt: 0.0 (consistent, deterministic outputs)
-- Filtered prompt: 0.0 (consistent, deterministic outputs)
 - Layman's terms prompt: 0.7 (more creative, natural language)
 - Enhanced search prompt: 0.2 (slightly varied outputs while maintaining accuracy)
 

@@ -2,7 +2,6 @@ import json
 import tiktoken
 from app.prompts import (
     BYLAWS_PROMPT_TEMPLATE, 
-    FILTERED_BYLAWS_PROMPT_TEMPLATE, 
     LAYMANS_PROMPT_TEMPLATE, 
     ENHANCED_SEARCH_PROMPT_TEMPLATE
 )
@@ -50,18 +49,16 @@ def count_tokens(bylaws=None, response=None, model="gemini-2.0-flash"):
             
             # Calculate prompt template token counts
             bylaws_template = BYLAWS_PROMPT_TEMPLATE.template.replace("{bylaws_content}", "").replace("{question}", "")
-            filtered_template = FILTERED_BYLAWS_PROMPT_TEMPLATE.template.replace("{first_response}", "").replace("{question}", "")
             laymans_template = LAYMANS_PROMPT_TEMPLATE.template.replace("{filtered_response}", "").replace("{question}", "")
             enhanced_template = ENHANCED_SEARCH_PROMPT_TEMPLATE.template.replace("{question}", "")
 
             # Count tokens for each template
             bylaws_template_tokens = len(encoding.encode(bylaws_template))
-            filtered_template_tokens = len(encoding.encode(filtered_template))
             laymans_template_tokens = len(encoding.encode(laymans_template))
             enhanced_template_tokens = len(encoding.encode(enhanced_template))
             
             # Calculate total input tokens (input + all templates)
-            token_counts['input_tokens'] = input_tokens + bylaws_template_tokens + filtered_template_tokens + laymans_template_tokens + enhanced_template_tokens
+            token_counts['input_tokens'] = input_tokens + bylaws_template_tokens + laymans_template_tokens + enhanced_template_tokens
         
         # Count output tokens if response is provided
         if response:

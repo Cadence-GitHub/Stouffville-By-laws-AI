@@ -5,6 +5,7 @@ import json
 import time
 from dotenv import load_dotenv
 import tiktoken  # Still needed for potential direct use elsewhere
+import re
 
 # Import from app package using the simplified imports from __init__.py
 from app import (
@@ -47,6 +48,7 @@ def ask():
     data = request.get_json()
     query = data.get('query', '')
     model = data.get('model', 'gemini-2.0-flash')
+    bylaw_status = data.get('bylaw_status', 'active')
     
     if not query:
         return jsonify({"error": "No query provided"}), 400
@@ -54,7 +56,7 @@ def ask():
     # Try to use ChromaDB to find relevant bylaws
     try:
         # Use ChromaDB to find relevant bylaws - now also returns collection existence status
-        relevant_bylaws, retrieval_time, collection_exists = chroma_retriever.retrieve_relevant_bylaws(query, limit=10)
+        relevant_bylaws, retrieval_time, collection_exists = chroma_retriever.retrieve_relevant_bylaws(query, limit=10, bylaw_status=bylaw_status)
         
         # Check if the collection exists
         if not collection_exists:
@@ -104,6 +106,9 @@ def demo():
         # Check if enhanced search is enabled
         enhanced_search = request.form.get('enhanced_search', 'false') == 'true'
         
+        # Get bylaw status filter (active or inactive)
+        bylaw_status = request.form.get('bylaw_status', 'active')
+        
         if query:
             # Try to use ChromaDB to find relevant bylaws
             try:
@@ -116,7 +121,7 @@ def demo():
                     transformed_query, transform_time = transform_query_for_enhanced_search(query, model)
                     
                     # First search with original query - also checks if collection exists
-                    original_results, original_time, collection_exists = chroma_retriever.retrieve_relevant_bylaws(query, limit=bylaws_limit)
+                    original_results, original_time, collection_exists = chroma_retriever.retrieve_relevant_bylaws(query, limit=bylaws_limit, bylaw_status=bylaw_status)
                     
                     # Check if collection exists
                     if not collection_exists:
@@ -124,7 +129,7 @@ def demo():
                         return render_template('demo.html', question=query, answer=error_message, model=model)
                     
                     # Second search with transformed query - always use 10 documents
-                    transformed_results, transformed_time, _ = chroma_retriever.retrieve_relevant_bylaws(transformed_query, limit=10)
+                    transformed_results, transformed_time, _ = chroma_retriever.retrieve_relevant_bylaws(transformed_query, limit=10, bylaw_status=bylaw_status)
                     
                     # Total retrieval time is the sum of both searches
                     retrieval_time = original_time + transformed_time
@@ -153,7 +158,7 @@ def demo():
                 else:
                     # Standard search - just use the original query
                     # This now also returns collection existence status
-                    relevant_bylaws, retrieval_time, collection_exists = chroma_retriever.retrieve_relevant_bylaws(query, limit=bylaws_limit)
+                    relevant_bylaws, retrieval_time, collection_exists = chroma_retriever.retrieve_relevant_bylaws(query, limit=bylaws_limit, bylaw_status=bylaw_status)
                     
                     # Check if collection exists
                     if not collection_exists:
@@ -191,13 +196,12 @@ def demo():
                 if 'timings' in response:
                     first_prompt_time = response['timings'].get('first_prompt', 0)
                     second_prompt_time = response['timings'].get('second_prompt', 0)
-                    third_prompt_time = response['timings'].get('third_prompt', 0)
                     
                     # Include transform time in enhanced search mode
                     if enhanced_search:
-                        timing_info = f"Timings: Transform: {transform_time:.2f}s, Original retrieval: {original_time:.2f}s, Enhanced retrieval: {transformed_time:.2f}s, First prompt: {first_prompt_time:.2f}s, Second prompt: {second_prompt_time:.2f}s, Third prompt: {third_prompt_time:.2f}s, Total processing: {pre_render_time:.2f}s"
+                        timing_info = f"Timings: Transform: {transform_time:.2f}s, Original retrieval: {original_time:.2f}s, Enhanced retrieval: {transformed_time:.2f}s, First prompt: {first_prompt_time:.2f}s, Second prompt: {second_prompt_time:.2f}s, Total processing: {pre_render_time:.2f}s"
                     else:
-                        timing_info = f"Timings: Retrieval: {retrieval_time:.2f}s, First prompt: {first_prompt_time:.2f}s, Second prompt: {second_prompt_time:.2f}s, Third prompt: {third_prompt_time:.2f}s, Total processing: {pre_render_time:.2f}s"
+                        timing_info = f"Timings: Retrieval: {retrieval_time:.2f}s, First prompt: {first_prompt_time:.2f}s, Second prompt: {second_prompt_time:.2f}s, Total processing: {pre_render_time:.2f}s"
                 else:
                     # If no detailed timings available, only show retrieval time (and transform time if applicable)
                     if enhanced_search:
@@ -214,6 +218,7 @@ def demo():
                     bylaw_info = f"Retrieved By-laws: {bylaw_numbers_str}"
                     token_info = f"Total input tokens: {input_token_count} (${input_cost:.6f})<br>Total output tokens: {output_token_count} (${output_cost:.6f})"
                     model_info = f"Model: {model}"
+                    status_info = f"Bylaw Status Filter: {bylaw_status.capitalize()}"
                     enhanced_info = ""
                     if enhanced_search:
                         # Identify which bylaws came from the enhanced search
@@ -224,7 +229,7 @@ def demo():
                         
                         enhanced_bylaws_str = ", ".join(enhanced_bylaw_ids) if enhanced_bylaw_ids else "None"
                         enhanced_info = f"<br>Bylaws found by Enhanced Search: {enhanced_bylaws_str}"
-                    footer = f"<hr><small><i>{source_info}<br>{bylaw_info}{enhanced_info}<br>{token_info}<br>{model_info}<br>{timing_info}</i></small>"
+                    footer = f"<hr><small><i>{source_info}<br>{bylaw_info}{enhanced_info}<br>{token_info}<br>{model_info}<br>{status_info}<br>{timing_info}</i></small>"
                     
                     if compare_mode:
                         # When comparing, provide only the answers without the footer
@@ -243,6 +248,7 @@ def demo():
                             model=model,
                             bylaws_limit=bylaws_limit,
                             enhanced_search=enhanced_search,
+                            bylaw_status=bylaw_status,
                             transformed_query=transformed_query if enhanced_search else None
                         )
                     else:
@@ -259,6 +265,7 @@ def demo():
                             model=model,
                             bylaws_limit=bylaws_limit,
                             enhanced_search=enhanced_search,
+                            bylaw_status=bylaw_status,
                             transformed_query=transformed_query if enhanced_search else None
                         )
                 
@@ -266,7 +273,7 @@ def demo():
                 error_message = f"Error: ChromaDB retrieval failed: {str(e)}"
                 return render_template('demo.html', question=query, answer=error_message, model=model)
     
-    return render_template('demo.html', compare_mode=False, side_by_side=False, model="gemini-mixed", bylaws_limit=10, enhanced_search=False)
+    return render_template('demo.html', compare_mode=False, side_by_side=False, model="gemini-mixed", bylaws_limit=10, enhanced_search=True, bylaw_status="active")
 
 @app.route('/api/bylaw/<bylaw_number>')
 def get_bylaw_json(bylaw_number):
@@ -274,8 +281,11 @@ def get_bylaw_json(bylaw_number):
     API endpoint that returns the full JSON data for a specific bylaw by its number.
     """
     try:
+        # Use regex to remove -XX pattern (dash followed by two capital letters) if present
+        clean_bylaw_number = re.sub(r'-[A-Z]{2}$', '', bylaw_number)
+        
         # Use metadata lookup with normalization
-        exact_match, retrieval_time, collection_exists = chroma_retriever.retrieve_bylaw_by_number(bylaw_number)
+        exact_match, retrieval_time, collection_exists = chroma_retriever.retrieve_bylaw_by_number(clean_bylaw_number)
         
         # Handle collection issues
         if not collection_exists:

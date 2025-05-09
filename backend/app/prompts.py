@@ -4,7 +4,6 @@ from datetime import datetime
 # Define temperature values for each prompt type in a dictionary
 TEMPERATURES = {
     "bylaws": 0.0,
-    "filtered": 0.0,
     "laymans": 0.7,
     "enhanced_search": 0.2
 }
@@ -39,41 +38,14 @@ When answering questions:
    - <hr> for separating sections if needed
    - Other basic HTML formatting as appropriate
 12. IMPORTANT: When referring to specific by-laws in your response:
-    - Create hyperlinks using the by-law number as anchor text and linking to our bylaw viewer. For example, instead of just writing "By-law 2024-103-PR", create a hyperlink like this: <a href="/static/bylawViewer.html?bylaw=2024-103-PR" target="_blank" rel="noopener noreferrer">By-law 2024-103-PR</a> using only the bylaw number as the parameter.
-    - When multiple by-laws are retrieved and you're referencing any of them, ensure that each of the by-laws referenced are hyperlinked using the above formulation.
-    - All by-laws must be hyperlinked using the formulation above.
+    - Do NOT create HTML hyperlinks directly.
+    - Instead, wrap each by-law number in XML tags like this: <BYLAW_URL>By-law 2024-103</BYLAW_URL>
+    - When multiple by-laws are retrieved and you're referencing any of them, ensure that each of the by-laws referenced are wrapped in these XML tags.
+    - All by-laws must be wrapped in these XML tags exactly as shown.
 
 User Question: {question}
 
 Your response (in HTML format):"""
-)
-
-# Define a modified prompt that explicitly filters out expired bylaws
-FILTERED_BYLAWS_PROMPT_TEMPLATE = PromptTemplate(
-    input_variables=["first_response", "question"],
-    template="""You are an AI assistant for the Town of Whitchurch-Stouffville, Ontario, Canada.
-            
-I previously generated a response about Stouffville by-laws based on the user's question. Here is my previous response:
-
-<first_response>
-{first_response}
-</first_response>
-
-Today's date is """ + datetime.now().strftime("%B %d, %Y") + """.
-
-Your task is to review my previous response and create a new version that:
-1. Only REMOVES by-laws that are EXPLICITLY stated as expired, temporary with a passed end date, or repealed
-2. Keep ALL by-laws mentioned in the first response UNLESS there is clear evidence in the response that they are no longer applicable
-3. If a by-law doesn't explicitly mention an expiration date or repealed status, KEEP IT in your response
-4. Assume all by-laws mentioned are active unless explicitly stated otherwise
-5. If uncertain about whether a by-law is still active, include it in your response
-6. Keep all other relevant information that pertains to by-laws
-7. Maintain the same professional tone and HTML formatting from my previous response
-8. Do not add any information beyond what was in the first response
-9. Only base your response on the information contained in the first response, not on your general knowledge
-10. This is a best-effort process - when in doubt, include the information from the first response
-
-Your filtered response (in HTML format):"""
 )
 
 # Define a new prompt template for layman's terms explanation

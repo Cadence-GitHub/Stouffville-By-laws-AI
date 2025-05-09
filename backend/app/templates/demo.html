@@ -10,8 +10,18 @@
     
     <form id="queryForm" action="/api/demo" method="post" autocomplete="off">
         <div class="form-overlay"></div>
-        <label for="query">Ask a question:</label>
-        <input type="text" id="query" name="query" required value="{{ question or '' }}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <div style="display: flex; align-items: center; width: 100%;">
+            <div style="flex: 1; margin-right: 10px; display: flex; align-items: center;">
+                <label for="query" style="white-space: nowrap; margin-right: 10px;">Ask a question:</label>
+                <input type="text" id="query" name="query" required value="{{ question or '' }}" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+            </div>
+            <div>
+                <select id="bylaw_status" name="bylaw_status">
+                    <option value="active" {% if bylaw_status == "active" or not bylaw_status %}selected{% endif %}>Active bylaws only</option>
+                    <option value="inactive" {% if bylaw_status == "inactive" %}selected{% endif %}>Inactive bylaws only</option>
+                </select>
+            </div>
+        </div>
         
         <div style="margin: 15px 0;">
             <label for="model">Select model:</label>
@@ -38,7 +48,7 @@
         </div>
         
         <div class="info-box">
-            <p><strong>Default behavior:</strong> By default, the system shows information in simple, everyday language without bylaw references. Only active by-laws (not expired, temporary, or obsolete) are considered when generating the response.</p>
+            <p><strong>Default behavior:</strong> By default, the system shows information in simple, everyday language without bylaw references. Only active by-laws (not expired, temporary, or obsolete) are considered when generating the response. You can use the "Bylaw Status" dropdown to switch between active and inactive bylaws.</p>
         </div>
         
         <div class="checkbox-container">
@@ -72,15 +82,15 @@
     <div class="answers-wrapper {% if side_by_side %}side-by-side{% endif %}">
         {% if compare_mode %}
         <div class="answer-container">
-            <h3>Complete Answer (includes all by-laws)</h3>
-            <p class="explanation" style="font-style: italic; color: #666;">This answer includes all relevant by-laws, including those that have expired or are no longer in effect.</p>
+            <h3>Complete Answer (with XML tags)</h3>
+            <p class="explanation" style="font-style: italic; color: #666;">This is the raw response from the first model with bylaw references marked with XML tags.</p>
             <div>{{ full_answer | safe }}</div>
             <a class="bug-report-btn" data-answer-type="complete">Problem? Log a bug!</a>
         </div>
         
         <div class="answer-container">
-            <h3>Filtered Answer (active by-laws only)</h3>
-            <p class="explanation" style="font-style: italic; color: #666;">This answer only includes currently active by-laws. Expired, temporary, or obsolete by-laws have been filtered out.</p>
+            <h3>Enhanced Answer (with bylaw links)</h3>
+            <p class="explanation" style="font-style: italic; color: #666;">This converts XML tags in the original response to proper HTML hyperlinks.</p>
             <div>{{ filtered_answer | safe }}</div>
             <a class="bug-report-btn" data-answer-type="filtered">Problem? Log a bug!</a>
         </div>
