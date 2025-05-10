@@ -60,7 +60,7 @@ Your response (in HTML format):"""
 # Function to get the appropriate prompt template based on bylaw status
 def get_bylaws_prompt_template(bylaw_status="active"):
     # For active bylaws, use the base template as is
-    if bylaw_status != "inactive":
+    if bylaw_status == "active":
         template_text = BASE_BYLAWS_PROMPT_TEMPLATE
     else:
         # For inactive bylaws, prepend the inactive bylaw preamble
