@@ -70,7 +70,7 @@ def ask():
         bylaw_numbers = [bylaw.get("bylawNumber", "Unknown") for bylaw in relevant_bylaws]
         
         # Get Gemini response using the relevant bylaws
-        response = get_gemini_response(query, relevant_bylaws, model)
+        response = get_gemini_response(query, relevant_bylaws, model, bylaw_status)
         
         # Check if there was an error
         if 'error' in response:
@@ -179,7 +179,7 @@ def demo():
                 bylaw_numbers_str = ", ".join(bylaw_numbers)
                 
                 # Get Gemini response using the relevant bylaws
-                response = get_gemini_response(query, relevant_bylaws, model)
+                response = get_gemini_response(query, relevant_bylaws, model, bylaw_status)
                 
                 # Count both input and output tokens and calculate costs
                 token_counts = count_tokens(bylaws=relevant_bylaws, response=response, model=model)
@@ -281,17 +281,23 @@ def get_bylaw_json(bylaw_number):
     API endpoint that returns the full JSON data for a specific bylaw by its number.
     """
     try:
-        # Use regex to remove -XX pattern (dash followed by two capital letters) if present
-        clean_bylaw_number = re.sub(r'-[A-Z]{2}$', '', bylaw_number)
-        
-        # Use metadata lookup with normalization
-        exact_match, retrieval_time, collection_exists = chroma_retriever.retrieve_bylaw_by_number(clean_bylaw_number)
+        # First try with the original bylaw number
+        exact_match, retrieval_time, collection_exists = chroma_retriever.retrieve_bylaw_by_number(bylaw_number)
         
         # Handle collection issues
         if not collection_exists:
             return jsonify({"error": "ChromaDB collection does not exist"}), 500
             
-        # If no exact match, return 404
+        # If no exact match with original number, try with cleaned version
+        if exact_match is None:
+            # Use regex to remove -XX pattern (dash followed by two capital letters) if present
+            clean_bylaw_number = re.sub(r'-[A-Z]{2}$', '', bylaw_number)
+            
+            # Only try the clean version if it's different from the original
+            if clean_bylaw_number != bylaw_number:
+                exact_match, retrieval_time, collection_exists = chroma_retriever.retrieve_bylaw_by_number(clean_bylaw_number)
+        
+        # If still no match after trying both versions, return 404
         if exact_match is None:
             return jsonify({"error": f"No bylaws found matching {bylaw_number}"}), 404
             

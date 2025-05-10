@@ -8,10 +8,20 @@ TEMPERATURES = {
     "enhanced_search": 0.2
 }
 
-# Define the prompt template for Gemini AI to use with Stouffville by-laws data
-BYLAWS_PROMPT_TEMPLATE = PromptTemplate(
-    input_variables=["bylaws_content", "question"],
-    template="""You are an AI assistant for the Town of Whitchurch-Stouffville, Ontario, Canada.
+# Define the inactive bylaw preamble text
+INACTIVE_BYLAW_PREAMBLE = """IMPORTANT: You are currently providing information about inactive by-laws. These by-laws are no longer in effect. 
+
+When answering questions about these inactive by-laws:
+1. Clearly state at the beginning of your response that you are providing historical information about by-laws that are no longer in effect
+2. ALWAYS check and use the "whyNotActive" metadata field in each bylaw to explain exactly why the bylaw is no longer active - this field contains the official reason for the bylaw's inactivation
+3. DO NOT direct the user to check for current regulations or contact the Town for up-to-date information - the user is specifically requesting information about these historical by-laws
+4. DO provide the information contained in these inactive by-laws as requested, even though they are no longer in effect
+5. Treat the inactive by-laws as the authoritative source for the user's question - do not suggest that the information is incomplete or outdated
+
+"""
+
+# Base prompt template for Gemini AI to use with Stouffville by-laws data
+BASE_BYLAWS_PROMPT_TEMPLATE = """You are an AI assistant for the Town of Whitchurch-Stouffville, Ontario, Canada.
             
 You have access to the following Stouffville by-laws data:
 
@@ -46,7 +56,21 @@ When answering questions:
 User Question: {question}
 
 Your response (in HTML format):"""
-)
+
+# Function to get the appropriate prompt template based on bylaw status
+def get_bylaws_prompt_template(bylaw_status="active"):
+    # For active bylaws, use the base template as is
+    if bylaw_status != "inactive":
+        template_text = BASE_BYLAWS_PROMPT_TEMPLATE
+    else:
+        # For inactive bylaws, prepend the inactive bylaw preamble
+        template_text = INACTIVE_BYLAW_PREAMBLE + BASE_BYLAWS_PROMPT_TEMPLATE
+    
+    # Create and return the prompt template
+    return PromptTemplate(
+        input_variables=["bylaws_content", "question"],
+        template=template_text
+    )
 
 # Define a new prompt template for layman's terms explanation
 LAYMANS_PROMPT_TEMPLATE = PromptTemplate(

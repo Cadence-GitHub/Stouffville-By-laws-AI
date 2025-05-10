@@ -3,7 +3,7 @@ import json
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.schema.output_parser import StrOutputParser
 from app.prompts import (
-    BYLAWS_PROMPT_TEMPLATE, 
+    get_bylaws_prompt_template, 
     LAYMANS_PROMPT_TEMPLATE, ENHANCED_SEARCH_PROMPT_TEMPLATE,
     TEMPERATURES
 )
@@ -88,7 +88,7 @@ def convert_bylaw_tags_to_links(text):
     
     return result
 
-def get_gemini_response(query, relevant_bylaws, model="gemini-2.0-flash"):
+def get_gemini_response(query, relevant_bylaws, model="gemini-2.0-flash", bylaw_status="active"):
     """
     Process user queries through the Gemini AI model.
     
@@ -96,6 +96,7 @@ def get_gemini_response(query, relevant_bylaws, model="gemini-2.0-flash"):
         query (str): The user's question about Stouffville by-laws
         relevant_bylaws (list): List of by-laws relevant to the query
         model (str): The Gemini model to use (default: gemini-2.0-flash)
+        bylaw_status (str): Status of bylaws being queried (default: "active")
         
     Returns:
         dict: Contains either the AI response(s) or error information
@@ -147,7 +148,7 @@ def get_gemini_response(query, relevant_bylaws, model="gemini-2.0-flash"):
         # 1. Get response with all bylaws
         cleaned_full_response, first_prompt_time = run_model_step(
             "bylaws",
-            BYLAWS_PROMPT_TEMPLATE,
+            get_bylaws_prompt_template(bylaw_status),
             {"bylaws_content": bylaws_content, "question": query}
         )
         

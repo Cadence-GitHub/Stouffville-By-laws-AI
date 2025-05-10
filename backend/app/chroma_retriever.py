@@ -101,8 +101,13 @@ class ChromaDBRetriever:
                 bylaw_data["content"] = doc.page_content
                 
                 # Remove unnecessary fields from each bylaw
-                fields_to_remove = ["keywords", "isActive", "whyNotActive", "bylawFileName", 
+                fields_to_remove = ["keywords", "bylawFileName", 
                                    "urlOriginalDocument", "bylawHeader", "newsSources", "entityAndDesignation"]
+                
+                # Only remove isActive and whyNotActive fields for active bylaws
+                if bylaw_status == "active":
+                    fields_to_remove.extend(["isActive", "whyNotActive"])
+                    
                 for field in fields_to_remove:
                     if field in bylaw_data:
                         del bylaw_data[field]

@@ -144,6 +144,7 @@ Dependencies for AI integration:
 - **Token Counting and Cost Calculation**: Tracks token usage for both input and output, calculating costs based on model-specific pricing to provide transparency about API usage.
 - **Bylaw Status Filtering**: The system allows filtering bylaws by status (active or inactive) through a dropdown selection, improving user control over search results.
 - **Direct Vector Search Filtering**: Active/inactive bylaw filtering is performed directly in the vector search query, improving efficiency.
+- **Inactive Bylaw Handling**: Special prompt template for inactive bylaws that clearly communicates their non-active status and includes specific reasons why they are no longer in effect, using the "whyNotActive" metadata field.
 - **Layman's Terms Conversion**: After retrieving relevant bylaws, a second prompt transforms the technical legal language into plain, everyday language without bylaw references, making information more accessible to residents.
 - **Comparison Mode**: Option to display both versions of the answer (technical with bylaw references and layman's terms) for comparison.
 - **Model Selection**: Users can select which Gemini model to use based on their requirements for speed, cost, and quality.
@@ -339,7 +340,7 @@ The system implements a Retrieval-Augmented Generation (RAG) architecture with t
    - Flask application handles HTTP routing and request processing
    - ChromaDB Retriever manages vector database interactions and directly filters for active bylaws during retrieval
    - Gemini Handler orchestrates AI model interactions with multiple model options
-   - Prompts Module contains templates that structure AI responses
+   - Prompts Module contains templates that structure AI responses, with specialized templates for inactive bylaws
    - Token Counter calculates token usage and associated costs
    - Bylaw Viewer provides an interactive interface to explore complete bylaw information
    - Autocomplete feature provides intelligent suggestions as users type their queries
