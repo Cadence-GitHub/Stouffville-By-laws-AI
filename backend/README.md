@@ -10,6 +10,8 @@ A Flask-based backend service that provides AI-powered responses to questions ab
 - Token counting and cost calculation for each query
 - Bylaw status filtering allowing users to search specifically for active or inactive bylaws
 - Optimized vector search with direct filtering for bylaw status (active/inactive)
+- Specialized prompt template for inactive bylaws that clearly identifies them as no longer in effect and explains why
+- Metadata preservation for inactive bylaws to explain their non-active status via the "whyNotActive" field
 - Layman's terms conversion that transforms legal language into plain, everyday language accessible to residents
 - Comparison mode to see differences between technical and layman's terms versions
 - Performance metrics showing execution time for bylaw retrieval and each prompt (in demo interface)
@@ -194,7 +196,7 @@ Frontend developers can directly use this production backend if they don't want 
 - `app.py`: Main Flask application
 - `app/`: Application package
   - `__init__.py`: Package initialization with simplified imports
-  - `prompts.py`: AI prompt templates (including filtered version for active by-laws only, layman's terms conversion, and enhanced search)
+  - `prompts.py`: AI prompt templates (including specialized template for inactive bylaws, layman's terms conversion, and enhanced search)
   - `chroma_retriever.py`: ChromaDB integration for vector search with direct active bylaw filtering
   - `gemini_handler.py`: Gemini AI model integration and response processing
   - `token_counter.py`: Token counting and cost calculation utilities
@@ -224,16 +226,19 @@ The application uses ChromaDB and Voyage AI embeddings to provide intelligent re
 
 1. When a query is received, the system attempts to find relevant by-laws using vector search
 2. The vector search directly filters by bylaw status (active or inactive) based on user selection during retrieval
-3. Unnecessary metadata fields are removed from the results to streamline the response
-4. If enhanced search is enabled, the system:
+3. If inactive bylaws are requested, the system preserves the "isActive" and "whyNotActive" metadata fields for proper explanation
+4. Unnecessary metadata fields are removed from the results to streamline the response
+5. If enhanced search is enabled, the system:
    - Transforms the user query into formal, bylaw-oriented language
    - Performs two searches: one with the original query and one with the transformed query
    - Combines results, removing duplicates
-5. If relevant documents are found, those specific by-laws are sent to Gemini AI
-6. The system generates two different responses:
+6. If relevant documents are found, those specific by-laws are sent to Gemini AI
+7. The system selects the appropriate prompt template based on bylaw status (active or inactive)
+8. For inactive bylaws, a special preamble instructs the AI to clearly state that these bylaws are no longer in effect and explain why
+9. The system generates two different responses:
    - A technical answer with bylaw references (using XML tags that are converted to HTML links)
    - A layman's terms answer that simplifies the language and removes bylaw references
-7. Demo interface provides options to compare both responses
+10. Demo interface provides options to compare both responses
 
 The system uses different embedding models for different collections:
 - The main by-laws collection uses `voyage-3-large` for highest quality retrieval
@@ -275,6 +280,21 @@ The application includes an interactive bylaw viewer that:
    - And many more fields when available
 7. Improved bylaw number handling that automatically removes `-XX` pattern suffixes for better matching
 
+## Inactive Bylaw Handling
+
+The application provides specialized handling for inactive bylaws:
+
+1. **Preserving Crucial Metadata**: For inactive bylaws, the system preserves the "isActive" and "whyNotActive" metadata fields to explain their non-active status
+2. **Specialized Prompt Template**: When querying about inactive bylaws, a special prompt template is used with a preamble that:
+   - Clearly states at the beginning of responses that information is about bylaws no longer in effect
+   - Always includes the reason why the bylaw is inactive using the "whyNotActive" field
+   - Instructs the AI to provide the requested historical information rather than redirecting to current regulations
+   - Preserves the appropriate tone and formatting for the response
+3. **UI Selection**: Users can choose to query active or inactive bylaws through a dropdown in the interface
+4. **Direct Vector Search Filtering**: Active/inactive status filtering is performed directly during vector search for efficiency
+
+This feature ensures that when users specifically want information about inactive bylaws, they receive clear historical context with appropriate disclaimers.
+
 ## Bug Reporting System
 
 The application includes a streamlined bug reporting system:
@@ -299,10 +319,11 @@ The application includes a streamlined bug reporting system:
 The system uses a cost-efficient multi-step approach for processing by-laws information:
 
 1. **Vector Search with Status Filtering**: The system directly filters by bylaw status (active or inactive) during vector search based on user selection
-2. **First Prompt**: The filtered bylaws content is sent to the Gemini model along with the user question, generating a response with bylaw references in XML tags
-3. **XML Tag Processing**: The system converts `<BYLAW_URL>By-law 2023-060-RE</BYLAW_URL>` tags to proper HTML hyperlinks (non-LLM step)
-4. **Second Prompt**: The processed response with hyperlinks is sent to a second prompt that transforms the legal language into plain, everyday language and removes all bylaw references
-5. **Benefits**:
+2. **Status-Based Template Selection**: The system selects the appropriate prompt template based on whether active or inactive bylaws are being queried
+3. **First Prompt**: The filtered bylaws content is sent to the Gemini model along with the user question, generating a response with bylaw references in XML tags
+4. **XML Tag Processing**: The system converts `<BYLAW_URL>By-law 2023-060-RE</BYLAW_URL>` tags to proper HTML hyperlinks (non-LLM step)
+5. **Second Prompt**: The processed response with hyperlinks is sent to a second prompt that transforms the legal language into plain, everyday language and removes all bylaw references
+6. **Benefits**:
    - Significantly reduces token usage and API costs by eliminating the separate filtering prompt
    - Maintains quality by having each prompt focus on a specific task
    - Preserves formatting while transforming content appropriately at each step

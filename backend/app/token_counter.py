@@ -1,7 +1,7 @@
 import json
 import tiktoken
 from app.prompts import (
-    BYLAWS_PROMPT_TEMPLATE, 
+    BASE_BYLAWS_PROMPT_TEMPLATE, 
     LAYMANS_PROMPT_TEMPLATE, 
     ENHANCED_SEARCH_PROMPT_TEMPLATE
 )
@@ -48,7 +48,7 @@ def count_tokens(bylaws=None, response=None, model="gemini-2.0-flash"):
             input_tokens = len(encoding.encode(bylaws_json))
             
             # Calculate prompt template token counts
-            bylaws_template = BYLAWS_PROMPT_TEMPLATE.template.replace("{bylaws_content}", "").replace("{question}", "")
+            bylaws_template = BASE_BYLAWS_PROMPT_TEMPLATE.replace("{bylaws_content}", "").replace("{question}", "")
             laymans_template = LAYMANS_PROMPT_TEMPLATE.template.replace("{filtered_response}", "").replace("{question}", "")
             enhanced_template = ENHANCED_SEARCH_PROMPT_TEMPLATE.template.replace("{question}", "")
 
