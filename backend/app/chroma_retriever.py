@@ -60,12 +60,13 @@ class ChromaDBRetriever:
             bylaw_status (str): "active" or "inactive" to filter bylaws by status
             
         Returns:
-            tuple: (list of by-law documents with their metadata, retrieval_time in seconds, exists_status)
+            tuple: (list of by-law documents with filtered metadata, list of by-law documents with full metadata, 
+                   retrieval_time in seconds, exists_status)
                    where exists_status is a boolean indicating if the collection exists and has documents
         """
         if not self.vector_store:
             print("ChromaDB connection not available")
-            return [], 0, False
+            return [], [], 0, False
             
         try:
             # Start timing the retrieval
@@ -91,16 +92,21 @@ class ChromaDBRetriever:
             # Calculate retrieval time
             retrieval_time = time.time() - start_time
             
-            # Process the results
+            # Process the results - one with filtered fields, one with all fields
             results = []
+            results_all_fields = []
+            
             for doc in documents:
-                # Extract the by-law data from metadata
-                bylaw_data = doc.metadata
+                # For full metadata version
+                full_bylaw_data = dict(doc.metadata)
+                full_bylaw_data["content"] = doc.page_content
+                results_all_fields.append(full_bylaw_data)
                 
-                # Also add the page content separately if needed
-                bylaw_data["content"] = doc.page_content
+                # For filtered version
+                filtered_bylaw_data = dict(doc.metadata)
+                filtered_bylaw_data["content"] = doc.page_content
                 
-                # Remove unnecessary fields from each bylaw
+                # Remove unnecessary fields from each bylaw for the filtered version
                 fields_to_remove = ["keywords", "bylawFileName", 
                                    "urlOriginalDocument", "bylawHeader", "newsSources", "entityAndDesignation"]
                 
@@ -109,17 +115,17 @@ class ChromaDBRetriever:
                     fields_to_remove.extend(["isActive", "whyNotActive"])
                     
                 for field in fields_to_remove:
-                    if field in bylaw_data:
-                        del bylaw_data[field]
+                    if field in filtered_bylaw_data:
+                        del filtered_bylaw_data[field]
 
-                results.append(bylaw_data)
+                results.append(filtered_bylaw_data)
             
-            # Return the results and a flag indicating the collection exists
-            return results, retrieval_time, True
+            # Return both filtered and full results, and a flag indicating the collection exists
+            return results, results_all_fields, retrieval_time, True
             
         except Exception as e:
             print(f"Error retrieving bylaws: {str(e)}")
-            return [], 0, False
+            return [], [], 0, False
     
     def retrieve_bylaw_by_number(self, bylaw_number):
         """

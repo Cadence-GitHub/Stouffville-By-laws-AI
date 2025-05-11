@@ -57,12 +57,13 @@ def invoke_model_with_timing(prompt_type, model_config, prompt_template, prompt_
     
     return cleaned_response, execution_time
 
-def convert_bylaw_tags_to_links(text):
+def convert_bylaw_tags_to_links(text, relevant_bylaws_all_fields=None):
     """
     Convert <BYLAW_URL> tags to proper HTML hyperlinks.
     
     Args:
         text (str): Text with <BYLAW_URL> tags
+        relevant_bylaws_all_fields (list, optional): List of bylaws with all fields, including urlOriginalDocument
         
     Returns:
         str: Text with proper HTML hyperlinks
@@ -80,7 +81,13 @@ def convert_bylaw_tags_to_links(text):
             if len(bylaw_parts) > 1:
                 bylaw_number = bylaw_parts[1].strip()
         
-        # Create the HTML hyperlink
+        # If we have relevant_bylaws_all_fields and it contains this bylaw number, use its urlOriginalDocument
+        if relevant_bylaws_all_fields:
+            for bylaw in relevant_bylaws_all_fields:
+                if bylaw.get("bylawNumber") == bylaw_number and bylaw.get("urlOriginalDocument"):
+                    return f'<a href="{bylaw["urlOriginalDocument"]}" target="_blank" rel="noopener noreferrer">{bylaw_text}</a>'
+        
+        # Default fallback to the bylawViewer.html if no urlOriginalDocument found
         return f'<a href="/static/bylawViewer.html?bylaw={bylaw_number}" target="_blank" rel="noopener noreferrer">{bylaw_text}</a>'
     
     # Replace all instances of the pattern with proper hyperlinks
@@ -88,7 +95,7 @@ def convert_bylaw_tags_to_links(text):
     
     return result
 
-def get_gemini_response(query, relevant_bylaws, model="gemini-2.0-flash", bylaw_status="active"):
+def get_gemini_response(query, relevant_bylaws, model="gemini-2.0-flash", bylaw_status="active", relevant_bylaws_all_fields=None):
     """
     Process user queries through the Gemini AI model.
     
@@ -97,6 +104,7 @@ def get_gemini_response(query, relevant_bylaws, model="gemini-2.0-flash", bylaw_
         relevant_bylaws (list): List of by-laws relevant to the query
         model (str): The Gemini model to use (default: gemini-2.0-flash)
         bylaw_status (str): Status of bylaws being queried (default: "active")
+        relevant_bylaws_all_fields (list, optional): List of bylaws with all fields, for linking to original documents
         
     Returns:
         dict: Contains either the AI response(s) or error information
@@ -153,7 +161,7 @@ def get_gemini_response(query, relevant_bylaws, model="gemini-2.0-flash", bylaw_
         )
         
         # Process XML tags in the full response to convert them to HTML links (non-LLM step)
-        cleaned_filtered_response = convert_bylaw_tags_to_links(cleaned_full_response)
+        cleaned_filtered_response = convert_bylaw_tags_to_links(cleaned_full_response, relevant_bylaws_all_fields)
         
         # 2. Get layman's terms response using the filtered response as input
         laymans_response, second_prompt_time = run_model_step(
