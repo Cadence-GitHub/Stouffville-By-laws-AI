@@ -326,6 +326,42 @@ Bylaw Years:
   - 2018: 1
 ```
 
+### Dual Metadata Retrieval
+
+The ChromaDB retriever now processes bylaw metadata in two forms when retrieving relevant bylaws:
+
+```python
+def retrieve_relevant_bylaws(self, query, limit=10, bylaw_status="active"):
+    """
+    Retrieve the most relevant by-laws for a given query.
+    
+    Args:
+        query (str): The query to search for
+        limit (int): The maximum number of results to return
+        bylaw_status (str): "active" or "inactive" to filter bylaws by status
+        
+    Returns:
+        tuple: (list of by-law documents with filtered metadata, list of by-law documents with full metadata, 
+               retrieval_time in seconds, exists_status)
+               where exists_status is a boolean indicating if the collection exists and has documents
+    """
+```
+
+This function:
+1. Takes a query string and optional parameters
+2. Performs vector search to find semantically relevant bylaws
+3. Processes each result in two ways:
+   - Creates a filtered version with only essential fields for the AI to process (reducing token usage)
+   - Creates a complete version with all metadata fields (including urlOriginalDocument for direct PDF access)
+4. Returns both sets of results along with timing information
+5. The filtered version is used for the AI prompt to reduce token usage
+6. The full version is used for generating hyperlinks to original documents when available
+
+This dual approach allows the system to:
+- Keep token usage low by sending only essential data to the Gemini model
+- Maintain access to all metadata fields for UI enhancements like direct document linking
+- Generate proper hyperlinks that point to original PDF documents when available
+
 ### Direct Bylaw Retrieval
 
 The ChromaDB integration includes a robust function to retrieve specific bylaws by their number:
@@ -414,17 +450,21 @@ At least one of `--query`, `--keyword`, `--bylaw-number`, or `--stats` is requir
 
 After initializing ChromaDB, the Flask application will automatically use it for queries. The application:
 1. Attempts to find relevant by-laws using vector search
-2. With enhanced search enabled, transforms the user query into legal language and performs dual searches
+2. The system always performs enhanced search, transforming the user query into legal language and performing dual searches
 3. Allows filtering by bylaw status (active or inactive) through a dropdown selection
 4. Directly applies bylaw status filtering during vector search for efficiency 
-5. For inactive bylaws, preserves the "isActive" and "whyNotActive" fields to explain why they are no longer in effect
-6. Sends the retrieved by-laws to the Gemini AI model
-7. Uses a specialized prompt template for inactive bylaws that clearly identifies them as historical and explains their non-active status
-8. Generates technical response with bylaw references and layman's terms response
-9. Provides options for users to compare these different responses
-10. Allows direct access to specific bylaws through the `/api/bylaw/<bylaw_number>` endpoint (with improved handling of bylaw number variations and suffix removal)
-11. Integrates with an interactive bylaw viewer to display comprehensive bylaw information
-12. Offers autocomplete suggestions as users type their queries using the "questions" collection
+5. Returns two sets of results from the retriever:
+   - A filtered set with only essential fields (to reduce token usage)
+   - A complete set with all metadata fields (for enhanced functionality like direct document links)
+6. For inactive bylaws, preserves the "isActive" and "whyNotActive" fields to explain why they are no longer in effect
+7. Sends the filtered by-laws to the Gemini AI model (reducing token usage)
+8. Uses a specialized prompt template for inactive bylaws that clearly identifies them as historical and explains their non-active status
+9. Generates technical response with bylaw references and layman's terms response
+10. Uses the full metadata version to generate enhanced hyperlinks to original PDF documents when available
+11. Provides options for users to compare these different responses
+12. Allows direct access to specific bylaws through the `/api/bylaw/<bylaw_number>` endpoint (with improved handling of bylaw number variations and suffix removal)
+13. Integrates with an interactive bylaw viewer to display comprehensive bylaw information
+14. Offers autocomplete suggestions as users type their queries using the "questions" collection
 
 The bylaw viewer uses the direct retrieval function to fetch complete bylaw data and displays it in a user-friendly format with:
 - Comprehensive metadata display
@@ -432,6 +472,13 @@ The bylaw viewer uses the direct retrieval function to fetch complete bylaw data
 - Original document links
 - Formatted content with proper spacing and structure
 - Dark mode support for better readability
+
+The public demo interface provides a simplified user experience with:
+- Clean, responsive design
+- Dark mode toggle
+- Intelligent autocomplete
+- Direct links to original documents when available
+- Toggle between simple and detailed answers
 
 The autocomplete feature uses the questions collection in ChromaDB to provide intelligent suggestions as users type, improving the user experience and helping users discover relevant questions they might want to ask.
 

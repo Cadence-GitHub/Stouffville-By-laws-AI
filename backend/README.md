@@ -18,9 +18,10 @@ A Flask-based backend service that provides AI-powered responses to questions ab
 - Configurable number of bylaws to retrieve (5, 10, 15, or 20) in the demo interface
 - Intelligent autocomplete feature that provides suggestions as users type their queries (minimum 3 characters)
 - Simple web-based demo interface for testing without the frontend
+- Simplified public demo interface with clean design and dark mode support
 - Interactive bylaw viewer with detailed information about specific bylaws
 - Direct bylaw linking and sidebar viewing from AI responses
-- XML tag processing for bylaw references that converts them to proper HTML hyperlinks
+- XML tag processing for bylaw references that converts them to proper HTML hyperlinks, with direct links to original PDF documents when available
 - One-click bug reporting system with automatic context capture for GitHub Issues
 - CORS support for frontend integration
 - 50-second timeout protection for AI queries
@@ -50,20 +51,18 @@ Main endpoint for the React frontend to query the AI.
 ```json
 {
   "query": "What are the noise restrictions in Stouffville?",
-  "model": "gemini-2.0-flash",
   "bylaw_status": "active"
 }
 ```
+Note: The model parameter is no longer used as the API always uses 'gemini-mixed' for optimal results and always performs enhanced search.
 
 **Response (Success):**
 ```json
 {
   "answer": "The AI-generated response about Stouffville by-laws with bylaw references",
   "laymans_answer": "The AI-generated response in simple, everyday language without bylaw references",
-  "source": "ChromaDB",
-  "bylaw_numbers": ["2015-139-RE", "2015-04-RE"],
-  "model": "gemini-2.0-flash",
-  "retrieval_time": 0.45
+  "filtered_answer": "The AI-generated response filtered to only include active bylaws",
+  "model": "gemini-mixed"
 }
 ```
 
@@ -149,6 +148,16 @@ The demo page includes:
 - Interactive sidebar to view full bylaw details directly from hyperlinks
 - "Problem? Log a bug!" buttons under each answer type that capture complete context for GitHub Issues
 
+### GET `/public-demo`
+
+Serves a simplified public-facing demo page with a clean, modern interface:
+- User-friendly design with minimal controls
+- Dark mode toggle for better readability
+- Intelligent autocomplete suggestions as you type
+- Toggle between simple and detailed answers
+- Responsive design that works well on mobile devices
+- Direct links to original bylaw documents when available
+
 ## Setup for Frontend Developers
 
 ### Production Backend
@@ -186,10 +195,9 @@ Frontend developers can directly use this production backend if they don't want 
 
    - Backend is configured with CORS support for frontend integration
    - Use the `/api/ask` endpoint for all AI queries from your React app
-   - Queries should be sent as JSON with a `query` field and optional `model` field
+   - Queries should be sent as JSON with a `query` field (model is no longer configurable in the public API)
    - Responses will contain `answer`, `filtered_answer`, and `laymans_answer` fields with the AI responses, or an `error` field
-   - Responses include a `source` field indicating the data comes from ChromaDB
-   - Responses include a `bylaw_numbers` array listing the referenced by-laws
+   - Enhanced search is always enabled in the API, providing better semantic retrieval
 
 ## Project Structure
 
@@ -205,6 +213,9 @@ Frontend developers can directly use this production backend if they don't want 
   - `static/`: Static assets for web interfaces
     - `demo.css`: CSS styling for the demo interface, including autocomplete styles
     - `demo.js`: JavaScript for the demo interface, including autocomplete functionality and bug report generation
+    - `public_demo.html`: Simplified public demo interface
+    - `public_demo.css`: CSS styling for the public demo interface
+    - `public_demo.js`: JavaScript for the public demo interface
     - `bylawViewer.html`: Bylaw viewer interface
     - `bylawViewer.css`: CSS styling for the bylaw viewer
     - `bylawViewer.js`: JavaScript for the bylaw viewer
@@ -228,7 +239,7 @@ The application uses ChromaDB and Voyage AI embeddings to provide intelligent re
 2. The vector search directly filters by bylaw status (active or inactive) based on user selection during retrieval
 3. If inactive bylaws are requested, the system preserves the "isActive" and "whyNotActive" metadata fields for proper explanation
 4. Unnecessary metadata fields are removed from the results to streamline the response
-5. If enhanced search is enabled, the system:
+5. The system always performs enhanced search:
    - Transforms the user query into formal, bylaw-oriented language
    - Performs two searches: one with the original query and one with the transformed query
    - Combines results, removing duplicates
@@ -238,7 +249,7 @@ The application uses ChromaDB and Voyage AI embeddings to provide intelligent re
 9. The system generates two different responses:
    - A technical answer with bylaw references (using XML tags that are converted to HTML links)
    - A layman's terms answer that simplifies the language and removes bylaw references
-10. Demo interface provides options to compare both responses
+10. Demo interface provides options to compare these different responses
 
 The system uses different embedding models for different collections:
 - The main by-laws collection uses `voyage-3-large` for highest quality retrieval
@@ -280,6 +291,21 @@ The application includes an interactive bylaw viewer that:
    - And many more fields when available
 7. Improved bylaw number handling that automatically removes `-XX` pattern suffixes for better matching
 
+## Public Demo Interface
+
+The new public-facing demo interface provides:
+
+1. A clean, modern design focused on simplicity and user experience
+2. Dark mode support that can be toggled with a switch
+3. Enhanced accessibility features for all users
+4. Automatic retrieval of the most relevant bylaws using the gemini-mixed model
+5. Simplified controls with only a search box and submit button
+6. Option to toggle between simple and detailed answers
+7. Intelligent autocomplete suggestions as users type
+8. Responsive design that works well on mobile and desktop devices
+9. Direct links to original bylaw documents when available in the metadata
+10. Clean error handling with helpful messages for users
+
 ## Inactive Bylaw Handling
 
 The application provides specialized handling for inactive bylaws:
@@ -314,6 +340,16 @@ The application includes a streamlined bug reporting system:
 4. The user is directed to the GitHub issue creation page with all context data pre-populated
 5. This helps to accurately track and resolve issues with the AI responses
 
+## Enhanced Bylaw Linking
+
+The system now provides improved bylaw linking functionality:
+
+1. XML tags in AI responses are processed to convert `<BYLAW_URL>By-law 2023-060-RE</BYLAW_URL>` tags to HTML hyperlinks
+2. The system now checks for the presence of an original document URL in the bylaw metadata
+3. When available, links will point directly to the original PDF document using the `urlOriginalDocument` field
+4. When no original document URL is available, links fall back to the bylawViewer.html interface
+5. This provides users with direct access to official documents whenever possible
+
 ## Optimized Two-Step Prompt System
 
 The system uses a cost-efficient multi-step approach for processing by-laws information:
@@ -332,13 +368,13 @@ The system uses a cost-efficient multi-step approach for processing by-laws info
 
 ## Gemini AI Models
 
-The backend supports multiple Gemini model options:
+The API now standardizes on the 'gemini-mixed' approach for all public-facing endpoints, but still supports model selection in the developer demo:
 
-- `gemini-mixed`: Uses the best model for each query stage (default)
-- `gemini-2.0-flash-lite`: Fastest, lowest cost option
-- `gemini-2.0-flash`: Balanced speed and quality
-- `gemini-2.5-flash-preview-04-17`: Fast, high quality option
-- `gemini-2.5-pro-exp-03-25`: Highest quality, but most expensive
+- `gemini-mixed`: Uses the best model for each query stage (default for all API calls)
+- `gemini-2.0-flash-lite`: Fastest, lowest cost option (available in dev demo only)
+- `gemini-2.0-flash`: Balanced speed and quality (available in dev demo only)
+- `gemini-2.5-flash-preview-04-17`: Fast, high quality option (available in dev demo only)
+- `gemini-2.5-pro-exp-03-25`: Highest quality, but most expensive (available in dev demo only)
 
 The gemini-mixed option selects different models for different processing stages:
 - Query transformation: Uses `gemini-2.0-flash` for efficient query enhancement
@@ -360,7 +396,8 @@ The system includes a token counting utility that:
 
 ## Important Implementation Details
 
-- The backend defaults to the `gemini-2.0-flash` model
+- The backend now standardizes on the `gemini-mixed` model for all API calls
+- Enhanced search is always enabled for optimal retrieval quality
 - A 50-second timeout is applied to all AI queries to prevent long-running requests
 - The AI is configured to provide comprehensive HTML-formatted responses 
 - Error handling is implemented for API key issues, model selection, and processing errors
