@@ -110,6 +110,11 @@ h1 {
     box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
 }
 
+#question:focus + .autocomplete-container {
+    border-color: var(--primary);
+    border-top: none;
+}
+
 #question.error-input {
     border-color: var(--error);
 }
@@ -140,6 +145,7 @@ button {
     justify-content: center;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    margin-top: 0;
 }
 
 button:hover {
@@ -458,4 +464,36 @@ input:checked + .slider:before {
 [data-theme="dark"] .toggle-button.active {
     background-color: var(--card-bg);
     color: var(--primary);
+}
+
+/* Autocomplete styles */
+.autocomplete-container {
+    position: absolute;
+    max-height: 300px;
+    overflow-y: auto;
+    background-color: var(--card-bg);
+    border: 2px solid var(--light-gray);
+    border-radius: 0 0 var(--radius) var(--radius);
+    box-shadow: var(--shadow);
+    z-index: 1000;
+    width: 100%;
+    top: 100%;
+    border-top: none;
+}
+
+.autocomplete-suggestion {
+    padding: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    color: var(--text);
+}
+
+.autocomplete-suggestion:hover,
+.autocomplete-suggestion.selected {
+    background-color: var(--light-gray);
+}
+
+/* Position the form to handle autocomplete positioning */
+.question-form form {
+    position: relative;
 } 
