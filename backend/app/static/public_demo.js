@@ -72,6 +72,377 @@ function resetButton(button) {
     button.innerHTML = '<span>Get Answer</span>';
 }
 
+// Handler for bylaw links
+function handleBylawLinks() {
+    document.querySelectorAll('a[href*="bylawViewer.html"]').forEach(link => {
+        // Remove existing event listeners to prevent duplicates
+        link.removeEventListener('click', bylawLinkClickHandler);
+        // Add our click handler
+        link.addEventListener('click', bylawLinkClickHandler);
+    });
+}
+
+// Click handler for bylaw links
+function bylawLinkClickHandler(e) {
+    const href = this.getAttribute('href');
+    const isMobile = window.innerWidth <= 768;
+    
+    // Extract bylaw ID
+    const bylawMatch = href.match(/[?&]bylaw=([^&]+)/);
+    if (!bylawMatch) return true;
+    
+    const bylawId = bylawMatch[1];
+    
+    if (isMobile) {
+        // On mobile, let it open in new tab
+        return true;
+    } else {
+        // Open in panel
+        e.preventDefault();
+        openBylawPanel(bylawId);
+        return false;
+    }
+}
+// Function to open the bylaw panel
+function openBylawPanel(bylawId) {
+    const panel = document.getElementById('bylaw-panel');
+    const content = document.getElementById('bylaw-content');
+    const bylawTitle = document.getElementById('bylaw-title');
+    
+    // Check if elements exist
+    if (!panel || !content || !bylawTitle) {
+        console.error('Required panel elements not found');
+        return;
+    }
+    
+    // Show loading indicator
+    content.innerHTML = `
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Loading bylaw information...</p>
+        </div>
+    `;
+    
+    // Activate panel
+    panel.classList.add('active');
+    document.body.classList.add('panel-open');
+
+    const container = document.querySelector('.container');
+    const body = document.body;
+    if (container && body) {
+        body.style.maxWidth = 'none';
+        body.style.margin = '0';
+        body.style.marginRight = '50%';
+        
+        container.style.width = 'calc(100% - 2rem)';
+        container.style.maxWidth = 'none';
+    }
+    
+    // Fetch bylaw data
+    fetch(`/api/bylaw/${bylawId}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Failed to fetch bylaw: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(bylaw => {
+            renderBylaw(bylaw, content, bylawTitle);
+        })
+        .catch(error => {
+            content.innerHTML = `
+                <div class="error-message">
+                    <h3>Error loading bylaw</h3>
+                    <p>${error.message}</p>
+                </div>
+            `;
+        });
+}
+
+// Function to render bylaw content
+function renderBylaw(bylaw, contentElement, titleElement) {
+    // Set bylaw title
+    let displayTitle = bylaw.bylawNumber;
+    if (bylaw.bylawFileName) {
+        displayTitle = bylaw.bylawFileName;
+        if (displayTitle.endsWith('.json')) {
+            displayTitle = displayTitle.slice(0, -5);
+        }
+    }
+    
+    titleElement.textContent = displayTitle;
+    
+    // Helper function to determine if a field should be displayed
+    function shouldDisplay(field) {
+        if (field === undefined || field === null) return false;
+        if (field === false) return false;
+        if (typeof field === 'string' && (field.trim() === '' || field.toLowerCase() === 'none')) return false;
+        if (Array.isArray(field) && field.length === 0) return false;
+        if (Array.isArray(field) && field.length === 1 && field[0].toLowerCase() === 'none') return false;
+        return true;
+    }
+    
+    // Helper to format text
+    function formatText(text) {
+        if (!text) return '';
+        
+        // Handle newlines
+        let formattedText = text.replace(/\n/g, '<br>');
+        
+        // Handle multiple dashes as separators (4 or more)
+        formattedText = formattedText.replace(/----+/g, '<hr>');
+        
+        // Handle percentage signs as separators
+        formattedText = formattedText.replace(/%%%/g, ', ');
+        
+        // Handle triple pipe as separators
+        formattedText = formattedText.replace(/\|\|\|/g, ', ');
+        
+        // Handle pipe separators in non-table content
+        if (!formattedText.includes('<table>')) {
+            formattedText = formattedText.replace(/\|/g, ' | ');
+        }
+        
+        return formattedText;
+    }
+    
+    // Helper to create a section
+    function createSection(title, content, hideInPublicDemo = false) {
+        // Skip if content shouldn't be displayed or section should be hidden in public demo
+        if (!shouldDisplay(content) || hideInPublicDemo) return '';
+        
+        let formattedContent;
+        if (Array.isArray(content)) {
+            // Format as list
+            formattedContent = '<ul>';
+            content.forEach(item => {
+                formattedContent += `<li>${formatText(item)}</li>`;
+            });
+            formattedContent += '</ul>';
+        } else {
+            formattedContent = `<p>${formatText(content)}</p>`;
+        }
+        
+        return `
+            <div class="bylaw-section">
+                <h4 class="section-title">${title}</h4>
+                <div class="section-content">${formattedContent}</div>
+            </div>
+        `;
+    }
+    
+    // Build HTML for sections
+    let html = '';
+
+    // URL Original Document section
+    if (shouldDisplay(bylaw.urlOriginalDocument)) {
+        let pdfName = "document";
+        if (bylaw.urlOriginalDocument && typeof bylaw.urlOriginalDocument === 'string') {
+            const urlParts = bylaw.urlOriginalDocument.split('/');
+            if (urlParts.length > 0) {
+                const lastPart = urlParts[urlParts.length - 1];
+                if (lastPart.includes('?')) {
+                    pdfName = lastPart.split('?')[0];
+                } else {
+                    pdfName = lastPart;
+                }
+            }
+        }
+        
+        html += `
+            <div class="bylaw-section">
+                <h4 class="section-title">Original Town Document</h4>
+                <div class="section-content">
+                    <p><a href="${bylaw.urlOriginalDocument}" target="_blank" rel="noopener noreferrer">${pdfName}</a></p>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Layman's explanation section
+    html += createSection('Summary', bylaw.laymanExplanation);
+    
+    // Key dates and info section
+    html += createSection('Key Dates', bylaw.keyDatesAndInfo);
+    
+    // Entity and designation section
+    html += createSection('Entity and Designation', bylaw.entityAndDesignation);
+    
+    // Conditions and clauses section
+    html += createSection('Conditions and Clauses', bylaw.condtionsAndClauses);
+    
+    // Other Bylaws section
+    html += createSection('Other Bylaws', bylaw.otherBylaws);
+    
+    // Why Other Bylaws section
+    html += createSection('Why Other Bylaws', bylaw.whyOtherBylaws);
+    
+    // Legislation section
+    html += createSection('Legislation', bylaw.legislation);
+    
+    // Why Legislation section
+    html += createSection('Why Legislation', bylaw.whyLegislation);
+    
+    // Location Addresses section (special handling)
+    if (shouldDisplay(bylaw.locationAddresses)) {
+        let locationContent = '';
+        let locations = [];
+        
+        if (typeof bylaw.locationAddresses === 'string') {
+            locations = bylaw.locationAddresses
+                .split(/\|\|\||%%%|\n/)
+                .map(loc => loc.trim())
+                .filter(loc => loc && loc.toLowerCase() !== 'none');
+        } else if (Array.isArray(bylaw.locationAddresses)) {
+            locations = bylaw.locationAddresses.filter(loc => loc && loc.toLowerCase() !== 'none');
+        }
+        
+        if (locations.length > 0) {
+            locationContent = '<ul>';
+            locations.forEach(location => {
+                const encodedLocation = encodeURIComponent(location + ', Ontario, Canada');
+                const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedLocation}`;
+                
+                locationContent += `<li><a href="${googleMapsUrl}" target="_blank" rel="noopener noreferrer">${location}</a></li>`;
+            });
+            locationContent += '</ul>';
+        } else {
+            locationContent = `<p>${formatText(bylaw.locationAddresses)}</p>`;
+        }
+        
+        html += `
+            <div class="bylaw-section">
+                <h4 class="section-title">Location Addresses</h4>
+                <div class="section-content">${locationContent}</div>
+            </div>
+        `;
+    }
+    
+    // Money and Categories section
+    html += createSection('Money and Categories', bylaw.moneyAndCategories);
+    
+    // Other Details section - hidden in public demo
+    html += createSection('Other Details', bylaw.otherDetails, true);
+    
+    // Image Description section
+    if (bylaw.hasEmbeddedImages && shouldDisplay(bylaw.imageDesciption)) {
+        html += createSection('Image Description', bylaw.imageDesciption);
+    }
+    
+    // Map Description section
+    if (bylaw.hasEmbeddedMaps && shouldDisplay(bylaw.mapDescription)) {
+        html += createSection('Map Description', bylaw.mapDescription);
+    }
+    
+    // Full text section
+    if (shouldDisplay(bylaw.content)) {
+        const textContent = Array.isArray(bylaw.content) ? bylaw.content.join('\n') : bylaw.content;
+        
+        html += `
+            <div class="bylaw-section">
+                <h4 class="section-title">Full Text</h4>
+                <div class="section-content">
+                    <div class="bylaw-section full-width">${formatText(textContent)}</div>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Add content to panel
+    contentElement.innerHTML = html;
+}
+
+// Function to setup bylaw panel
+function setupBylawPanel() {
+    const panel = document.getElementById('bylaw-panel');
+    const closeBtn = document.getElementById('close-panel');
+    const resizer = document.getElementById('panel-resizer');
+    
+    if (!panel || !closeBtn || !resizer) {
+        console.error('Required panel elements not found');
+        return;
+    }
+    
+    // Close button click handler
+    closeBtn.addEventListener('click', function() {
+        panel.classList.remove('active');
+        document.body.classList.remove('panel-open');
+        
+        // Reset container margin and width
+        const container = document.querySelector('.container');
+        const body = document.body;
+        if (container && body) {
+            body.style.maxWidth = '';
+            body.style.margin = '';
+            body.style.marginRight = '';
+            
+            container.style.width = '';
+            container.style.maxWidth = '';
+        }
+        
+        setTimeout(() => {
+            document.getElementById('bylaw-content').innerHTML = '';
+            document.getElementById('bylaw-title').textContent = 'Bylaw Details';
+        }, 300);
+    });
+    
+    // Set up resize functionality
+    let isResizing = false;
+    
+    resizer.addEventListener('mousedown', function(e) {
+        isResizing = true;
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', stopResize);
+        document.body.style.cursor = 'ew-resize';
+        e.preventDefault();
+    });
+    
+    function handleMouseMove(e) {
+        if (!isResizing) return;
+        
+        const windowWidth = window.innerWidth;
+        const panelWidth = windowWidth - e.clientX;
+        const percentage = Math.min(Math.max((panelWidth / windowWidth) * 100, 30), 70);
+        
+        // Update panel width
+        panel.style.width = `${percentage}%`;
+        
+        // Get container and body
+        const container = document.querySelector('.container');
+        const body = document.body;
+        
+        if (container && body) {
+            // Adjust body to move content left
+            body.style.maxWidth = 'none';
+            body.style.margin = '0';
+            body.style.marginRight = `${percentage}%`;
+            
+            // Adjust container
+            container.style.width = `calc(100% - 2rem)`;
+            container.style.maxWidth = 'none';
+        }
+    }
+    
+    function stopResize() {
+        isResizing = false;
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.body.style.cursor = '';
+    }
+    
+    // Initial call to set up links
+    handleBylawLinks();
+    
+    // Setup mutation observer to handle dynamically added bylaw links
+    const observer = new MutationObserver(function() {
+        handleBylawLinks();
+    });
+    
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+}
+
 // Function to display the answer
 function displayAnswer(data) {
     const answerContainer = document.getElementById('answerContainer');
@@ -98,6 +469,9 @@ function displayAnswer(data) {
     
     answerContainer.style.display = 'block';
     
+    // Process bylaw links in the answer
+    setTimeout(handleBylawLinks, 100);
+    
     // Set up toggle functionality if both answers exist
     if (laymansAnswer && filteredAnswer) {
         const toggleBtn = document.getElementById('toggleAnswerDetail');
@@ -121,6 +495,9 @@ function displayAnswer(data) {
                     toggleBtn.querySelector('span').textContent = 'Show Detailed Answer';
                     toggleBtn.classList.remove('active');
                 }
+                
+                // Process bylaw links in the toggled content
+                handleBylawLinks();
                 
                 // Add fade-in class
                 answerContent.classList.remove('fade-out');
@@ -439,6 +816,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize autocomplete
     setupAutocomplete();
     
+    // Initialize bylaw panel
+    setupBylawPanel();
+    
     // Focus the input field for immediate user interaction
     document.getElementById('question').focus();
-}); 
+});

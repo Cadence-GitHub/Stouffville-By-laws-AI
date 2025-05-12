@@ -497,3 +497,152 @@ input:checked + .slider:before {
 .question-form form {
     position: relative;
 } 
+
+/* Bylaw Panel Styles */
+.bylaw-panel {
+    position: fixed;
+    top: 0;
+    right: -50%;
+    width: 50%;
+    height: 100vh;
+    background: var(--card-bg);
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.2);
+    transition: right 0.3s ease;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-left: 1px solid var(--light-gray);
+}
+
+.bylaw-panel.active {
+    right: 0;
+}
+
+.panel-header {
+    padding: 15px;
+    background: var(--primary);
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 2;
+}
+
+.panel-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background-color: var(--background);
+}
+
+.panel-resizer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 10px;
+    height: 100%;
+    cursor: ew-resize;
+    background-color: rgba(0, 0, 0, 0.1);
+    z-index: 3;
+}
+
+.panel-resizer:hover {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+body.panel-open .container {
+    margin-right: 50%;
+    transition: margin-right 0.3s ease;
+    width: 50%;
+}
+
+.close-button {
+    background-color: transparent;
+    color: white;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0 10px;
+    height: 30px;
+    line-height: 30px;
+}
+
+.close-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.loading-spinner {
+    text-align: center;
+    padding: 40px;
+}
+
+.spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border-left-color: var(--primary);
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.bylaw-section {
+    background-color: var(--card-bg);
+    border-radius: var(--radius);
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--light-gray);
+}
+
+.section-title {
+    color: var(--primary);
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--light-gray);
+}
+
+.section-content {
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.section-content p {
+    margin-bottom: 10px;
+}
+
+.section-content ul {
+    padding-left: 20px;
+    margin-bottom: 10px;
+}
+
+[data-theme="dark"] .spinner {
+    border-color: rgba(255, 255, 255, 0.1);
+    border-left-color: var(--primary);
+}
+
+@media (max-width: 768px) {
+    .bylaw-panel {
+        width: 100%;
+        right: -100%;
+    }
+    
+    body.panel-open .container {
+        margin-right: 0;
+    }
+}
+
+.bylaw-panel.active {
+    right: 0 !important;
+}
+
+.full-width {
+    grid-column: 1 / -1;
+}

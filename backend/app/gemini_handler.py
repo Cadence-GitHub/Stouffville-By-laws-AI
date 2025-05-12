@@ -82,10 +82,10 @@ def convert_bylaw_tags_to_links(text, relevant_bylaws_all_fields=None):
                 bylaw_number = bylaw_parts[1].strip()
         
         # If we have relevant_bylaws_all_fields and it contains this bylaw number, use its urlOriginalDocument
-        if relevant_bylaws_all_fields:
+        """if relevant_bylaws_all_fields:
             for bylaw in relevant_bylaws_all_fields:
                 if bylaw.get("bylawNumber") == bylaw_number and bylaw.get("urlOriginalDocument"):
-                    return f'<a href="{bylaw["urlOriginalDocument"]}" target="_blank" rel="noopener noreferrer">{bylaw_text}</a>'
+                    return f'<a href="{bylaw["urlOriginalDocument"]}" target="_blank" rel="noopener noreferrer">{bylaw_text}</a>'"""
         
         # Default fallback to the bylawViewer.html if no urlOriginalDocument found
         return f'<a href="/static/bylawViewer.html?bylaw={bylaw_number}" target="_blank" rel="noopener noreferrer">{bylaw_text}</a>'

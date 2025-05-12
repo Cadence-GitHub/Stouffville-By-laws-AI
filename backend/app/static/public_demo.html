@@ -25,12 +25,12 @@
                 </label>
             </div>
             <h1>Stouffville By-laws AI</h1>
-            <p class="subtitle">Ask questions about local by-laws in plain language</p>
+            <p class="subtitle">Your bylaw questions answered in plain simple language</p>
         </header>
         
         <div class="question-form">
             <form id="questionForm">
-                <label for="question">Ask a question about Stouffville by-laws:</label>
+                <label for="question">What's on your mind?</label>
                 <input type="text" id="question" name="question" required 
                        placeholder="Example: Can I park on the street overnight?"
                        autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
@@ -52,7 +52,14 @@
             <p>This AI tool provides general information about Stouffville by-laws and should not be considered legal advice.</p>
         </footer>
     </main>
-    
+    <div id="bylaw-panel" class="bylaw-panel">
+        <div id="panel-resizer" class="panel-resizer"></div>
+        <div class="panel-header">
+            <h3 id="bylaw-title">Bylaw Details</h3>
+            <button id="close-panel" class="close-button" title="Close viewer">×</button>
+        </div>
+        <div class="panel-content" id="bylaw-content"></div>
+    </div>
     <script src="/static/public_demo.js"></script>
 </body>
 </html> 
