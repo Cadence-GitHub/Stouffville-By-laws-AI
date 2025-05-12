@@ -56,29 +56,27 @@ def ask():
     # Try to use ChromaDB to find relevant bylaws
     try:
         # Transform user query into legal language using the Gemini handler
-        transformed_query, transform_time = transform_query_for_enhanced_search(query, model)
+        transformed_query, _ = transform_query_for_enhanced_search(query, model)
         
         # First search with original query - also checks if collection exists
-        original_results, original_results_all_fields, original_time, collection_exists = chroma_retriever.retrieve_relevant_bylaws(query, limit=10, bylaw_status=bylaw_status)
+        original_results, _, collection_exists = chroma_retriever.retrieve_relevant_bylaws(query, limit=10, bylaw_status=bylaw_status)
         
         # Check if the collection exists
         if not collection_exists:
             return jsonify({"error": "ChromaDB collection does not exist"}), 500
         
         # Second search with transformed query
-        transformed_results, transformed_results_all_fields, transformed_time, _ = chroma_retriever.retrieve_relevant_bylaws(transformed_query, limit=10, bylaw_status=bylaw_status)
+        transformed_results, _, _ = chroma_retriever.retrieve_relevant_bylaws(transformed_query, limit=10, bylaw_status=bylaw_status)
         
         # Combine results and remove duplicates based on bylawNumber
         seen_bylaws = set()
         combined_results = []
-        combined_results_all_fields = []
         
         # First add ALL original results
         for i, bylaw in enumerate(original_results):
             bylaw_id = bylaw.get("bylawNumber", "Unknown")
             seen_bylaws.add(bylaw_id)
             combined_results.append(bylaw)
-            combined_results_all_fields.append(original_results_all_fields[i])
         
         # Then add only NEW transformed results that aren't duplicates
         for i, bylaw in enumerate(transformed_results):
@@ -86,18 +84,16 @@ def ask():
             if bylaw_id not in seen_bylaws:
                 seen_bylaws.add(bylaw_id)
                 combined_results.append(bylaw)
-                combined_results_all_fields.append(transformed_results_all_fields[i])
         
         # Use the combined results
         relevant_bylaws = combined_results
-        relevant_bylaws_all_fields = combined_results_all_fields
         
         # If no relevant bylaws found, return an error
         if not relevant_bylaws:
             return jsonify({"error": f"No relevant bylaws found for query: {query}"}), 404
         
         # Get Gemini response using the relevant bylaws
-        response = get_gemini_response(query, relevant_bylaws, model, bylaw_status, relevant_bylaws_all_fields)
+        response = get_gemini_response(query, relevant_bylaws, model, bylaw_status)
         
         # Check if there was an error
         if 'error' in response:
@@ -142,7 +138,7 @@ def demo():
                     transformed_query, transform_time = transform_query_for_enhanced_search(query, model)
                     
                     # First search with original query - also checks if collection exists
-                    original_results, _, original_time, collection_exists = chroma_retriever.retrieve_relevant_bylaws(query, limit=bylaws_limit, bylaw_status=bylaw_status)
+                    original_results, original_time, collection_exists = chroma_retriever.retrieve_relevant_bylaws(query, limit=bylaws_limit, bylaw_status=bylaw_status)
                     
                     # Check if collection exists
                     if not collection_exists:
@@ -150,7 +146,7 @@ def demo():
                         return render_template('demo.html', question=query, answer=error_message, model=model)
                     
                     # Second search with transformed query - always use 10 documents
-                    transformed_results, _, transformed_time, _ = chroma_retriever.retrieve_relevant_bylaws(transformed_query, limit=10, bylaw_status=bylaw_status)
+                    transformed_results, transformed_time, _ = chroma_retriever.retrieve_relevant_bylaws(transformed_query, limit=10, bylaw_status=bylaw_status)
                     
                     # Total retrieval time is the sum of both searches
                     retrieval_time = original_time + transformed_time
@@ -179,7 +175,7 @@ def demo():
                 else:
                     # Standard search - just use the original query
                     # This now also returns collection existence status
-                    relevant_bylaws, _, retrieval_time, collection_exists = chroma_retriever.retrieve_relevant_bylaws(query, limit=bylaws_limit, bylaw_status=bylaw_status)
+                    relevant_bylaws, retrieval_time, collection_exists = chroma_retriever.retrieve_relevant_bylaws(query, limit=bylaws_limit, bylaw_status=bylaw_status)
                     
                     # Check if collection exists
                     if not collection_exists:

@@ -156,7 +156,7 @@ Dependencies for AI integration:
 - **Performance Metrics**: The demo interface displays detailed timing information showing how long each step takes (by-law retrieval, first prompt execution, second prompt execution).
 - **Bylaw Limit Selection**: In the demo interface, users can choose how many relevant bylaws to retrieve (5, 10, 15, or 20) for their queries.
 - **Interactive Bylaw Viewer**: A dedicated interface to view complete bylaw information with rich formatting, dark mode support, and detailed metadata display.
-- **Direct Bylaw Linking**: AI responses include hyperlinks to specific bylaws that open in the bylaw viewer or link to original PDF documents when available.
+- **Direct Bylaw Linking**: AI responses include hyperlinks to specific bylaws that open in the bylaw viewer.
 - **Intelligent Bylaw Number Matching**: The system can match bylaw numbers even with different formatting variations (spacing, dashes, etc.).
 - **Visual UI Improvements**: Enhanced demo interface with better layout and formatting options.
 - **Bug Reporting System**: Each answer type includes a "Problem? Log a bug!" button that automatically captures query details, model information, retrieved bylaws, timing data, and the response content, formatting it as Markdown for clear reporting in GitHub Issues.
