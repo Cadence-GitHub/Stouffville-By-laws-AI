@@ -93,14 +93,12 @@ class ChromaDBRetriever:
             
             # Process the results
             results = []
+            
             for doc in documents:
-                # Extract the by-law data from metadata
-                bylaw_data = doc.metadata
+                filtered_bylaw_data = dict(doc.metadata)
+                filtered_bylaw_data["content"] = doc.page_content
                 
-                # Also add the page content separately if needed
-                bylaw_data["content"] = doc.page_content
-                
-                # Remove unnecessary fields from each bylaw
+                # Remove unnecessary fields from each bylaw for the filtered version
                 fields_to_remove = ["keywords", "bylawFileName", 
                                    "urlOriginalDocument", "bylawHeader", "newsSources", "entityAndDesignation"]
                 
@@ -109,10 +107,10 @@ class ChromaDBRetriever:
                     fields_to_remove.extend(["isActive", "whyNotActive"])
                     
                 for field in fields_to_remove:
-                    if field in bylaw_data:
-                        del bylaw_data[field]
+                    if field in filtered_bylaw_data:
+                        del filtered_bylaw_data[field]
 
-                results.append(bylaw_data)
+                results.append(filtered_bylaw_data)
             
             # Return the results and a flag indicating the collection exists
             return results, retrieval_time, True

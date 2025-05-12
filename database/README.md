@@ -414,11 +414,11 @@ At least one of `--query`, `--keyword`, `--bylaw-number`, or `--stats` is requir
 
 After initializing ChromaDB, the Flask application will automatically use it for queries. The application:
 1. Attempts to find relevant by-laws using vector search
-2. With enhanced search enabled, transforms the user query into legal language and performs dual searches
+2. The system always performs enhanced search, transforming the user query into legal language and performing dual searches
 3. Allows filtering by bylaw status (active or inactive) through a dropdown selection
-4. Directly applies bylaw status filtering during vector search for efficiency 
+4. Directly applies bylaw status filtering during vector search 
 5. For inactive bylaws, preserves the "isActive" and "whyNotActive" fields to explain why they are no longer in effect
-6. Sends the retrieved by-laws to the Gemini AI model
+6. Sends the filtered by-laws to the Gemini AI model (reducing token usage and improving LLM reliability by removing unnecessary information)
 7. Uses a specialized prompt template for inactive bylaws that clearly identifies them as historical and explains their non-active status
 8. Generates technical response with bylaw references and layman's terms response
 9. Provides options for users to compare these different responses
@@ -432,6 +432,13 @@ The bylaw viewer uses the direct retrieval function to fetch complete bylaw data
 - Original document links
 - Formatted content with proper spacing and structure
 - Dark mode support for better readability
+
+The public demo interface provides a simplified user experience with:
+- Clean, responsive design
+- Dark mode toggle
+- Intelligent autocomplete
+- Direct links to the bylaw viewer
+- Toggle between simple and detailed answers
 
 The autocomplete feature uses the questions collection in ChromaDB to provide intelligent suggestions as users type, improving the user experience and helping users discover relevant questions they might want to ask.
 

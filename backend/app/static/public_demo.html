@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stouffville By-laws AI</title>
+    <link rel="icon" href="/static/images/favicon.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/public_demo.css">
+</head>
+<body>
+    <main class="container">
+        <header>
+            <div class="theme-switch-wrapper">
+                <label class="theme-switch" for="checkbox">
+                    <div class="slider-icons">
+                        <i class="fas fa-sun"></i>
+                        <i class="fas fa-moon"></i>
+                    </div>
+                    <input type="checkbox" id="checkbox" />
+                    <div class="slider"></div>
+                </label>
+            </div>
+            <h1>Stouffville By-laws AI</h1>
+            <p class="subtitle">Your bylaw questions answered in plain simple language</p>
+        </header>
+        
+        <div class="question-form">
+            <form id="questionForm">
+                <label for="question">What's on your mind?</label>
+                <input type="text" id="question" name="question" required 
+                       placeholder="Example: Can I park on the street overnight?"
+                       autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                <button type="submit" id="submitButton">
+                    <span>Get Answer</span>
+                </button>
+            </form>
+        </div>
+        
+        <div id="loadingIndicator">
+            <img src="/static/images/bylaw-loading-animation.svg" alt="Loading..." 
+                 onerror="this.style.display='none'">
+            <div class="loading-text">Searching through by-laws...</div>
+        </div>
+        
+        <div id="answerContainer"></div>
+        
+        <footer>
+            <p>This AI tool provides general information about Stouffville by-laws and should not be considered legal advice.</p>
+        </footer>
+    </main>
+    <div id="bylaw-panel" class="bylaw-panel">
+        <div id="panel-resizer" class="panel-resizer"></div>
+        <div class="panel-header">
+            <h3 id="bylaw-title">Bylaw Details</h3>
+            <button id="close-panel" class="close-button" title="Close viewer">×</button>
+        </div>
+        <div class="panel-content" id="bylaw-content"></div>
+    </div>
+    <script src="/static/public_demo.js"></script>
+</body>
+</html> 

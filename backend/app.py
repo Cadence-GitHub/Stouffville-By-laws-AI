@@ -47,7 +47,7 @@ def ask():
     """
     data = request.get_json()
     query = data.get('query', '')
-    model = data.get('model', 'gemini-2.0-flash')
+    model = 'gemini-mixed'  # Always use gemini-mixed
     bylaw_status = data.get('bylaw_status', 'active')
     
     if not query:
@@ -55,19 +55,42 @@ def ask():
     
     # Try to use ChromaDB to find relevant bylaws
     try:
-        # Use ChromaDB to find relevant bylaws - now also returns collection existence status
-        relevant_bylaws, retrieval_time, collection_exists = chroma_retriever.retrieve_relevant_bylaws(query, limit=10, bylaw_status=bylaw_status)
+        # Transform user query into legal language using the Gemini handler
+        transformed_query, _ = transform_query_for_enhanced_search(query, model)
+        
+        # First search with original query - also checks if collection exists
+        original_results, _, collection_exists = chroma_retriever.retrieve_relevant_bylaws(query, limit=10, bylaw_status=bylaw_status)
         
         # Check if the collection exists
         if not collection_exists:
             return jsonify({"error": "ChromaDB collection does not exist"}), 500
         
+        # Second search with transformed query
+        transformed_results, _, _ = chroma_retriever.retrieve_relevant_bylaws(transformed_query, limit=10, bylaw_status=bylaw_status)
+        
+        # Combine results and remove duplicates based on bylawNumber
+        seen_bylaws = set()
+        combined_results = []
+        
+        # First add ALL original results
+        for i, bylaw in enumerate(original_results):
+            bylaw_id = bylaw.get("bylawNumber", "Unknown")
+            seen_bylaws.add(bylaw_id)
+            combined_results.append(bylaw)
+        
+        # Then add only NEW transformed results that aren't duplicates
+        for i, bylaw in enumerate(transformed_results):
+            bylaw_id = bylaw.get("bylawNumber", "Unknown")
+            if bylaw_id not in seen_bylaws:
+                seen_bylaws.add(bylaw_id)
+                combined_results.append(bylaw)
+        
+        # Use the combined results
+        relevant_bylaws = combined_results
+        
         # If no relevant bylaws found, return an error
         if not relevant_bylaws:
             return jsonify({"error": f"No relevant bylaws found for query: {query}"}), 404
-        
-        # Extract bylaw numbers for display
-        bylaw_numbers = [bylaw.get("bylawNumber", "Unknown") for bylaw in relevant_bylaws]
         
         # Get Gemini response using the relevant bylaws
         response = get_gemini_response(query, relevant_bylaws, model, bylaw_status)
@@ -75,12 +98,6 @@ def ask():
         # Check if there was an error
         if 'error' in response:
             return jsonify(response), 500
-            
-        # If successful, add source and bylaw information
-        response["source"] = "ChromaDB"
-        response["bylaw_numbers"] = bylaw_numbers
-        response["model"] = model
-        response["retrieval_time"] = retrieval_time
         
         return jsonify(response)
             
@@ -344,6 +361,13 @@ def autocomplete():
             
     except Exception as e:
         return jsonify({"error": f"Autocomplete failed: {str(e)}"}), 500
+
+@app.route('/public-demo')
+def public_demo():
+    """
+    Serve the public demo page for the by-laws AI.
+    """
+    return app.send_static_file('public_demo.html')
 
 if __name__ == '__main__':
     # Run in debug mode for development

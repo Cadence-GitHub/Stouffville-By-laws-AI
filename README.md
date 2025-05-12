@@ -51,6 +51,7 @@ This project uses Docker to create a consistent development environment. The set
    - The API will be available at http://localhost:5000
    - Test the API with: `curl http://localhost:5000/api/hello`
    - Access the demo web interface at http://localhost:5000/api/demo
+   - Access the public demo interface at http://localhost:5000/public-demo
    - View specific bylaws at http://localhost:5000/static/bylawViewer.html?bylaw=BYLAW-NUMBER
 
 ### Development Workflow
@@ -71,6 +72,7 @@ This project uses Docker to create a consistent development environment. The set
 
 - **Static Assets**: Frontend assets are in the `backend/app/static/` directory
   - `demo.css` and `demo.js`: Styling and functionality for the demo interface
+  - `public_demo.css`, `public_demo.html`, and `public_demo.js`: Simple public-facing demo interface
   - `bylawViewer.html`, `bylawViewer.css`, and `bylawViewer.js`: Bylaw viewer interface
 
 - **Live Code Changes**: 
@@ -95,7 +97,8 @@ This project uses Docker to create a consistent development environment. The set
 - `GET /api/hello`: Returns a greeting message in JSON format
 - `POST /api/ask`: Processes AI queries about bylaws
   - Requires JSON with a 'query' field
-  - Optionally accepts 'model' parameter to specify which Gemini model to use
+  - Always uses 'gemini-mixed' model for optimal response generation
+  - Automatically performs enhanced search by transforming queries
 - `GET /api/bylaw/<bylaw_number>`: Retrieves full data for a specific bylaw
   - Intelligently handles different format variations of bylaw numbers
   - Returns complete metadata and content for the requested bylaw
@@ -104,6 +107,7 @@ This project uses Docker to create a consistent development environment. The set
 - `POST /api/autocomplete`: Returns autocomplete suggestions for partial queries
   - Requires JSON with a 'query' field containing the partial query text
   - Returns semantically similar questions when the query is at least 3 characters long
+- `GET /public-demo`: Serves a simplified public-facing demo interface
 
 ### AI Integration
 
@@ -111,8 +115,8 @@ This project uses Google's Gemini AI models through the LangChain framework. Mak
 
 The application leverages ChromaDB (version 0.6.3) for vector search with Voyage AI embeddings to efficiently retrieve relevant by-laws based on semantic similarity. The system uses a direct similarity search with filtering for active bylaws only, and removes unnecessary metadata fields from results.
 
-Available Gemini models:
-- gemini-mixed (uses best model for each query stage)
+Available Gemini models (in developer tools):
+- gemini-mixed (uses best model for each query stage, default for the public API)
 - gemini-2.0-flash-lite (fastest, lowest cost)
 - gemini-2.0-flash (balanced speed/quality)
 - gemini-2.5-flash-preview-04-17 (fast, high quality)
@@ -140,7 +144,8 @@ Dependencies for AI integration:
 
 ### Key Features
 
-- **Enhanced Search**: Transforms user queries into formal, bylaw-oriented language to improve semantic search results, combining both original and transformed search results to maximize retrieval relevance.
+- **Public Demo Interface**: A simplified, user-friendly interface for the public to query bylaw information, with a clean design and dark mode support.
+- **Enhanced Search**: Always enabled in the API, transforms user queries into formal, bylaw-oriented language to improve semantic search results, combining both original and transformed search results to maximize retrieval relevance.
 - **Token Counting and Cost Calculation**: Tracks token usage for both input and output, calculating costs based on model-specific pricing to provide transparency about API usage.
 - **Bylaw Status Filtering**: The system allows filtering bylaws by status (active or inactive) through a dropdown selection, improving user control over search results.
 - **Direct Vector Search Filtering**: Active/inactive bylaw filtering is performed directly in the vector search query, improving efficiency.
@@ -151,7 +156,7 @@ Dependencies for AI integration:
 - **Performance Metrics**: The demo interface displays detailed timing information showing how long each step takes (by-law retrieval, first prompt execution, second prompt execution).
 - **Bylaw Limit Selection**: In the demo interface, users can choose how many relevant bylaws to retrieve (5, 10, 15, or 20) for their queries.
 - **Interactive Bylaw Viewer**: A dedicated interface to view complete bylaw information with rich formatting, dark mode support, and detailed metadata display.
-- **Direct Bylaw Linking**: AI responses include hyperlinks to specific bylaws that open in the bylaw viewer (either in a new tab or sidebar).
+- **Direct Bylaw Linking**: AI responses include hyperlinks to specific bylaws that open in the bylaw viewer.
 - **Intelligent Bylaw Number Matching**: The system can match bylaw numbers even with different formatting variations (spacing, dashes, etc.).
 - **Visual UI Improvements**: Enhanced demo interface with better layout and formatting options.
 - **Bug Reporting System**: Each answer type includes a "Problem? Log a bug!" button that automatically captures query details, model information, retrieved bylaws, timing data, and the response content, formatting it as Markdown for clear reporting in GitHub Issues.
@@ -235,6 +240,7 @@ graph TB
         PromptsModule["Prompts Module (prompts.py)"]
         TokenCounter["Token Counter (token_counter.py)"]
         Demo["Web Demo (templates/demo.html)"]
+        PublicDemo["Public Demo (static/public_demo.html)"]
         BylawViewer["Bylaw Viewer (static/bylawViewer.html)"]
         Autocomplete["Autocomplete (static/demo.js)"]
 
@@ -245,6 +251,7 @@ graph TB
             API3["/api/hello (GET)"]
             API4["/api/bylaw/ (GET)"]
             API5["/api/autocomplete (POST)"]
+            API6["/public-demo (GET)"]
         end
     end
 
@@ -270,6 +277,7 @@ graph TB
     FlaskApp --> GeminiHandler
     FlaskApp --> ChromaRetriever
     FlaskApp --> Demo
+    FlaskApp --> PublicDemo
     FlaskApp --> TokenCounter
     ChromaRetriever --> ChromaDB
     ChromaRetriever <--> BylawViewer
@@ -290,8 +298,10 @@ graph TB
     API4 --> BylawViewer
     API5 --> ChromaRetriever
     API5 --> Autocomplete
+    API6 --> PublicDemo
     Demo --> BylawViewer
     Demo --> Autocomplete
+    PublicDemo --> Autocomplete
     
     
     %% Container connections
@@ -309,7 +319,9 @@ graph TB
     User --> API3
     User --> API4
     User --> API5
+    User --> API6
     User --> Demo
+    User --> PublicDemo
     User --> BylawViewer
     User --> Autocomplete
     style GoogleAPI fill:#0CC0DF
@@ -330,7 +342,7 @@ The system implements a Retrieval-Augmented Generation (RAG) architecture with t
    - ChromaDB indexes embeddings for efficient semantic retrieval using HNSW algorithm
    - Sample questions and answers are ingested using `ingest_questions.py` to enable autocomplete functionality
    - When a query is received, relevant by-laws are retrieved and passed to Gemini AI
-   - If enhanced search is enabled, the system transforms the query into legal language and performs two searches
+   - The API always enables enhanced search, transforming the query into legal language and performing two searches
    - Users can filter bylaws by status (active or inactive) through a dropdown selection
    - Gemini generates two different responses:
      - Complete response with bylaw references (includes XML tags that are converted to HTML links)
@@ -342,6 +354,7 @@ The system implements a Retrieval-Augmented Generation (RAG) architecture with t
    - Gemini Handler orchestrates AI model interactions with multiple model options
    - Prompts Module contains templates that structure AI responses, with specialized templates for inactive bylaws
    - Token Counter calculates token usage and associated costs
+   - Public Demo provides a simplified, user-friendly interface for public users
    - Bylaw Viewer provides an interactive interface to explore complete bylaw information
    - Autocomplete feature provides intelligent suggestions as users type their queries
 
@@ -357,7 +370,8 @@ The system implements a Retrieval-Augmented Generation (RAG) architecture with t
    - Voyage AI supplies high-quality text embeddings for semantic search
 
 5. **User Interface Options**:
-   - Web demo interface with model selection and bylaw limit options
+   - Public demo interface with a clean, modern design and dark mode support
+   - Developer web demo interface with model selection and bylaw limit options
    - Enhanced search option for improved semantic retrieval
    - Intelligent autocomplete that suggests similar questions as users type
    - Token usage and cost information

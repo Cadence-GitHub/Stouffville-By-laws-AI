@@ -79,8 +79,7 @@ def convert_bylaw_tags_to_links(text):
             bylaw_parts = bylaw_text.split("By-law")
             if len(bylaw_parts) > 1:
                 bylaw_number = bylaw_parts[1].strip()
-        
-        # Create the HTML hyperlink
+
         return f'<a href="/static/bylawViewer.html?bylaw={bylaw_number}" target="_blank" rel="noopener noreferrer">{bylaw_text}</a>'
     
     # Replace all instances of the pattern with proper hyperlinks
