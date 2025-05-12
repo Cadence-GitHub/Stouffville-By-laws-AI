@@ -646,3 +646,48 @@ body.panel-open .container {
 .full-width {
     grid-column: 1 / -1;
 }
+
+/* Source styling */
+.source-section {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--light-gray);
+}
+
+.source-section h4 {
+    color: var(--primary);
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+}
+
+.source-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.source-item {
+    padding: 0.75rem;
+    background-color: var(--card-bg);
+    border-radius: var(--radius);
+    border: 1px solid var(--light-gray);
+}
+
+.source-item a {
+    color: var(--primary);
+    font-weight: 500;
+    text-decoration: none;
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.source-item a:hover {
+    text-decoration: underline;
+}
+
+.source-snippet {
+    font-size: 0.85rem;
+    color: var(--light-text);
+    margin: 0;
+    line-height: 1.4;
+}

@@ -794,6 +794,101 @@ function setupAutocomplete() {
     }
 }
 
+// Provincial law functionality
+function setupProvincialLawSection() {
+    const lawButtons = document.querySelectorAll('.law-type-button');
+    const contentContainer = document.getElementById('provincialLawContent');
+    
+    // Load the default (general) info on page load
+    fetchProvincialLawInfo('general');
+    
+    // Add click handlers to buttons
+    lawButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Update active button
+            lawButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Fetch information for the selected type
+            const bylawType = this.getAttribute('data-type');
+            fetchProvincialLawInfo(bylawType);
+        });
+    });
+    
+    // Function to fetch provincial law information
+    function fetchProvincialLawInfo(bylawType) {
+        const contentContainer = document.getElementById('provincialLawContent');
+        
+        contentContainer.innerHTML = `
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p>Loading provincial law information...</p>
+            </div>
+        `;
+        
+        fetch('/api/provincial_laws', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                bylaw_type: bylawType,
+                model: 'gemini-2.0-flash'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                contentContainer.innerHTML = `
+                    <div class="error-message">
+                        <h3>Error loading information</h3>
+                        <p>${data.error}</p>
+                    </div>
+                `;
+            } else {
+                // Create the content with the provincial info
+                let htmlContent = `<div class="provincial-info">${data.provincial_info}</div>`;
+                
+                // Add sources if available
+                if (data.sources && data.sources.length > 0) {
+                    htmlContent += `
+                        <div class="source-section">
+                            <h4>Sources</h4>
+                            <div class="source-list">
+                    `;
+                    
+                    data.sources.forEach(source => {
+                        htmlContent += `
+                            <div class="source-item">
+                                <a href="${source.url}" target="_blank" rel="noopener noreferrer">
+                                    ${source.title || 'Source'}
+                                </a>
+                                <p class="source-snippet">${source.snippet || ''}</p>
+                            </div>
+                        `;
+                    });
+                    
+                    htmlContent += `
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                contentContainer.innerHTML = htmlContent;
+                handleBylawLinks();
+            }
+        })
+        .catch(error => {
+            contentContainer.innerHTML = `
+                <div class="error-message">
+                    <h3>Error loading information</h3>
+                    <p>${error.message}</p>
+                </div>
+            `;
+        });
+    }
+}
+
 // Ensure everything is set up properly when the page loads
 document.addEventListener('DOMContentLoaded', function() {
     // Ensure loading indicator is hidden when page loads
@@ -818,6 +913,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize bylaw panel
     setupBylawPanel();
+
+    // Initialize provincial law section
+    setupProvincialLawSection();
     
     // Focus the input field for immediate user interaction
     document.getElementById('question').focus();

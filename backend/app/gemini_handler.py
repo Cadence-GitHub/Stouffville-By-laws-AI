@@ -244,3 +244,134 @@ def clean_response(response):
     response = response.strip()
     
     return response 
+
+def get_provincial_law_info(bylaw_type, model="gemini-2.0-flash"):
+    """Get information about provincial laws using Google Search grounding."""
+    api_key = os.environ.get("GOOGLE_API_KEY")
+    if not api_key:
+        return {"error": "GOOGLE_API_KEY environment variable is not set"}
+    
+    if model not in ALLOWED_MODELS:
+        return {"error": f"Invalid model: {model}. Only these models are allowed: {', '.join(ALLOWED_MODELS)}"}
+    
+    try:
+        # Define model to use
+        if model == "gemini-mixed":
+            model_to_use = "gemini-2.0-flash"
+        else:
+            model_to_use = model
+            
+        # Start timing
+        start_time = time.time()
+        
+        # Construct request URL
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_to_use}:generateContent?key={api_key}"
+        
+        # Prepare request payload
+        payload = {
+            "contents": [
+                {
+                    "parts": [
+                        {"text": f"""Provide information about how {bylaw_type} bylaws in Whitchurch-Stouffville, Ontario, Canada 
+                        are informed or regulated by Ontario provincial laws and regulations.
+                        
+                        Your response should:
+                        1. Identify the key provincial statutes and regulations that govern municipal authority in this area
+                        2. Explain how provincial laws establish the framework and limitations for municipal bylaws
+                        3. Highlight any recent changes to provincial legislation that affect municipal bylaws
+                        4. Format your response using HTML for better presentation
+                        5. Be concise, informative, and focused on the relationship between provincial and municipal legislation"""}
+                    ]
+                }
+            ],
+            "tools": [
+                {
+                    "google_search": {}
+                }
+            ],
+            "generationConfig": {
+                "temperature": TEMPERATURES.get("provincial_law", 0.2),
+                "topP": 0.8,
+                "maxOutputTokens": 1024
+            }
+        }
+        
+        # Send request
+        import requests
+        response = requests.post(
+            url=url,
+            headers={"Content-Type": "application/json"},
+            json=payload,
+            timeout=30
+        )
+        
+        # Check for HTTP errors
+        response.raise_for_status()
+        
+        # Parse JSON response
+        result = response.json()
+        
+
+        # Debug print to console - add this
+        import json
+        print(f"PROVINCIAL LAW API RESPONSE ({bylaw_type}):")
+        print(json.dumps(result, indent=2))
+
+        # Extract the provincial info from response
+        provincial_info = ""
+        sources = []
+        search_queries = []
+        
+        if "candidates" in result and result["candidates"]:
+            candidate = result["candidates"][0]
+            
+            # Extract content
+            if "content" in candidate and "parts" in candidate["content"]:
+                for part in candidate["content"]["parts"]:
+                    if "text" in part:
+                        provincial_info += part["text"]
+            
+            # Extract grounding metadata
+            if "groundingMetadata" in candidate:
+                # Extract search queries
+                if "webSearchQueries" in candidate["groundingMetadata"]:
+                    search_queries = candidate["groundingMetadata"]["webSearchQueries"]
+                
+                # Try to extract sources from groundingChunks if available
+                if "groundingChunks" in candidate["groundingMetadata"]:
+                    for chunk in candidate["groundingMetadata"]["groundingChunks"]:
+                        if "web" in chunk:
+                            sources.append({
+                                "title": chunk["web"].get("title", ""),
+                                "url": chunk["web"].get("uri", "")
+                            })
+                
+                # If no sources found and searchEntryPoint available, parse HTML
+                if not sources and "searchEntryPoint" in candidate["groundingMetadata"]:
+                    if "renderedContent" in candidate["groundingMetadata"]["searchEntryPoint"]:
+                        html_content = candidate["groundingMetadata"]["searchEntryPoint"]["renderedContent"]
+                        
+                        # Simple regex-based extraction to avoid requiring BeautifulSoup
+                        import re
+                        chip_pattern = r'<a class="chip" href="(https://vertexaisearch[^"]+)">([^<]+)</a>'
+                        for match in re.finditer(chip_pattern, html_content):
+                            sources.append({
+                                "url": match.group(1),
+                                "title": match.group(2)
+                            })
+        
+        # Clean the response
+        provincial_info = clean_response(provincial_info)
+        
+        # Calculate execution time
+        execution_time = time.time() - start_time
+        
+        return {
+            "provincial_info": provincial_info,
+            "sources": sources,
+            "timings": {
+                "processing_time": execution_time
+            }
+        }
+    except Exception as e:
+        return {"error": str(e)}
