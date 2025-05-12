@@ -13,26 +13,13 @@ body {
   font-family: 'Poppins', sans-serif;
 }
 
-.textarea-input{
-  font-family: 'Poppins', sans-serif;
-  font-size: clamp(13px, 5vw, 13px);
-  resize: none;
-  height: 35px;
-  width: 330px;
-  border-radius: 0.3vw;
-  overflow: hidden;
-  /* T R B L */
-  padding: 1.1vh; 
-  line-height: 1.8vh;
-  box-sizing: border-box;
-}
-
 .headerContainer {
   display: flex;
   text-align: center;
   position: fixed;
   justify-content: center;
   width: 100%;
+  height: 110px;
   top: 0;
   left: 0;
 }
@@ -43,43 +30,17 @@ body {
   border-width: thin;
   top: 200px;
   width: 100%;
-  height: 550px;
+  height: 80%;
 }
 
 .centerItems {
   display: flex;
+  position: relative;
   width: 100%;
+  height: 100%;
   text-align: center;
   justify-content: center;
   flex-direction: column;
-}
-
-.chat-textarea {
-  position: inherit;
-  width: 330px;
-  height: 95px;
-  padding: 10px;
-  padding-right: 56px; /* Make space for the send button */
-  border: 1px solid #333;
-  border-radius: 1vw;
-  resize: none;
-  box-sizing: border-box;
-  outline: none;
-}
-
-.chatBoxContainer {
-  position: inherit;
-  display: flex;
-  border-color: black;
-  border-width: thin;
-  justify-content: center;
-}
-
-.input-wrapper {
-  position: inherit;
-  width: 100%;
-  height: 35px;
-  margin-bottom: 50px;
 }
 
 .submitButtonQuery {
@@ -168,19 +129,6 @@ body {
   color: white;
 }
 
-.input[type=text] { 
-  width: 330px;  
-  height: 35px;
-  border-radius: 0.3vw;
-  padding: 1vw;
-  margin-bottom: 25px;
-  box-sizing: border-box;
-  outline: #333;  
-  color: rgba(0, 0, 0, 0.5);
-  font-family: 'Poppins', sans-serif;
-  font-size: 13px;
-  
-}
 
 .form {
   display: flex;
@@ -217,14 +165,6 @@ body {
     padding: 2vh 20vw; /* Adjust padding for smaller screens */
     font-size: clamp(10px, 5vw, 15px);
     border-radius: 1.0vh;
-  }
-
-  .input[type=text] {
-    border-radius: 0.8vw;
-  }
-
-  .textarea-input {
-    border-radius: 0.8vw;
   }
 
 }

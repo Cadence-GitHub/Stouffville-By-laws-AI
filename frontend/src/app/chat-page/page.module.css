@@ -1,0 +1,16 @@
+.textareaChatContainer {
+    display: flex;
+    position: relative;
+    justify-content: center;
+    align-items: center;
+    bottom: 10%;
+}
+  
+.textareaChat {
+    font-family: 'Poppins', sans-serif;
+    height: 75px;
+    width: 350px;
+    padding: 1.5vw;
+    border-radius: 1vw;
+    resize: none;
+}

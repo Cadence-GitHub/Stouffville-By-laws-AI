@@ -1,12 +1,13 @@
-'use Client'
+'use client'
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
-import MyUserInput from "./MyUserInput";
-import MyTextArea from "./MyTextArea";
-import MyPlaceHolders from "./MyPlaceHolders";
+import CustomInput from "../CustomInput";
+import CustomTextArea from "../CustomTextArea";
+import MyPlaceHolders from "../PlaceHolderQueries";
 
 
-const DynamicForms = ({startChat}) => {
+const DynamicFormTemplate = () => {
     
     // Responsive UI interaction for the input fields (changes text on click)
     // Change the type of form being displayed when 
@@ -35,9 +36,12 @@ const DynamicForms = ({startChat}) => {
     // TODO: Get the information the user has passed and pipe it to the backend for processing.
     // TODO: Sanitize input as well.
     // TODO: Disable submitting after user has submitted query, then re-enable after backend has reponded.
+    const router = useRouter();
     const handleSubmit = (e) => {
         e.preventDefault();
-        startChat();
+        
+        router.push("/chat-page")
+
     }
 
     
@@ -69,14 +73,12 @@ const DynamicForms = ({startChat}) => {
     );
 };
 
-export default DynamicForms;
+export default DynamicFormTemplate;
 
 const SimpleForm = ({placeholder}) => {
     
     return (
-        <div className="input-wrapper">
-           <MyTextArea placeholder={placeholder}/>
-        </div>
+        <CustomTextArea placeholder={placeholder}/>
     );
 };
 
@@ -85,9 +87,9 @@ const AdvancedForm = ({placeholder}) => {
     
     return (
         <div className="form">
-            <MyUserInput displayValue={"Category"}/>
-            <MyUserInput displayValue={"Keywords"}/>
-            <MyTextArea placeholder={placeholder}/>
+            <CustomInput displayValue={"Category"}/>
+            <CustomInput displayValue={"Keywords"}/>
+            <CustomTextArea placeholder={placeholder}/>
         </div>
     );
 };

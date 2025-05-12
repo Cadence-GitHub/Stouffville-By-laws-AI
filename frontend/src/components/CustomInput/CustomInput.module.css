@@ -1,0 +1,19 @@
+.input[type=text] { 
+    width: 330px;  
+    height: 35px;
+    border-radius: 0.3vw;
+    padding: 1vw;
+    margin-bottom: 25px;
+    box-sizing: border-box;
+    outline: #333;  
+    color: rgba(0, 0, 0, 0.5);
+    font-family: 'Poppins', sans-serif;
+    font-size: 13px;
+    
+}
+
+@media (max-width: 600px) {
+    .input[type=text] {
+    border-radius: 0.8vw;
+  }
+}

@@ -1,0 +1,26 @@
+.textareaInput{
+    font-family: 'Poppins', sans-serif;
+    font-size: clamp(13px, 5vw, 13px);
+    resize: none;
+    height: 35px;
+    width: 330px;
+    border-radius: 0.3vw;
+    overflow: hidden;
+    /* T R B L */
+    padding: 1.1vh; 
+    line-height: 1.8vh;
+    box-sizing: border-box;
+}
+
+.inputWrapper {
+    position: inherit;
+    width: 100%;
+    height: 35px;
+    margin-bottom: 50px;
+}
+
+@media (max-width: 600px) {
+    .textareaInput {
+        border-radius: 0.8vw;
+    }
+}

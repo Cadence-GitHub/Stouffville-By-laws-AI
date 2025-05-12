@@ -1,20 +1,12 @@
 'use client'
+import { useRouter } from "next/navigation";
 import Image from "next/image";
-import DynamicForms from "@/components/DynamicForms";
-import { useState } from "react";
+import DynamicFormTemplate from "@/components/DynamicFormTemplate";
 
 export default function Home() {
   
-  const [chatInitiated, setChatInitiated] = useState(false);
+  const router = useRouter();
   
-  return (
-    // setChatInitiated is the flag that will cause the page to re-render with the chatbox ui.
-    // We are passing a callback function as a prop when the user clicks on the submit button inside <DynamicForms>
-    !chatInitiated ? (<StarterPage startChat={() => setChatInitiated(true)}/>) : (<ChatBox/>)
-  );
-}
-
-const StarterPage = ({startChat}) => {
   return (
     <div className="contentContainer">
       <div className="centerItems">
@@ -26,36 +18,13 @@ const StarterPage = ({startChat}) => {
         
         {/* TODO: Button routes to a FAQ page */}
         <div style={{margin: 22.5}}>
-          <button className="buttonRoute">
+          <button onClick={() => router.push('/faq-page')} className="buttonRoute">
             FAQ
           </button>
         </div>
-
-        <DynamicForms startChat={startChat}/>
-
-      </div>
-    </div>
-  );
-}
-
-const ChatBox = () => {
-  return (
-    <div className="contentContainer">
-      <div className="centerItems">
-        <div className="chatBoxContainer"></div>
-          <div className="input-wrapper">
-            <textarea className="chat-textarea" placeholder="Ask Anything">
-            </textarea>
-            <button className="submitButtonQuery" style={{right: "10px", bottom: "435px"}}>
-              <Image 
-                src="/assets/images/Send-button.svg" 
-                alt="send button" 
-                width={25} 
-                height={25}
-              />
-            </button>
-          </div>
-
+        
+        <DynamicFormTemplate/>
+  
       </div>
     </div>
   );

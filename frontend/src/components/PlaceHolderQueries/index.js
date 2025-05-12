@@ -11,7 +11,7 @@ const getRandomMessage = () => {
 }
 
 // Returns a message based on a randomly generated integer from 0 to whatever the length of the array above:        
-const MyPlaceHolders = () => {   
+const PlaceHolderQueries = () => {   
     const [placeHolder, setPlaceHolder] = useState('');
 
     useEffect(() => {
@@ -21,4 +21,4 @@ const MyPlaceHolders = () => {
     return placeHolder;
 }
 
-export default MyPlaceHolders;
+export default PlaceHolderQueries;

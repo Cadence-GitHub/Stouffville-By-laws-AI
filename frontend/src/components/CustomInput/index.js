@@ -1,8 +1,10 @@
 'use Client'
+import styles from "./CustomInput.module.css";
 import { useState } from "react";
-import MyPlaceHolders from "./MyPlaceHolders";
+import MyPlaceHolders from "../PlaceHolderQueries";
 
-const MyUserInput = ({displayValue}) => {
+
+const CustomInput = ({displayValue}) => {
 
     const [userQuery, setUserQuery] = useState(displayValue === '' ? defaulttMessage() : displayValue);
     
@@ -20,7 +22,7 @@ const MyUserInput = ({displayValue}) => {
 
     return (
         <input 
-            className="input"
+            className={styles.input}
             name="userQuery" 
             type="text" 
             value={userQuery} 
@@ -31,4 +33,4 @@ const MyUserInput = ({displayValue}) => {
     );
 }
 
-export default MyUserInput;
+export default CustomInput;

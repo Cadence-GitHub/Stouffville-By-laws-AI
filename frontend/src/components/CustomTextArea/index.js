@@ -1,6 +1,7 @@
 import { useRef } from "react";
+import styles from "./CustomTextArea.module.css"
 
-const MyTextArea = ({placeholder}) => {
+const CustomTextArea = ({placeholder}) => {
 
     const textAreaRef = useRef(null);
     const handleInput = () => {
@@ -24,10 +25,10 @@ const MyTextArea = ({placeholder}) => {
     }
 
     return (
-        <div className="input-wrapper">
+<div className={styles.inputWrapper}>
                 <textarea 
                     ref={textAreaRef}
-                    className="textarea-input"
+                    className={styles.textareaInput}
                     placeholder={placeholder}
                     onInput={handleInput}
                     row={1}>
@@ -36,4 +37,4 @@ const MyTextArea = ({placeholder}) => {
     );
 }
 
-export default MyTextArea;
+export default CustomTextArea;
