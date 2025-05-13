@@ -255,10 +255,13 @@ def get_provincial_law_info(bylaw_type, model="gemini-2.0-flash"):
         # Start timing
         start_time = time.time()
         
+
+        ## TODO: rewrite this in Langchain
         # Construct request URL
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_to_use}:generateContent?key={api_key}"
         
         # Prepare request payload
+        # TODO: we need to use the prompt from the prompts.py file instead of hardcoding it
         payload = {
             "contents": [
                 {
@@ -308,6 +311,7 @@ def get_provincial_law_info(bylaw_type, model="gemini-2.0-flash"):
         print(f"PROVINCIAL LAW API RESPONSE ({bylaw_type}):")
         print(json.dumps(result, indent=2))
 
+        ## TODO: rewrite this so that the links match what the Gemini refers to in its response
         # Extract the provincial info from response
         provincial_info = ""
         sources = []
