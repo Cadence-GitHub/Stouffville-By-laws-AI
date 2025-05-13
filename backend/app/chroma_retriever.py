@@ -60,13 +60,12 @@ class ChromaDBRetriever:
             bylaw_status (str): "active" or "inactive" to filter bylaws by status
             
         Returns:
-            tuple: (list of by-law documents with filtered metadata, list of by-law documents with full metadata, 
-                   retrieval_time in seconds, exists_status)
+            tuple: (list of by-law documents with their metadata, retrieval_time in seconds, exists_status)
                    where exists_status is a boolean indicating if the collection exists and has documents
         """
         if not self.vector_store:
             print("ChromaDB connection not available")
-            return [], [], 0, False
+            return [], 0, False
             
         try:
             # Start timing the retrieval
@@ -92,17 +91,10 @@ class ChromaDBRetriever:
             # Calculate retrieval time
             retrieval_time = time.time() - start_time
             
-            # Process the results - one with filtered fields, one with all fields
+            # Process the results
             results = []
-            results_all_fields = []
             
             for doc in documents:
-                # For full metadata version
-                full_bylaw_data = dict(doc.metadata)
-                full_bylaw_data["content"] = doc.page_content
-                results_all_fields.append(full_bylaw_data)
-                
-                # For filtered version
                 filtered_bylaw_data = dict(doc.metadata)
                 filtered_bylaw_data["content"] = doc.page_content
                 
@@ -120,12 +112,12 @@ class ChromaDBRetriever:
 
                 results.append(filtered_bylaw_data)
             
-            # Return both filtered and full results, and a flag indicating the collection exists
-            return results, results_all_fields, retrieval_time, True
+            # Return the results and a flag indicating the collection exists
+            return results, retrieval_time, True
             
         except Exception as e:
             print(f"Error retrieving bylaws: {str(e)}")
-            return [], [], 0, False
+            return [], 0, False
     
     def retrieve_bylaw_by_number(self, bylaw_number):
         """

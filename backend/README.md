@@ -21,7 +21,7 @@ A Flask-based backend service that provides AI-powered responses to questions ab
 - Simplified public demo interface with clean design and dark mode support
 - Interactive bylaw viewer with detailed information about specific bylaws
 - Direct bylaw linking and sidebar viewing from AI responses
-- XML tag processing for bylaw references that converts them to proper HTML hyperlinks, with direct links to original PDF documents when available
+- XML tag processing for bylaw references that converts them to proper HTML hyperlinks
 - One-click bug reporting system with automatic context capture for GitHub Issues
 - CORS support for frontend integration
 - 50-second timeout protection for AI queries
@@ -156,7 +156,7 @@ Serves a simplified public-facing demo page with a clean, modern interface:
 - Intelligent autocomplete suggestions as you type
 - Toggle between simple and detailed answers
 - Responsive design that works well on mobile devices
-- Direct links to original bylaw documents when available
+- Direct links to the bylaw viewer
 
 ## Setup for Frontend Developers
 
@@ -303,7 +303,7 @@ The new public-facing demo interface provides:
 6. Option to toggle between simple and detailed answers
 7. Intelligent autocomplete suggestions as users type
 8. Responsive design that works well on mobile and desktop devices
-9. Direct links to original bylaw documents when available in the metadata
+9. Direct links to the bylaw viewer
 10. Clean error handling with helpful messages for users
 
 ## Inactive Bylaw Handling
@@ -339,16 +339,6 @@ The application includes a streamlined bug reporting system:
 3. This information is formatted as Markdown for clear, readable display in GitHub Issues
 4. The user is directed to the GitHub issue creation page with all context data pre-populated
 5. This helps to accurately track and resolve issues with the AI responses
-
-## Enhanced Bylaw Linking
-
-The system now provides improved bylaw linking functionality:
-
-1. XML tags in AI responses are processed to convert `<BYLAW_URL>By-law 2023-060-RE</BYLAW_URL>` tags to HTML hyperlinks
-2. The system now checks for the presence of an original document URL in the bylaw metadata
-3. When available, links will point directly to the original PDF document using the `urlOriginalDocument` field
-4. When no original document URL is available, links fall back to the bylawViewer.html interface
-5. This provides users with direct access to official documents whenever possible
 
 ## Optimized Two-Step Prompt System
 
