@@ -62,6 +62,24 @@
         </div>
         
         <input type="submit" value="Submit">
+        <button type="button" id="provincialLawsBtn" class="secondary-button">Get Provincial Laws Info</button>
+        <div id="provincialLawsForm" style="display: none; margin-top: 10px; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+            <h3>Provincial Laws Information</h3>
+            <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                <label for="bylaw_type" style="margin-right: 10px;">Bylaw Type:</label>
+                <input type="text" id="bylaw_type" placeholder="e.g. parking, zoning, noise" value="general">
+                
+                <label for="provincial_model" style="margin-left: 20px; margin-right: 10px;">Model:</label>
+                <select id="provincial_model">
+                    <option value="gemini-2.0-flash" selected>gemini-2.0-flash</option>
+                    <option value="gemini-2.0-flash-lite">gemini-2.0-flash-lite</option>
+                    <option value="gemini-2.5-flash-preview-04-17">gemini-2.5-flash-preview-04-17</option>
+                    <option value="gemini-2.5-pro-exp-03-25">gemini-2.5-pro-exp-03-25</option>
+                </select>
+                
+                <button type="button" id="fetchProvincialLaws" style="margin-left: 20px;">Fetch Information</button>
+            </div>
+        </div>
     </form>
     
     <div id="loadingMessage" class="loading">
@@ -114,6 +132,18 @@
     <div id="bylaw-sidebar" class="bylaw-sidebar">
         <div id="sidebar-resizer" class="sidebar-resizer"></div>
         <iframe id="bylaw-frame" src="about:blank"></iframe>
+    </div>
+
+    <div id="provincialLawsResult" style="display: none; margin-top: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;">
+        <h3>Provincial Laws Information</h3>
+        <div id="provincialContent"></div>
+        <div id="provincialSources" style="margin-top: 15px; border-top: 1px solid #ddd; padding-top: 10px;">
+            <h4>Sources</h4>
+            <ul id="sourcesList"></ul>
+        </div>
+        <div id="provincialLoading" class="loading" style="display: none;">
+            <div class="loading-text">Fetching provincial law information...</div>
+        </div>
     </div>
 
     <script src="{{ url_for('static', filename='demo.js') }}"></script>

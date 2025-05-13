@@ -5,7 +5,8 @@ from datetime import datetime
 TEMPERATURES = {
     "bylaws": 0.0,
     "laymans": 0.7,
-    "enhanced_search": 0.2
+    "enhanced_search": 0.2,
+    "provincial_law": 0.2 
 }
 
 # Define the inactive bylaw preamble text
@@ -131,3 +132,21 @@ Do not provide any explanations, just return the transformed query.
 
 Transformed query:"""
 ) 
+
+# Define the provincial law information prompt template
+PROVINCIAL_LAW_PROMPT_TEMPLATE = PromptTemplate(
+    input_variables=["bylaw_type"],
+    template="""You are an AI assistant for the Town of Whitchurch-Stouffville, Ontario, Canada.
+
+Provide information about how {bylaw_type} bylaws in Stouffville are informed or regulated by Ontario provincial laws and regulations.
+
+Your response should:
+1. Identify the key Ontario statutes and regulations that govern municipal authority in this area
+2. Explain how Ontario laws establish the framework and limitations for municipal bylaws
+3. Highlight any recent changes to Ontario legislation that affect municipal bylaws based on recent news articles. Take current date into account.
+4. Format your response using HTML for better presentation but not the grounding sources. Leave the grounding sources as is.
+5. Be concise, informative, and focused on the relationship between provincial and municipal legislation
+6. Provide your sources as hyperlinks; embedd these links within the html resonses themselves.
+
+Your response (in HTML format):"""
+)

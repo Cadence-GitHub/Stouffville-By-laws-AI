@@ -208,3 +208,77 @@ body.sidebar-open .container {
     color: #666;
     margin-left: 5px;
 }
+
+/* Provincial Laws Styles */
+.secondary-button {
+    padding: 8px 16px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.secondary-button:hover {
+    background-color: #3e8e41;
+}
+
+#provincialLawsForm {
+    background-color: #f9f9f9;
+}
+
+#provincialLawsResult {
+    background-color: #f0f7ff !important;
+}
+
+#provincialLawsResult h3 {
+    color: #0066cc;
+    margin-top: 0;
+}
+
+#provincialContent {
+    line-height: 1.6;
+}
+
+#provincialContent a {
+    color: #0066cc;
+    text-decoration: none;
+}
+
+#provincialContent a:hover {
+    text-decoration: underline;
+}
+
+#provincialSources {
+    margin-top: 15px;
+}
+
+#sourcesList {
+    padding-left: 20px;
+}
+
+#sourcesList li {
+    margin-bottom: 5px;
+}
+
+#fetchProvincialLaws {
+    padding: 6px 12px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#fetchProvincialLaws:hover {
+    background-color: #3e8e41;
+}
+
+.error {
+    color: #dc3545;
+    padding: 10px;
+    background-color: #f8d7da;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}

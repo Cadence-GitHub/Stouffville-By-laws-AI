@@ -12,6 +12,7 @@ from app import (
     ChromaDBRetriever,
     get_gemini_response, 
     transform_query_for_enhanced_search,
+    get_provincial_law_info,
     ALLOWED_MODELS,
     count_tokens,
     MODEL_PRICING
@@ -368,6 +369,21 @@ def public_demo():
     Serve the public demo page for the by-laws AI.
     """
     return app.send_static_file('public_demo.html')
+
+
+@app.route('/api/provincial_laws', methods=['POST'])
+def provincial_laws():
+    """API endpoint that provides information about provincial laws with Google Search grounding."""
+    data = request.get_json()
+    bylaw_type = data.get('bylaw_type', 'general')
+    model = data.get('model', 'gemini-2.0-flash')
+    
+    response = get_provincial_law_info(bylaw_type, model)
+    
+    if 'error' in response:
+        return jsonify({"error": response['error']}), 500
+    
+    return jsonify(response)
 
 if __name__ == '__main__':
     # Run in debug mode for development
