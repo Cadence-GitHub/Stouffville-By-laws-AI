@@ -1,6 +1,5 @@
 'use client'
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import DynamicFormTemplate from "@/components/DynamicFormTemplate";
 
 export default function Home() {

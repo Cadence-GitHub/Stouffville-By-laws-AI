@@ -1,0 +1,27 @@
+.footer {
+    color: white;
+    font-weight: 400;
+    font-style: italic;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  
+    position: fixed;
+    bottom: 20px;
+  
+    width: 85vw;
+    max-width: 85vw; /* ensure wrapping is respected */
+    
+    padding: 1em 1.5em; /* dynamic spacing instead of height */
+    
+    border-radius: 1vw;
+    border-width: 2px;
+    background-color: #F26722;
+  
+    font-size: clamp(0.9rem, 1.2vw, 1.1rem);
+    line-height: 1.4;
+    word-break: break-word;
+  }
+  

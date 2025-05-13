@@ -1,0 +1,11 @@
+.header {
+    background-color: #FFFFFF;
+    width: 100vw;
+    height: 75px;
+}
+
+.headerTrim {
+    background-color: #0060A1;
+    width: 100vw;
+    height: 30px;
+}
