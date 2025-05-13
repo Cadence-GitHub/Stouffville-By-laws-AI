@@ -519,4 +519,95 @@ ${answerContent}
     handleBylawLinks();
     initBugReportButtons(); // Initialize bug report buttons on page load
     console.log('Bylaw sidebar initialized');
+    
+    // Provincial Laws functionality
+    const provincialLawsBtn = document.getElementById('provincialLawsBtn');
+    const provincialLawsForm = document.getElementById('provincialLawsForm');
+    const fetchProvincialLawsBtn = document.getElementById('fetchProvincialLaws');
+    const provincialLawsResult = document.getElementById('provincialLawsResult');
+    const provincialContent = document.getElementById('provincialContent');
+    const sourcesList = document.getElementById('sourcesList');
+    const provincialLoading = document.getElementById('provincialLoading');
+    
+    // Toggle the provincial laws form when button is clicked
+    if (provincialLawsBtn) {
+        provincialLawsBtn.addEventListener('click', function() {
+            if (provincialLawsForm.style.display === 'none') {
+                provincialLawsForm.style.display = 'block';
+            } else {
+                provincialLawsForm.style.display = 'none';
+            }
+        });
+    }
+    
+    // Fetch provincial laws when the fetch button is clicked
+    if (fetchProvincialLawsBtn) {
+        fetchProvincialLawsBtn.addEventListener('click', function() {
+            const bylawType = document.getElementById('bylaw_type').value.trim();
+            const provincialModel = document.getElementById('provincial_model').value;
+            
+            if (bylawType === '') {
+                alert('Please enter a bylaw type');
+                return;
+            }
+            
+            // Show loading indicator
+            provincialLoading.style.display = 'block';
+            provincialContent.innerHTML = '';
+            sourcesList.innerHTML = '';
+            provincialLawsResult.style.display = 'block';
+            
+            // Fetch provincial laws data
+            fetch('/api/provincial_laws', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    bylaw_type: bylawType,
+                    model: provincialModel
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide loading indicator
+                provincialLoading.style.display = 'none';
+                
+                if (data.error) {
+                    provincialContent.innerHTML = `<div class="error">${data.error}</div>`;
+                    return;
+                }
+                
+                // Display the provincial information
+                provincialContent.innerHTML = data.provincial_info;
+                
+                // Display sources if available
+                if (data.sources && data.sources.length > 0) {
+                    sourcesList.innerHTML = '';
+                    data.sources.forEach(source => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<a href="${source.url}" target="_blank">${source.title}</a>`;
+                        sourcesList.appendChild(li);
+                    });
+                } else {
+                    sourcesList.innerHTML = '<li>No sources available</li>';
+                }
+                
+                // Add timing information if available
+                if (data.timings && data.timings.processing_time) {
+                    const processingTime = (data.timings.processing_time).toFixed(2);
+                    const timingInfo = document.createElement('div');
+                    timingInfo.className = 'timing-info';
+                    timingInfo.textContent = `Processing time: ${processingTime} seconds`;
+                    provincialContent.appendChild(document.createElement('hr'));
+                    provincialContent.appendChild(timingInfo);
+                }
+            })
+            .catch(error => {
+                provincialLoading.style.display = 'none';
+                provincialContent.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+                console.error('Error fetching provincial laws:', error);
+            });
+        });
+    }
 }); 
