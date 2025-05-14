@@ -6,6 +6,7 @@ import time
 from dotenv import load_dotenv
 import tiktoken  # Still needed for potential direct use elsewhere
 import re
+import datetime  # Added for timestamping log entries
 
 # Import from app package using the simplified imports from __init__.py
 from app import (
@@ -29,6 +30,9 @@ CORS(app)
 
 # Define paths to data files relative to the project root
 BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Log file path
+LOG_FILE = os.path.join(BACKEND_DIR, 'queries_log.txt')
 
 # Initialize ChromaDB retriever
 chroma_retriever = ChromaDBRetriever()
@@ -69,6 +73,9 @@ def ask():
         # Second search with transformed query
         transformed_results, _, _ = chroma_retriever.retrieve_relevant_bylaws(transformed_query, limit=10, bylaw_status=bylaw_status)
         
+        # Extract original bylaw numbers for logging
+        original_bylaw_ids = [bylaw.get("bylawNumber", "Unknown") for bylaw in original_results]
+        
         # Combine results and remove duplicates based on bylawNumber
         seen_bylaws = set()
         combined_results = []
@@ -79,12 +86,16 @@ def ask():
             seen_bylaws.add(bylaw_id)
             combined_results.append(bylaw)
         
+        # Extract transformed bylaw numbers for logging
+        transformed_bylaw_ids = []
+        
         # Then add only NEW transformed results that aren't duplicates
         for i, bylaw in enumerate(transformed_results):
             bylaw_id = bylaw.get("bylawNumber", "Unknown")
             if bylaw_id not in seen_bylaws:
                 seen_bylaws.add(bylaw_id)
                 combined_results.append(bylaw)
+                transformed_bylaw_ids.append(bylaw_id)
         
         # Use the combined results
         relevant_bylaws = combined_results
@@ -99,6 +110,25 @@ def ask():
         # Check if there was an error
         if 'error' in response:
             return jsonify(response), 500
+        
+        # Log the query and response
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        log_entry = [
+            f"--- LOG ENTRY: {timestamp} ---",
+            f"QUERY: {query}",
+            f"TRANSFORMED QUERY: {transformed_query}",
+            f"ORIGINAL BYLAWS: {', '.join(original_bylaw_ids)}",
+            f"ADDITIONAL BYLAWS FROM TRANSFORMED QUERY: {', '.join(transformed_bylaw_ids)}",
+            f"TIMING - FIRST PROMPT: {response['timings'].get('first_prompt', 0):.2f}s",
+            f"TIMING - SECOND PROMPT: {response['timings'].get('second_prompt', 0):.2f}s",
+            f"FILTERED ANSWER: {response.get('filtered_answer', 'N/A')}",
+            f"LAYMANS ANSWER: {response.get('laymans_answer', 'N/A')}",
+            "-" * 80
+        ]
+        
+        # Write to log file
+        with open(LOG_FILE, 'a', encoding='utf-8') as log_file:
+            log_file.write('\n'.join(log_entry) + '\n\n')
         
         return jsonify(response)
             
