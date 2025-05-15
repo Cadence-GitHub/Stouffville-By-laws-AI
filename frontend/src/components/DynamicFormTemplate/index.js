@@ -46,27 +46,23 @@ const DynamicFormTemplate = () => {
 
     
     return (
-        <div style={{margin: 22.5}}>
+        <div>
             <form onSubmit={handleSubmit}>
                 
                 {!useAdvancedForm ? (<SimpleForm placeholder={MyPlaceHolders()} />) : (<AdvancedForm placeholder={MyPlaceHolders()}/>)}
                 
                 <div>
-                    <p 
-                        className="clickable-text" 
-                        style={{fontSize: "15px", color: "#0060A1", fontWeight: "550", margin: 22.5}} 
-                        onClick={handleSwitch}>
-                            {useFormLabel}
+                    <p className="clickable-text" onClick={handleSwitch} style={{fontSize: "15px", fontWeight: "550"}}>                        
+                        {useFormLabel}
                     </p>
                 
                     {/* This element is a flag that changes the output that tailored to law enforcement officer language*/}
-                    <button type="button" style={{margin: 22.5}} className="buttonState" onClick={HandleClick}>
-                        Im an Officer
-                        
+                    <button type="button" className="buttonState" onClick={HandleClick}>
+                        Im an Officer                        
                         <input name="officerFlag" type="checkbox" className="custom-checkbox" checked={isOfficerFlag} readOnly />
                     </button>
                 
-                    <button type="submit" style={{margin: 22.5}} className="buttonSubmit">Search</button>
+                    <button type="submit" className="buttonSubmit">Search</button>
                 </div>
             </form>
         </div>
@@ -88,7 +84,7 @@ const AdvancedForm = ({placeholder}) => {
     return (
         <div className="form">
             <CustomInput displayValue={"Category"}/>
-            <CustomInput displayValue={"Keywords"}/>
+            <CustomInput displayValue={"Keywords (separated by \',\')"}/>
             <CustomTextArea placeholder={placeholder}/>
         </div>
     );

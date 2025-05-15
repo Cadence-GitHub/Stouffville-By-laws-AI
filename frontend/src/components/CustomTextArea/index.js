@@ -25,15 +25,15 @@ const CustomTextArea = ({placeholder}) => {
     }
 
     return (
-<div className={styles.inputWrapper}>
-                <textarea 
-                    ref={textAreaRef}
-                    className={styles.textareaInput}
-                    placeholder={placeholder}
-                    onInput={handleInput}
-                    row={1}>
-                </textarea>
-            </div>
+        <div className={styles.inputWrapper}>
+            <textarea 
+                ref={textAreaRef}
+                className={styles.textareaInput}
+                placeholder={placeholder}
+                onInput={handleInput}
+                row={1}>
+            </textarea>
+        </div>
     );
 }
 

@@ -1,9 +1,43 @@
+.chatMessagesContainer {
+    height: 65vh;
+    width: 100vw;
+    margin-top: 15px;
+    
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+.messages {
+    width: 400px;
+}
+
+.message {
+    padding: 7px;
+    font-size: 15px;
+    color: black;
+
+    text-align: left;
+
+    border: 1px solid black;
+    border-radius: 5px;
+    width: 350px;
+}
+
+.systemMessage {
+    margin-top: 30px;
+    text-align: left;
+}
+
+.userMessage {
+    margin-top: 30px;
+}
+
 .textareaChatContainer {
     display: flex;
-    position: relative;
     justify-content: center;
     align-items: center;
-    bottom: 100px;
+    margin-top: 15px;
 }
   
 .textareaChat {
@@ -11,6 +45,6 @@
     height: 75px;
     width: 350px;
     padding: 1.5vw;
-    border-radius: 1vw;
+    border-radius: 0.8vw;
     resize: none;
 }

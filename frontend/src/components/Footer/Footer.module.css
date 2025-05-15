@@ -1,27 +1,29 @@
-.footer {
-    color: white;
-    font-weight: 400;
-    font-style: italic;
+.footerWrapper {
+  display: flex;
+  width: 100vw; 
+  justify-content: center;
+  align-items: center;
+  text-align: center;    
+}
 
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
+.footer {
+  color: white;
+  font-weight: 400;
+  font-style: italic;
+
+  display: flex;
+
+  max-width: 85vw;
+  padding: 1em 1.5em;     
+  margin-top: 15px;
+  margin-bottom: 15px;
   
-    position: fixed;
-    bottom: 20px;
-  
-    width: 85vw;
-    max-width: 85vw; /* ensure wrapping is respected */
-    
-    padding: 1em 1.5em; /* dynamic spacing instead of height */
-    
-    border-radius: 1vw;
-    border-width: 2px;
-    background-color: #F26722;
-  
-    font-size: clamp(0.9rem, 1.2vw, 1.1rem);
-    line-height: 1.4;
-    word-break: break-word;
+  border-radius: 1vw;
+  border-width: 2px;
+  background-color: #F26722;
+
+  font-size: clamp(0.9rem, 1.2vw, 1.1rem);
+  line-height: 1.4;
+  word-break: break-word;
   }
   
