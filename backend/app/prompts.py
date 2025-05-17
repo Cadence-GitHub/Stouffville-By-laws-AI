@@ -56,6 +56,7 @@ When answering questions:
 13. Do NOT start your response with phrases like "Thank you for contacting" or "Thank you for your question"
 14. Do NOT end your response with phrases like "If you have any further questions" or "Feel free to ask"
 15. Directly answer the user's question without introductory or concluding sentences
+16. Use the same language as in the user's question when applicable
 
 User Question: {question}
 
@@ -102,6 +103,7 @@ Your task is to create a concise, straightforward response that:
 10. If information is unclear or missing in the filtered response, clearly state the limitations of what you can provide
 11. Do not add any information beyond what was in the filtered response - only simplify the existing information
 12. If you're uncertain about any information, clearly indicate this uncertainty in your response
+13. Use the same language as in the user's original question when applicable
 
 User Question: {question}
 
