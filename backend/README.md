@@ -9,6 +9,7 @@ A Flask-based backend service that provides AI-powered responses to questions ab
 - Enhanced search capability that transforms user queries into legal language for better semantic search
 - Token counting and cost calculation for each query
 - Bylaw status filtering allowing users to search specifically for active or inactive bylaws
+- Query logging system that records all user queries, transformed queries, retrieved bylaws, timing metrics, and responses to a JSON file for analysis
 - Optimized vector search with direct filtering for bylaw status (active/inactive)
 - Specialized prompt template for inactive bylaws that clearly identifies them as no longer in effect and explains why
 - Metadata preservation for inactive bylaws to explain their non-active status via the "whyNotActive" field
@@ -339,6 +340,28 @@ The application includes a streamlined bug reporting system:
 3. This information is formatted as Markdown for clear, readable display in GitHub Issues
 4. The user is directed to the GitHub issue creation page with all context data pre-populated
 5. This helps to accurately track and resolve issues with the AI responses
+
+## Query Logging System
+
+The application includes an automated query logging system that:
+
+1. Records comprehensive details of every user query to a JSON file
+2. Each log entry includes:
+   - Timestamp of when the query was processed
+   - Original user query text
+   - Transformed query (after enhanced search processing)
+   - Bylaws retrieved from the original query
+   - Additional bylaws found by the transformed query
+   - Timing metrics for each processing step
+   - Both the filtered and layman's versions of the AI response
+3. Log entries are stored in a queries_log.json file in the backend directory
+4. The system automatically initializes the log file if it doesn't exist
+5. Log data can be analyzed to:
+   - Improve query transformation algorithms
+   - Identify frequently asked questions
+   - Measure system performance
+   - Understand how users are interacting with the system
+   - Train and improve the AI model over time
 
 ## Optimized Two-Step Prompt System
 
