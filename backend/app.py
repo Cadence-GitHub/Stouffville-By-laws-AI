@@ -32,7 +32,7 @@ CORS(app)
 BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Log file path
-LOG_FILE = os.path.join(BACKEND_DIR, 'queries_log.txt')
+LOG_FILE = os.path.join(BACKEND_DIR, 'queries_log.json')
 
 # Initialize ChromaDB retriever
 chroma_retriever = ChromaDBRetriever()
@@ -111,24 +111,39 @@ def ask():
         if 'error' in response:
             return jsonify(response), 500
         
-        # Log the query and response
+        # Log the query and response in JSON format
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        log_entry = [
-            f"--- LOG ENTRY: {timestamp} ---",
-            f"QUERY: {query}",
-            f"TRANSFORMED QUERY: {transformed_query}",
-            f"ORIGINAL BYLAWS: {', '.join(original_bylaw_ids)}",
-            f"ADDITIONAL BYLAWS FROM TRANSFORMED QUERY: {', '.join(transformed_bylaw_ids)}",
-            f"TIMING - FIRST PROMPT: {response['timings'].get('first_prompt', 0):.2f}s",
-            f"TIMING - SECOND PROMPT: {response['timings'].get('second_prompt', 0):.2f}s",
-            f"FILTERED ANSWER: {response.get('filtered_answer', 'N/A')}",
-            f"LAYMANS ANSWER: {response.get('laymans_answer', 'N/A')}",
-            "-" * 80
-        ]
+        log_entry = {
+            "timestamp": timestamp,
+            "query": query,
+            "transformed_query": transformed_query,
+            "original_bylaws": original_bylaw_ids,
+            "additional_bylaws": transformed_bylaw_ids,
+            "timings": {
+                "first_prompt": response['timings'].get('first_prompt', 0),
+                "second_prompt": response['timings'].get('second_prompt', 0)
+            },
+            "filtered_answer": response.get('filtered_answer', 'N/A'),
+            "laymans_answer": response.get('laymans_answer', 'N/A')
+        }
         
-        # Write to log file
-        with open(LOG_FILE, 'a', encoding='utf-8') as log_file:
-            log_file.write('\n'.join(log_entry) + '\n\n')
+        # Check if log file exists and create it with a JSON array if it doesn't
+        if not os.path.exists(LOG_FILE):
+            with open(LOG_FILE, 'w', encoding='utf-8') as log_file:
+                json.dump([], log_file)
+        
+        # Read existing logs
+        with open(LOG_FILE, 'r', encoding='utf-8') as log_file:
+            try:
+                logs = json.load(log_file)
+            except json.JSONDecodeError:
+                # If the file is empty or has invalid JSON, start with an empty list
+                logs = []
+        
+        # Append new log entry and write back to file
+        logs.append(log_entry)
+        with open(LOG_FILE, 'w', encoding='utf-8') as log_file:
+            json.dump(logs, log_file, indent=2)
         
         return jsonify(response)
             
