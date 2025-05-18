@@ -49,7 +49,7 @@ const DynamicFormTemplate = () => {
         <div>
             <form onSubmit={handleSubmit}>
                 
-                {!useAdvancedForm ? (<SimpleForm placeholder={MyPlaceHolders()} />) : (<AdvancedForm placeholder={MyPlaceHolders()}/>)}
+                {!useAdvancedForm ? (<SimpleForm placeholder={MyPlaceHolders()} sendTo={handleSubmit}/>) : (<AdvancedForm placeholder={MyPlaceHolders()} sendTo={handleSubmit}/>)}
                 
                 <div>
                     <p className="clickable-text" onClick={handleSwitch} style={{fontSize: "15px", fontWeight: "550"}}>                        
@@ -71,21 +71,21 @@ const DynamicFormTemplate = () => {
 
 export default DynamicFormTemplate;
 
-const SimpleForm = ({placeholder}) => {
+const SimpleForm = ({placeholder, sendTo}) => {
     
     return (
-        <CustomTextArea placeholder={placeholder}/>
+        <CustomTextArea placeholder={placeholder} sendTo={sendTo}/>
     );
 };
 
 
-const AdvancedForm = ({placeholder}) => {
+const AdvancedForm = ({placeholder, sendTo}) => {
     
     return (
         <div className="form">
             <CustomInput displayValue={"Category"}/>
             <CustomInput displayValue={"Keywords (separated by \',\')"}/>
-            <CustomTextArea placeholder={placeholder}/>
+            <CustomTextArea placeholder={placeholder} sendTo={sendTo}/>
         </div>
     );
 };

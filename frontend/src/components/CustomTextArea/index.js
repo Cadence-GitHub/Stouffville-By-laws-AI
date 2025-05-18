@@ -1,7 +1,8 @@
+'use client'
 import { useRef } from "react";
 import styles from "./CustomTextArea.module.css"
 
-const CustomTextArea = ({placeholder}) => {
+const CustomTextArea = ({placeholder, sendTo}) => {
 
     const textAreaRef = useRef(null);
     const handleInput = () => {
@@ -22,7 +23,7 @@ const CustomTextArea = ({placeholder}) => {
                 elementRef.style.overflow = 'auto'; // Reset
             }
         }
-    }
+    }   
 
     return (
         <div className={styles.inputWrapper}>
@@ -31,7 +32,14 @@ const CustomTextArea = ({placeholder}) => {
                 className={styles.textareaInput}
                 placeholder={placeholder}
                 onInput={handleInput}
-                row={1}>
+                rows={1}
+                onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        sendTo(e)
+                    }
+                  }}
+                >
             </textarea>
         </div>
     );

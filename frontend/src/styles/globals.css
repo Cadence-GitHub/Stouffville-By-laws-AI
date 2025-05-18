@@ -126,6 +126,10 @@ body {
   justify-content: center;
 }
 
+.clickable-image {
+  cursor: pointer;
+}
+
 .clickable-text {
   cursor: pointer;
   color: #0060A1;
