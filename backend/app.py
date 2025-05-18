@@ -61,17 +61,17 @@ def ask():
     # Try to use ChromaDB to find relevant bylaws
     try:
         # Transform user query into legal language using the Gemini handler
-        transformed_query, _ = transform_query_for_enhanced_search(query, model)
+        transformed_query, transform_time = transform_query_for_enhanced_search(query, model)
         
         # First search with original query - also checks if collection exists
-        original_results, _, collection_exists = chroma_retriever.retrieve_relevant_bylaws(query, limit=10, bylaw_status=bylaw_status)
+        original_results, original_time, collection_exists = chroma_retriever.retrieve_relevant_bylaws(query, limit=10, bylaw_status=bylaw_status)
         
         # Check if the collection exists
         if not collection_exists:
             return jsonify({"error": "ChromaDB collection does not exist"}), 500
         
         # Second search with transformed query
-        transformed_results, _, _ = chroma_retriever.retrieve_relevant_bylaws(transformed_query, limit=10, bylaw_status=bylaw_status)
+        transformed_results, transformed_time, _ = chroma_retriever.retrieve_relevant_bylaws(transformed_query, limit=10, bylaw_status=bylaw_status)
         
         # Extract original bylaw numbers for logging
         original_bylaw_ids = [bylaw.get("bylawNumber", "Unknown") for bylaw in original_results]
@@ -120,6 +120,9 @@ def ask():
             "original_bylaws": original_bylaw_ids,
             "additional_bylaws": transformed_bylaw_ids,
             "timings": {
+                "transform": transform_time,
+                "retrieval_original": original_time,
+                "retrieval_transformed": transformed_time,
                 "first_prompt": response['timings'].get('first_prompt', 0),
                 "second_prompt": response['timings'].get('second_prompt', 0)
             },
