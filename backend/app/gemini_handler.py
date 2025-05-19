@@ -5,10 +5,11 @@ from langchain.schema.output_parser import StrOutputParser
 from app.prompts import (
     get_bylaws_prompt_template, 
     LAYMANS_PROMPT_TEMPLATE, ENHANCED_SEARCH_PROMPT_TEMPLATE,
-    TEMPERATURES
+    TEMPERATURES, VOICE_PROMPT_TEMPLATE
 )
 import time
 import re
+from langchain_core.messages import HumanMessage
 
 # Define allowed models
 ALLOWED_MODELS = [
@@ -370,3 +371,34 @@ def get_provincial_law_info(bylaw_type, model="gemini-2.0-flash"):
         }
     except Exception as e:
         return {"error": str(e)}
+
+# Process voice queries
+def process_voice_query(encoded_audio: str, mime_type: str, model: str = "gemini-2.0-flash"):
+    """
+    Process a voice query audio using the VOICE_PROMPT_TEMPLATE and return the reformulated question
+    or NO_BYLAW_QUESTION_DETECTED.
+    """
+    api_key = os.environ.get("GOOGLE_API_KEY")
+    if not api_key:
+        return "Error: GOOGLE_API_KEY environment variable is not set"
+
+    # Initialize the LLM for voice transcription
+    llm = ChatGoogleGenerativeAI(
+        model=model,
+        google_api_key=api_key,
+        timeout=30
+    )
+
+    # Create a HumanMessage with the template and audio media
+    message = HumanMessage(
+        content=[
+            {"type": "text", "text": VOICE_PROMPT_TEMPLATE.template},
+            {"type": "media", "data": encoded_audio, "mime_type": mime_type}
+        ]
+    )
+
+    # Invoke the model
+    response = llm.invoke([message])
+
+    # Return the content of the response
+    return response.content

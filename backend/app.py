@@ -18,6 +18,7 @@ from app import (
     count_tokens,
     MODEL_PRICING
 )
+from app.gemini_handler import process_voice_query
 
 # Load API keys and environment variables from .env file
 load_dotenv()
@@ -433,9 +434,43 @@ def provincial_laws():
     
     return jsonify(response)
 
+@app.route('/api/voice_query', methods=['POST'])
+def voice_query():
+    """
+    API endpoint that processes voice input and returns a transcribed bylaw question
+    or NO_BYLAW_QUESTION_DETECTED.
+    """
+    data = request.get_json()
+    audio_data = data.get('audio_data')
+    mime_type = data.get('mime_type')
+    if not audio_data or not mime_type:
+        return jsonify({"error": "Missing audio data or MIME type"}), 400
+    # Process the voice query using the Gemini handler
+    result = process_voice_query(audio_data, mime_type)
+    # Return the transcript directly
+    return jsonify({"transcript": result})
+
 if __name__ == '__main__':
-    # Run in debug mode for development
-    # In production, we should set debug=False and configure a proper WSGI server
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    from threading import Thread
+    from werkzeug.serving import run_simple
+
+    # Turn off the reloader so you don't get four threads
+    def serve_http():
+        run_simple(
+            '0.0.0.0', 5000, app,
+            use_reloader=False,
+            use_debugger=True
+        )
+
+    def serve_https():
+        run_simple(
+            '0.0.0.0', 5443, app,
+            ssl_context='adhoc',
+            use_reloader=False,
+            use_debugger=True
+        )
+
+    Thread(target=serve_http).start()
+    Thread(target=serve_https).start()
 
 

@@ -610,4 +610,112 @@ ${answerContent}
             });
         });
     }
+
+    // Voice query functionality
+    const voiceBtn = document.getElementById('voiceBtn');
+    const voiceForm = document.getElementById('voiceForm');
+    const startRecordingBtn = document.getElementById('startRecording');
+    const stopRecordingBtn = document.getElementById('stopRecording');
+    const recordingIndicator = document.getElementById('recordingIndicator');
+
+    let mediaRecorder;
+    let audioChunks = [];
+    let recordingTimeout;
+
+    // Toggle the voice form when button is clicked
+    if (voiceBtn) {
+        voiceBtn.addEventListener('click', function() {
+            if (voiceForm.style.display === 'none') {
+                voiceForm.style.display = 'block';
+            } else {
+                voiceForm.style.display = 'none';
+            }
+        });
+    }
+
+    // Start recording audio
+    if (startRecordingBtn) {
+        startRecordingBtn.addEventListener('click', function() {
+            // Unified getUserMedia across browsers and secure context check
+            let getUserMediaFunc;
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                getUserMediaFunc = (constraints) => navigator.mediaDevices.getUserMedia(constraints);
+            } else if (navigator.getUserMedia) {
+                getUserMediaFunc = (constraints) => new Promise((resolve, reject) => navigator.getUserMedia(constraints, resolve, reject));
+            } else if (navigator.webkitGetUserMedia) {
+                getUserMediaFunc = (constraints) => new Promise((resolve, reject) => navigator.webkitGetUserMedia(constraints, resolve, reject));
+            } else if (navigator.mozGetUserMedia) {
+                getUserMediaFunc = (constraints) => new Promise((resolve, reject) => navigator.mozGetUserMedia(constraints, resolve, reject));
+            } else {
+                // Voice recording not available: prompt user to use HTTPS demo page
+                const secureUrl = `https://${window.location.hostname}:5443/api/demo`;
+                alert(`Voice recording requires a secure connection. Please open the demo over HTTPS at ${secureUrl}`);
+                return;
+            }
+
+            getUserMediaFunc({ audio: true })
+                .then(stream => {
+                    mediaRecorder = new MediaRecorder(stream);
+                    mediaRecorder.ondataavailable = function(e) {
+                        audioChunks.push(e.data);
+                    };
+                    mediaRecorder.onstart = function() {
+                        recordingIndicator.style.display = 'inline';
+                        stopRecordingBtn.style.display = 'inline';
+                        startRecordingBtn.style.display = 'none';
+                    };
+                    mediaRecorder.onstop = function() {
+                        recordingIndicator.style.display = 'none';
+                        stopRecordingBtn.style.display = 'none';
+                        startRecordingBtn.style.display = 'inline';
+
+                        const audioBlob = new Blob(audioChunks, { type: audioChunks[0].type });
+                        const reader = new FileReader();
+                        reader.onloadend = function() {
+                            const base64data = reader.result.split(',')[1];
+                            fetch('/api/voice_query', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ audio_data: base64data, mime_type: audioBlob.type })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.transcript === 'NO_BYLAW_QUESTION_DETECTED') {
+                                    alert('No bylaw question detected');
+                                } else if (data.error) {
+                                    alert(data.error);
+                                } else {
+                                    document.getElementById('query').value = data.transcript;
+                                }
+                                audioChunks = [];
+                            })
+                            .catch(error => {
+                                console.error('Voice query error:', error);
+                                alert('Voice query failed');
+                                audioChunks = [];
+                            });
+                        };
+                        reader.readAsDataURL(audioBlob);
+                        clearTimeout(recordingTimeout);
+                    };
+                    mediaRecorder.start();
+                    recordingTimeout = setTimeout(function() {
+                        if (mediaRecorder.state === 'recording') mediaRecorder.stop();
+                    }, 30000);
+                })
+                .catch(err => {
+                    console.error('Microphone access denied:', err);
+                    alert('Could not access microphone');
+                });
+        });
+    }
+
+    // Stop recording audio
+    if (stopRecordingBtn) {
+        stopRecordingBtn.addEventListener('click', function() {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+            }
+        });
+    }
 }); 

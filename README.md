@@ -53,6 +53,7 @@ This project uses Docker to create a consistent development environment. The set
    - Access the demo web interface at http://localhost:5000/api/demo
    - Access the public demo interface at http://localhost:5000/public-demo
    - View specific bylaws at http://localhost:5000/static/bylawViewer.html?bylaw=BYLAW-NUMBER
+   - Record voice questions via the "Record Voice Question" button on the demo page over HTTPS: https://localhost:5443/api/demo
 
 ### Development Workflow
 
@@ -107,6 +108,9 @@ This project uses Docker to create a consistent development environment. The set
 - `POST /api/autocomplete`: Returns autocomplete suggestions for partial queries
   - Requires JSON with a 'query' field containing the partial query text
   - Returns semantically similar questions when the query is at least 3 characters long
+- `POST /api/voice_query`: Processes a base64-encoded audio recording for bylaw questions.
+  - Request JSON: `{ "audio_data": "<base64-encoded audio>", "mime_type": "<audio MIME type>" }`
+  - Response: `{ "transcript": "<transcribed question or NO_BYLAW_QUESTION_DETECTED>" }` or `{ "error": "<error message>" }`
 - `GET /public-demo`: Serves a simplified public-facing demo interface
 
 ### AI Integration
