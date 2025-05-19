@@ -6,6 +6,7 @@ import time
 from dotenv import load_dotenv
 import tiktoken  # Still needed for potential direct use elsewhere
 import re
+import datetime  # Added for timestamping log entries
 
 # Import from app package using the simplified imports from __init__.py
 from app import (
@@ -29,6 +30,9 @@ CORS(app)
 
 # Define paths to data files relative to the project root
 BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Log file path
+LOG_FILE = os.path.join(BACKEND_DIR, 'queries_log.json')
 
 # Initialize ChromaDB retriever
 chroma_retriever = ChromaDBRetriever()
@@ -57,17 +61,20 @@ def ask():
     # Try to use ChromaDB to find relevant bylaws
     try:
         # Transform user query into legal language using the Gemini handler
-        transformed_query, _ = transform_query_for_enhanced_search(query, model)
+        transformed_query, transform_time = transform_query_for_enhanced_search(query, model)
         
         # First search with original query - also checks if collection exists
-        original_results, _, collection_exists = chroma_retriever.retrieve_relevant_bylaws(query, limit=10, bylaw_status=bylaw_status)
+        original_results, original_time, collection_exists = chroma_retriever.retrieve_relevant_bylaws(query, limit=10, bylaw_status=bylaw_status)
         
         # Check if the collection exists
         if not collection_exists:
             return jsonify({"error": "ChromaDB collection does not exist"}), 500
         
         # Second search with transformed query
-        transformed_results, _, _ = chroma_retriever.retrieve_relevant_bylaws(transformed_query, limit=10, bylaw_status=bylaw_status)
+        transformed_results, transformed_time, _ = chroma_retriever.retrieve_relevant_bylaws(transformed_query, limit=10, bylaw_status=bylaw_status)
+        
+        # Extract original bylaw numbers for logging
+        original_bylaw_ids = [bylaw.get("bylawNumber", "Unknown") for bylaw in original_results]
         
         # Combine results and remove duplicates based on bylawNumber
         seen_bylaws = set()
@@ -79,12 +86,16 @@ def ask():
             seen_bylaws.add(bylaw_id)
             combined_results.append(bylaw)
         
+        # Extract transformed bylaw numbers for logging
+        transformed_bylaw_ids = []
+        
         # Then add only NEW transformed results that aren't duplicates
         for i, bylaw in enumerate(transformed_results):
             bylaw_id = bylaw.get("bylawNumber", "Unknown")
             if bylaw_id not in seen_bylaws:
                 seen_bylaws.add(bylaw_id)
                 combined_results.append(bylaw)
+                transformed_bylaw_ids.append(bylaw_id)
         
         # Use the combined results
         relevant_bylaws = combined_results
@@ -99,6 +110,43 @@ def ask():
         # Check if there was an error
         if 'error' in response:
             return jsonify(response), 500
+        
+        # Log the query and response in JSON format
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        log_entry = {
+            "timestamp": timestamp,
+            "query": query,
+            "transformed_query": transformed_query,
+            "original_bylaws": original_bylaw_ids,
+            "additional_bylaws": transformed_bylaw_ids,
+            "timings": {
+                "transform": transform_time,
+                "retrieval_original": original_time,
+                "retrieval_transformed": transformed_time,
+                "first_prompt": response['timings'].get('first_prompt', 0),
+                "second_prompt": response['timings'].get('second_prompt', 0)
+            },
+            "filtered_answer": response.get('filtered_answer', 'N/A'),
+            "laymans_answer": response.get('laymans_answer', 'N/A')
+        }
+        
+        # Check if log file exists and create it with a JSON array if it doesn't
+        if not os.path.exists(LOG_FILE):
+            with open(LOG_FILE, 'w', encoding='utf-8') as log_file:
+                json.dump([], log_file)
+        
+        # Read existing logs
+        with open(LOG_FILE, 'r', encoding='utf-8') as log_file:
+            try:
+                logs = json.load(log_file)
+            except json.JSONDecodeError:
+                # If the file is empty or has invalid JSON, start with an empty list
+                logs = []
+        
+        # Append new log entry and write back to file
+        logs.append(log_entry)
+        with open(LOG_FILE, 'w', encoding='utf-8') as log_file:
+            json.dump(logs, log_file, indent=2)
         
         return jsonify(response)
             

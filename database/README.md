@@ -425,6 +425,7 @@ After initializing ChromaDB, the Flask application will automatically use it for
 10. Allows direct access to specific bylaws through the `/api/bylaw/<bylaw_number>` endpoint (with improved handling of bylaw number variations and suffix removal)
 11. Integrates with an interactive bylaw viewer to display comprehensive bylaw information
 12. Offers autocomplete suggestions as users type their queries using the "questions" collection
+13. Records all queries, transformed queries, retrieved bylaws, timing metrics, and responses to a JSON log file for analysis and improvement
 
 The bylaw viewer uses the direct retrieval function to fetch complete bylaw data and displays it in a user-friendly format with:
 - Comprehensive metadata display
