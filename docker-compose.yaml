@@ -7,7 +7,6 @@ services:
       - ./database:/database  # Mount database directory
     ports:
       - "5000:5000"
-      - "5443:5443"
     restart: always
     environment:
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}

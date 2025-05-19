@@ -451,26 +451,20 @@ def voice_query():
     return jsonify({"transcript": result})
 
 if __name__ == '__main__':
-    from threading import Thread
-    from werkzeug.serving import run_simple
-
-    # Turn off the reloader so you don't get four threads
-    def serve_http():
-        run_simple(
-            '0.0.0.0', 5000, app,
-            use_reloader=False,
-            use_debugger=True
+    # Check if SSL certificate files exist
+    cert_file = 'cert.pem'
+    key_file = 'key.pem'
+    
+    if os.path.exists(cert_file) and os.path.exists(key_file):
+        # Use HTTPS with provided certificates
+        app.run(
+            host='0.0.0.0',
+            port=5000,
+            ssl_context=(cert_file, key_file),
+            debug=True
         )
-
-    def serve_https():
-        run_simple(
-            '0.0.0.0', 5443, app,
-            ssl_context='adhoc',
-            use_reloader=False,
-            use_debugger=True
-        )
-
-    Thread(target=serve_http).start()
-    Thread(target=serve_https).start()
+    else:
+        # Use standard HTTP
+        app.run(host='0.0.0.0', port=5000, debug=True)
 
 
