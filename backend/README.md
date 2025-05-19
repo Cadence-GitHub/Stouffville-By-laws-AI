@@ -219,7 +219,7 @@ Frontend developers can directly use this production backend if they don't want 
 
    The server will run at:
    - http://localhost:5000 (HTTP)
-   - https://localhost:5443 (HTTPS; voice recording requires secure context)
+   - https://localhost:5000 (HTTPS; voice recording requires cert.pem and key.pem to enable secure context)
 
 3. **Integration with Frontend**
 

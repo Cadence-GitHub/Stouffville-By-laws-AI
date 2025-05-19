@@ -53,7 +53,7 @@ This project uses Docker to create a consistent development environment. The set
    - Access the demo web interface at http://localhost:5000/api/demo
    - Access the public demo interface at http://localhost:5000/public-demo
    - View specific bylaws at http://localhost:5000/static/bylawViewer.html?bylaw=BYLAW-NUMBER
-   - Record voice questions via the "Record Voice Question" button on the demo page over HTTPS: https://localhost:5443/api/demo
+   - Record voice questions via the "Record Voice Question" button on the demo page over HTTPS: https://localhost:5000/api/demo (requires cert.pem and key.pem in the project root)
 
 ### Development Workflow
 
