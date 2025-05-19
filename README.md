@@ -144,6 +144,7 @@ Dependencies for AI integration:
 
 ### Key Features
 
+- **Query Logging System**: Comprehensive logging of all user queries including original query, transformed query, retrieved bylaws, timing metrics, and response data to a JSON file for analysis and improvement.
 - **Public Demo Interface**: A simplified, user-friendly interface for the public to query bylaw information, with a clean design and dark mode support.
 - **Enhanced Search**: Always enabled in the API, transforms user queries into formal, bylaw-oriented language to improve semantic search results, combining both original and transformed search results to maximize retrieval relevance.
 - **Token Counting and Cost Calculation**: Tracks token usage for both input and output, calculating costs based on model-specific pricing to provide transparency about API usage.
