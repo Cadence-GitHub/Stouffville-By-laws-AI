@@ -419,6 +419,12 @@ def public_demo():
     """
     return app.send_static_file('public_demo.html')
 
+@app.route('/')
+def root():
+    """
+    Serve the public demo page as the default landing page.
+    """
+    return app.send_static_file('public_demo.html')
 
 @app.route('/api/provincial_laws', methods=['POST'])
 def provincial_laws():
