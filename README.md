@@ -155,11 +155,11 @@ Available Gemini models (in developer tools):
 - gemini-2.0-flash-lite (fastest, lowest cost)
 - gemini-2.0-flash (balanced speed/quality)
 - gemini-2.5-flash-preview-04-17 (fast, high quality)
-- gemini-2.5-pro-exp-03-25 (highest quality, most expensive)
+- gemini-2.5-flash-preview-05-20 (latest update)
 
 When using the gemini-mixed option:
 - Query transformation uses gemini-2.0-flash
-- First query (bylaws) uses gemini-2.5-flash-preview-04-17
+- First query (bylaws) uses gemini-2.5-flash-preview-05-20
 - Second query (layman's terms) uses gemini-2.0-flash
 
 Each prompt type uses a specific temperature setting for optimal results:

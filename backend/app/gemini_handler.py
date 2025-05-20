@@ -17,7 +17,7 @@ ALLOWED_MODELS = [
     "gemini-2.0-flash",
     "gemini-2.0-flash-lite", 
     "gemini-2.5-flash-preview-04-17",
-    "gemini-2.5-pro-exp-03-25"
+    "gemini-2.5-flash-preview-05-20"
 ]
 
 def invoke_model_with_timing(prompt_type, model_config, prompt_template, prompt_args):
@@ -117,7 +117,7 @@ def get_gemini_response(query, relevant_bylaws, model="gemini-2.0-flash", bylaw_
         if model == "gemini-mixed":
             # For gemini-mixed option, use specific models for each step
             models = {
-                "bylaws": "gemini-2.5-flash-preview-04-17",  # Best model for first query
+                "bylaws": "gemini-2.5-flash-preview-05-20",  # Best model for first query
                 "filtered": "gemini-2.0-flash",              # Balanced model for second query
                 "laymans": "gemini-2.0-flash"                # Balanced model for third query
             }
