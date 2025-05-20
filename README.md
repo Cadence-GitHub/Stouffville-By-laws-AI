@@ -5,7 +5,7 @@ AI-powered web application that makes Stouffville's municipal bylaws accessible 
 
 Started as a community learning experience about AI and how we can elevate residents in their knowledge on AI. Soon, it took a rebirth of learning by doing. 
 
-Traditional municipal bylaw repositories present significant accessibility barriers. The (Stouffville document center) [https://whitchurch.civicweb.net/filepro/documents/], while functional, lacks semantic search capabilities, natural language understanding, and fails to clearly indicate bylaw status—whether active, expired, or revoked. Legal language remains opaque to residents, and navigating complex cross-references requires specialized knowledge.
+Traditional municipal bylaw repositories present significant accessibility barriers. The [Stouffville document center](https://whitchurch.civicweb.net/filepro/documents/), while functional, lacks semantic search capabilities, natural language understanding, and fails to clearly indicate bylaw status—whether active, expired, or revoked. Legal language remains opaque to residents, and navigating complex cross-references requires specialized knowledge.
 
 ### Technical Pipeline: From Static PDFs to Intelligent Resource
 
