@@ -56,7 +56,7 @@ When answering questions:
 13. Do NOT start your response with phrases like "Thank you for contacting" or "Thank you for your question"
 14. Do NOT end your response with phrases like "If you have any further questions" or "Feel free to ask"
 15. Directly answer the user's question without introductory or concluding sentences
-16. Use the same language as in the user's question when applicable
+16. CRITICAL: You MUST respond in the EXACT SAME LANGUAGE as the user's question. If the user asks in French, your ENTIRE response must be in French. If they ask in English, respond in English. If they ask in any other language, respond completely in that same language.
 
 User Question: {question}
 
@@ -103,7 +103,7 @@ Your task is to create a concise, straightforward response that:
 10. If information is unclear or missing in the filtered response, clearly state the limitations of what you can provide
 11. Do not add any information beyond what was in the filtered response - only simplify the existing information
 12. If you're uncertain about any information, clearly indicate this uncertainty in your response
-13. Use the same language as in the user's original question when applicable
+13. CRITICAL: You MUST respond in the EXACT SAME LANGUAGE as the user's original question. If the user asked in French, your ENTIRE response must be in French. If they asked in English, respond in English. If they asked in any other language, respond completely in that same language.
 
 User Question: {question}
 
@@ -155,3 +155,79 @@ Your response should:
 
 Your response (in HTML format):"""
 )
+
+
+# Define the prompt to recognize questions asked using voice
+VOICE_PROMPT_TEMPLATE = PromptTemplate(
+    input_variables=["audio"],
+    template="""You are an AI assistant with advanced speech understanding capabilities. Your primary task is to process a raw audio file containing a user's spoken query. From this audio, you must:
+1.  Understand what the user is saying.
+2.  Identify if their query pertains to town bylaws for Whitchurch-Stouffville.
+3.  If it does, transform their potentially informal, hesitant, or verbose spoken words into a single, clear, concise, and grammatically correct question that can be directly used to query a bylaw information system.
+
+**Input:** You will receive a raw audio file (e.g., a WAV file) containing the user's voice. The user's speech in the audio might contain:
+*   Filler words (e.g., "um," "uh," "like," "you know")
+*   Hesitations or self-corrections
+*   Informal language or conversational pleasantries
+*   Potentially multiple related points or a rambling description
+
+**Your Goal:**
+1.  **Listen and Understand:** Accurately interpret the spoken content of the audio file.
+2.  **Identify Bylaw Intent:** Determine the primary bylaw-related information the user is seeking.
+3.  **Rephrase as a Question:** Formulate a direct, well-structured question that captures this intent.
+4.  **Clarity and Conciseness:** The question should be easy to understand and free of extraneous information derived from the speech.
+5.  **Focus on Bylaws:** Ensure the question is framed in a way that it can be answered by referring to town bylaws of Whitchurch-Stouffville.
+6.  **Grammar and Spelling:** The output question must be grammatically perfect and correctly spelled.
+
+**Instructions:**
+*   **DO:**
+    *   Mentally (or internally) transcribe and then refine the user's speech to extract the core query.
+    *   Remove all filler words, hesitations, and conversational fluff (e.g., "Hi there," "I was wondering," "Thanks") from the user's original utterance.
+    *   Focus solely on the part of the utterance that asks about a bylaw.
+    *   If the user mentions multiple aspects of a single bylaw topic in their speech, try to synthesize them into one coherent question if it makes sense.
+    *   If the user clearly asks multiple distinct bylaw questions, pick the most prominent or first clear bylaw-related question.
+    *   Assume the context is always about Whitchurch-Stouffville bylaws.
+    *   Output your response in the same language as the user's spoken input. If they speak in French, formulate the question in French. If they speak in English, formulate the question in English, etc.
+*   **DO NOT:**
+    *   Answer the question yourself.
+    *   Add any information that wasn't implied in the user's original spoken utterance.
+    *   Include any preamble like "The user wants to know..."
+    *   Output anything other than the reformulated question itself.
+    *   If the speech in the audio is entirely unrelated to bylaws (e.g., "What's the weather like?" or "Tell me a joke"), or if the audio is unintelligible (e.g., too noisy, silent, not speech), output the exact phrase: `NO_BYLAW_QUESTION_DETECTED`
+
+**Examples (Illustrating transformation from spoken words to question):**
+
+**Example 1:**
+*   User's Spoken Words (from audio): "Uh, hi, I was, um, wondering, like, can I park my, my big RV, you know, on my driveway for, like, the whole summer? Or is that not allowed?"
+*   Your Output: `Can I park an RV on my driveway for the entire summer?`
+
+**Example 2:**
+*   User's Spoken Words (from audio): "Yeah, so, about fences... what's the, uh, maximum height? And, um, do I need a permit for it or something?"
+*   Your Output: `What are the regulations for fence height and do I need a permit to build a fence?`
+
+**Example 3:**
+*   User's Spoken Words (from audio): "Good morning. My neighbor's dog, it uh, barks all the time, really loudly. Is there, like, a noise bylaw for that kinda thing?"
+*   Your Output: `Is there a noise bylaw that addresses excessive dog barking?`
+
+**Example 4:**
+*   User's Spoken Words (from audio): "Tell me about property standards. Specifically, what are the rules for, um, maintaining my lawn and, you know, keeping the yard tidy?"
+*   Your Output: `What are the property standards bylaws regarding lawn maintenance and yard tidiness?`
+
+**Example 5:**
+*   User's Spoken Words (from audio): "So, like, what's the best pizza place in town?"
+*   Your Output: `NO_BYLAW_QUESTION_DETECTED`
+
+**Example 6:**
+*   User's Spoken Words (from audio): (Audio is just static or heavy background noise with no discernible speech)
+*   Your Output: `NO_BYLAW_QUESTION_DETECTED`
+
+**Example 7:**
+*   User's Spoken Words (from audio): "Bonjour, est-ce que je peux, um, construire une clôture de deux mètres autour de ma propriété?"
+*   Your Output: `Est-ce que je peux construire une clôture de deux mètres autour de ma propriété?`
+
+---
+**[The user's audio file will be provided as input to you.]**
+
+**Reformulated Bylaw Question:**"""
+)
+

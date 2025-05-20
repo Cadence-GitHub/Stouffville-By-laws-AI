@@ -129,6 +129,32 @@ Returns autocomplete suggestions for a partial query, finding semantically simil
 
 Note: This endpoint returns an empty array if the query is less than 3 characters long.
 
+### POST `/api/voice_query`
+
+Processes a voice recording for bylaw questions.
+
+**Request Body:**
+```json
+{
+  "audio_data": "<base64-encoded audio>",
+  "mime_type": "<audio MIME type>"
+}
+```
+
+**Response (Success):**
+```json
+{
+  "transcript": "<transcribed question or NO_BYLAW_QUESTION_DETECTED>"
+}
+```
+
+**Response (Error):**
+```json
+{
+  "error": "<error message>"
+}
+```
+
 ### GET/POST `/api/demo`
 
 A standalone web demo page with a simple form interface:
@@ -148,6 +174,7 @@ The demo page includes:
 - Visualization of bylaws found specifically by enhanced search
 - Interactive sidebar to view full bylaw details directly from hyperlinks
 - "Problem? Log a bug!" buttons under each answer type that capture complete context for GitHub Issues
+- Voice recording button and form to record your question via microphone and auto-fill the input (requires HTTPS on port 5443).
 
 ### GET `/public-demo`
 
@@ -184,13 +211,15 @@ Frontend developers can directly use this production backend if they don't want 
 
    ```bash
    # Install dependencies
-   pip install flask flask-cors langchain langchain-google-genai langchain-chroma langchain-voyageai chromadb python-dotenv tiktoken
+   pip install flask flask-cors langchain langchain-google-genai langchain-chroma langchain-voyageai chromadb python-dotenv tiktoken cryptography
 
    # Run the application
    python app.py
    ```
 
-   The server will run at `http://localhost:5000`
+   The server will run at:
+   - http://localhost:5000 (HTTP)
+   - https://localhost:5000 (HTTPS; voice recording requires cert.pem and key.pem to enable secure context)
 
 3. **Integration with Frontend**
 

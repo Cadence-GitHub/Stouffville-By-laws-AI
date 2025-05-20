@@ -18,6 +18,7 @@ from app import (
     count_tokens,
     MODEL_PRICING
 )
+from app.gemini_handler import process_voice_query
 
 # Load API keys and environment variables from .env file
 load_dotenv()
@@ -418,6 +419,12 @@ def public_demo():
     """
     return app.send_static_file('public_demo.html')
 
+@app.route('/')
+def root():
+    """
+    Serve the public demo page as the default landing page.
+    """
+    return app.send_static_file('public_demo.html')
 
 @app.route('/api/provincial_laws', methods=['POST'])
 def provincial_laws():
@@ -433,9 +440,37 @@ def provincial_laws():
     
     return jsonify(response)
 
+@app.route('/api/voice_query', methods=['POST'])
+def voice_query():
+    """
+    API endpoint that processes voice input and returns a transcribed bylaw question
+    or NO_BYLAW_QUESTION_DETECTED.
+    """
+    data = request.get_json()
+    audio_data = data.get('audio_data')
+    mime_type = data.get('mime_type')
+    if not audio_data or not mime_type:
+        return jsonify({"error": "Missing audio data or MIME type"}), 400
+    # Process the voice query using the Gemini handler
+    result = process_voice_query(audio_data, mime_type)
+    # Return the transcript directly
+    return jsonify({"transcript": result})
+
 if __name__ == '__main__':
-    # Run in debug mode for development
-    # In production, we should set debug=False and configure a proper WSGI server
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    # Check if SSL certificate files exist
+    cert_file = 'cert.pem'
+    key_file = 'key.pem'
+    
+    if os.path.exists(cert_file) and os.path.exists(key_file):
+        # Use HTTPS with provided certificates
+        app.run(
+            host='0.0.0.0',
+            port=5000,
+            ssl_context=(cert_file, key_file),
+            debug=True
+        )
+    else:
+        # Use standard HTTP
+        app.run(host='0.0.0.0', port=5000, debug=True)
 
 
