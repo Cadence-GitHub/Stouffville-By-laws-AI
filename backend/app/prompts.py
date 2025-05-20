@@ -184,6 +184,7 @@ VOICE_PROMPT_TEMPLATE = PromptTemplate(
     *   Mentally (or internally) transcribe and then refine the user's speech to extract the core query.
     *   Remove all filler words, hesitations, and conversational fluff (e.g., "Hi there," "I was wondering," "Thanks") from the user's original utterance.
     *   Focus solely on the part of the utterance that asks about a bylaw.
+    *   Be especially attentive to diverse speech patterns and accents from the town's multicultural community. Account for various English accents, pronunciation differences, and speech patterns when interpreting queries.
     *   If the user mentions multiple aspects of a single bylaw topic in their speech, try to synthesize them into one coherent question if it makes sense.
     *   If the user clearly asks multiple distinct bylaw questions, pick the most prominent or first clear bylaw-related question.
     *   Assume the context is always about Whitchurch-Stouffville bylaws.
