@@ -80,7 +80,11 @@ This project uses Docker to create a consistent development environment. The set
    - Access the demo web interface at http://localhost:5000/api/demo
    - Access the public demo interface at http://localhost:5000/public-demo
    - View specific bylaws at http://localhost:5000/static/bylawViewer.html?bylaw=BYLAW-NUMBER
-   - Record voice questions via the "Record Voice Question" button on the demo page over HTTPS: https://localhost:5000/api/demo (requires cert.pem and key.pem in the project root)
+   - Record voice questions via the "Record Voice Question" button on the demo page (requires HTTPS and cert.pem/key.pem in the project root for microphone access)
+
+### Production Deployment Note
+
+In production, this application is deployed behind an NGINX reverse proxy which handles SSL termination and serves the application over HTTPS. While the Flask application has built-in SSL capability for local development and testing (using cert.pem and key.pem), the production environment uses NGINX for better performance and stability with high traffic loads.
 
 ### Development Workflow
 

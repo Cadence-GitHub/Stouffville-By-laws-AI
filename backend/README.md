@@ -219,7 +219,7 @@ Frontend developers can directly use this production backend if they don't want 
 
    The server will run at:
    - http://localhost:5000 (HTTP)
-   - https://localhost:5000 (HTTPS; voice recording requires cert.pem and key.pem to enable secure context)
+   - https://localhost:5000 (HTTPS; voice recording requires cert.pem and key.pem in the project root for microphone access)
 
 3. **Integration with Frontend**
 
@@ -445,6 +445,10 @@ The system includes a token counting utility that:
 - Error handling is implemented for API key issues, model selection, and processing errors
 - Responses include current date information to help with determining expired by-laws
 - Bylaw responses include cache-prevention headers to ensure fresh data
+
+## Production Deployment
+
+In production, this application is deployed behind an NGINX reverse proxy which handles SSL termination and serves the application over HTTPS. The Flask application's built-in SSL capability is still maintained in the code for local development and testing, but in production, the more robust NGINX solution is used for SSL handling and better stability with high traffic loads.
 
 ## Development Notes
 
