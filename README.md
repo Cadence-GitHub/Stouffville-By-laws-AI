@@ -1,6 +1,33 @@
 # Stouffville-By-laws-AI
 AI-powered web application that makes Stouffville's municipal bylaws accessible and understandable to residents and municipal officers through natural conversation.
 
+## Motivation: Beyond Traditional Document Repositories
+
+Started as a community learning experience about AI and how we can elevate residents in their knowledge on AI. Soon, it took a rebirth of learning by doing. 
+
+Traditional municipal bylaw repositories present significant accessibility barriers. The [Stouffville document center] (https://whitchurch.civicweb.net/filepro/documents/), while functional, lacks semantic search capabilities, natural language understanding, and fails to clearly indicate bylaw status—whether active, expired, or revoked. Legal language remains opaque to residents, and navigating complex cross-references requires specialized knowledge.
+
+### Technical Pipeline: From Static PDFs to Intelligent Resource
+
+The transformation of 9,000+ static PDF documents into an AI-accessible knowledge base involved a sophisticated multi-stage pipeline:
+
+1. **Structured Data Extraction**: Leveraging the Google Gemini API through `BatchParseAndExtractBylawPDFs.py`, each PDF undergoes semantic parsing to extract hierarchical metadata—bylaw numbers, years, types, legal topics, referenced legislation, entities, locations, and conditions—according to a predefined JSON schema.
+
+2. **Status Intelligence Layer**: A series of specialized analyzers determine bylaw validity:
+   - `bylaw_expiry_analyzer.py` identifies time-limited bylaws that have naturally expired
+   - `bylaw_revocation_analysis.py` detects explicit revocation relationships between bylaws
+   - `prepare_final_json.py` enriches the dataset with comprehensive status metadata
+
+3. **Vector Embedding and Storage**: The system initializes ChromaDB using Voyage AI's `voyage-3-large` embedding model, creating high-dimensional vector representations that capture semantic relationships between bylaw concepts. This enables intelligent retrieval beyond keyword matching.
+
+4. **Retrieval-Augmented Generation Architecture**: The Flask backend implements a RAG pattern where:
+   - ChromaDB performs semantic search with real-time bylaw status filtering
+   - Retrieved bylaws pass through layered Gemini AI processing
+   - Legal language transforms into accessible explanations with proper citations
+   - XML formatting preserves hyperlinked references to source documents
+
+This implementation transcends traditional search paradigms, enabling context-aware natural language interaction with complex legal documents while maintaining document provenance and status awareness.
+
 ## Development Setup with Docker
 
 This project uses Docker to create a consistent development environment. The setup includes a Python Flask backend that can be easily deployed and tested.
