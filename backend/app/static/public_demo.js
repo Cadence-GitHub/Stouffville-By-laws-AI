@@ -819,6 +819,132 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize bylaw panel
     setupBylawPanel();
     
+    // Initialize voice query
+    setupVoiceQuery();
+    
     // Focus the input field for immediate user interaction
     document.getElementById('question').focus();
 });
+
+function setupVoiceQuery() {
+    const voiceQueryBtn = document.getElementById('voiceQueryBtn');
+    const voiceQueryPopup = document.getElementById('voiceQueryPopup');
+    const closeVoicePopupBtn = document.getElementById('closeVoicePopupBtn');
+    const startRecordingBtn = document.getElementById('startRecordingBtn');
+    const stopRecordingBtn = document.getElementById('stopRecordingBtn');
+    const recordingIndicator = document.getElementById('recordingIndicator');
+    const queryInput = document.getElementById('question');
+
+    let mediaRecorder;
+    let audioChunks = [];
+    let recordingTimeout;
+
+    if (!voiceQueryBtn || !voiceQueryPopup || !closeVoicePopupBtn || !startRecordingBtn || !stopRecordingBtn || !recordingIndicator) {
+        console.warn('Voice query elements not found, functionality will be disabled.');
+        return;
+    }
+
+    voiceQueryBtn.addEventListener('click', () => {
+        voiceQueryPopup.style.display = 'block';
+    });
+
+    closeVoicePopupBtn.addEventListener('click', () => {
+        voiceQueryPopup.style.display = 'none';
+        if (mediaRecorder && mediaRecorder.state === 'recording') {
+            mediaRecorder.stop();
+        }
+    });
+
+    startRecordingBtn.addEventListener('click', () => {
+        let getUserMediaFunc;
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            getUserMediaFunc = (constraints) => navigator.mediaDevices.getUserMedia(constraints);
+        } else if (navigator.getUserMedia) {
+            getUserMediaFunc = (constraints) => new Promise((resolve, reject) => navigator.getUserMedia(constraints, resolve, reject));
+        } else if (navigator.webkitGetUserMedia) {
+            getUserMediaFunc = (constraints) => new Promise((resolve, reject) => navigator.webkitGetUserMedia(constraints, resolve, reject));
+        } else if (navigator.mozGetUserMedia) {
+            getUserMediaFunc = (constraints) => new Promise((resolve, reject) => navigator.mozGetUserMedia(constraints, resolve, reject));
+        } else {
+            const secureUrl = `https://${window.location.hostname}:${window.location.port || (window.location.protocol === 'https:' ? '443' : '80')}/`; // Adjusted to work with public demo structure
+            alert(`Voice recording requires a secure connection (HTTPS). Please ensure you are accessing the page securely. You might need to access it via ${secureUrl} if not already.`);
+            return;
+        }
+
+        getUserMediaFunc({ audio: true })
+            .then(stream => {
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = []; // Reset chunks for new recording
+
+                mediaRecorder.ondataavailable = (e) => {
+                    audioChunks.push(e.data);
+                };
+
+                mediaRecorder.onstart = () => {
+                    recordingIndicator.style.display = 'inline';
+                    stopRecordingBtn.style.display = 'inline-block'; // Changed to inline-block for consistency with other buttons
+                    startRecordingBtn.style.display = 'none';
+                };
+
+                mediaRecorder.onstop = () => {
+                    recordingIndicator.style.display = 'none';
+                    stopRecordingBtn.style.display = 'none';
+                    startRecordingBtn.style.display = 'inline-block'; // Changed to inline-block
+                    voiceQueryPopup.style.display = 'none'; // Hide popup after recording stops
+
+                    if (audioChunks.length === 0) {
+                        console.warn('No audio data recorded.');
+                        clearTimeout(recordingTimeout); // Clear timeout as recording stopped
+                        return;
+                    }
+
+                    const audioBlob = new Blob(audioChunks, { type: audioChunks[0].type });
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        const base64data = reader.result.split(',')[1];
+                        fetch('/api/voice_query', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ audio_data: base64data, mime_type: audioBlob.type })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.transcript === 'NO_BYLAW_QUESTION_DETECTED') {
+                                alert('No bylaw question detected in your recording. Please try again.');
+                            } else if (data.error) {
+                                alert(`Error processing voice query: ${data.error}`);
+                            } else if (data.transcript) {
+                                queryInput.value = data.transcript;
+                                // Optionally, trigger form submission or provide feedback
+                            }
+                            audioChunks = []; // Clear chunks after processing
+                        })
+                        .catch(error => {
+                            console.error('Voice query API error:', error);
+                            alert('Failed to process your voice query. Please try again.');
+                            audioChunks = []; // Clear chunks on error
+                        });
+                    };
+                    reader.readAsDataURL(audioBlob);
+                    clearTimeout(recordingTimeout); // Clear timeout as recording stopped
+                };
+
+                mediaRecorder.start();
+                recordingTimeout = setTimeout(() => {
+                    if (mediaRecorder.state === 'recording') {
+                        mediaRecorder.stop();
+                    }
+                }, 30000); // 30 seconds limit
+            })
+            .catch(err => {
+                console.error('Microphone access error:', err);
+                alert('Could not access microphone. Please check your browser permissions and ensure you are on a secure (HTTPS) connection.');
+            });
+    });
+
+    stopRecordingBtn.addEventListener('click', () => {
+        if (mediaRecorder && mediaRecorder.state === 'recording') {
+            mediaRecorder.stop();
+        }
+    });
+}

@@ -18,6 +18,7 @@ A Flask-based backend service that provides AI-powered responses to questions ab
 - Performance metrics showing execution time for bylaw retrieval and each prompt (in demo interface)
 - Configurable number of bylaws to retrieve (5, 10, 15, or 20) in the demo interface
 - Intelligent autocomplete feature that provides suggestions as users type their queries (minimum 3 characters)
+- Voice query recording feature that allows users to ask questions by speaking instead of typing
 - Simple web-based demo interface for testing without the frontend
 - Simplified public demo interface with clean design and dark mode support
 - Interactive bylaw viewer with detailed information about specific bylaws
@@ -332,9 +333,15 @@ The new public-facing demo interface provides:
 5. Simplified controls with only a search box and submit button
 6. Option to toggle between simple and detailed answers
 7. Intelligent autocomplete suggestions as users type
-8. Responsive design that works well on mobile and desktop devices
-9. Direct links to the bylaw viewer
-10. Clean error handling with helpful messages for users
+8. Voice recording capability that allows users to:
+   - Record questions by speaking instead of typing
+   - Start and stop recordings with dedicated buttons
+   - See a recording indicator when actively recording
+   - Get automatic transcription of their spoken questions
+   - Have transcribed questions automatically populated in the search field
+9. Responsive design that works well on mobile and desktop devices
+10. Direct links to the bylaw viewer
+11. Clean error handling with helpful messages for users
 
 ## Inactive Bylaw Handling
 
