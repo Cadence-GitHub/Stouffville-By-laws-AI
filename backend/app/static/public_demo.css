@@ -98,7 +98,6 @@ h1 {
     font-size: 1rem;
     border: 2px solid var(--light-gray);
     border-radius: var(--radius);
-    margin-bottom: 1rem;
     transition: var(--transition);
     background-color: var(--card-bg);
     color: var(--text);
@@ -496,7 +495,50 @@ input:checked + .slider:before {
 /* Position the form to handle autocomplete positioning */
 .question-form form {
     position: relative;
-} 
+}
+
+/* Wrapper for question input and voice button */
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+/* Style the input inside input-wrapper */
+.input-wrapper input {
+    flex: 1;
+    padding-right: 4rem;
+    margin-bottom: 0;
+}
+
+/* Style the voice button inside input-wrapper */
+.input-wrapper #voiceQueryBtn {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    z-index: 10;
+}
+
+.input-wrapper #voiceQueryBtn img {
+    width: 2rem;
+    height: 2rem;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+}
+
+.input-wrapper #voiceQueryBtn:hover img {
+    opacity: 1;
+}
 
 /* Bylaw Panel Styles */
 .bylaw-panel {
@@ -645,4 +687,49 @@ body.panel-open .container {
 
 .full-width {
     grid-column: 1 / -1;
+}
+
+/* Voice Query Popup Styles */
+#voiceQueryPopup {
+    background-color: var(--card-bg);
+    color: var(--text);
+    padding: 25px;
+    border-radius: var(--radius);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--light-gray);
+    text-align: center;
+}
+
+#voiceQueryPopup h4 {
+    color: var(--primary);
+    margin-bottom: 15px;
+}
+
+#voiceQueryPopup button {
+    margin: 5px;
+}
+
+#voiceQueryPopup #closeVoicePopupBtn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--light-text);
+    cursor: pointer;
+    padding: 5px;
+}
+
+#voiceQueryPopup #closeVoicePopupBtn:hover {
+    color: var(--text);
+    background-color: transparent; /* Override button hover */
+    transform: none; /* Override button hover */
+    box-shadow: none; /* Override button hover */
+}
+
+#recordingIndicator {
+    display: inline-block; /* Make sure it takes space */
+    vertical-align: middle;
+    margin-left: 10px;
 }

@@ -197,6 +197,14 @@ Dependencies for AI integration:
 - **Visual UI Improvements**: Enhanced demo interface with better layout and formatting options.
 - **Bug Reporting System**: Each answer type includes a "Problem? Log a bug!" button that automatically captures query details, model information, retrieved bylaws, timing data, and the response content, formatting it as Markdown for clear reporting in GitHub Issues.
 - **Autocomplete Feature**: The search interface provides intelligent autocomplete suggestions based on previously stored questions when the user types at least 3 characters, finding semantically similar questions using ChromaDB's vector search.
+- **Voice Query Recording**: Allows users to record voice questions directly in the interface:
+  - Integrated microphone button in the search input field
+  - Popup interface for recording control with start/stop buttons
+  - Visible recording indicator to show when recording is active
+  - Automatic transcription of voice to text using Google's speech recognition
+  - Automatic population of the transcribed question in the search field
+  - Built-in timeout (30 seconds) to prevent excessively long recordings
+  - Requires HTTPS connection for browser security requirements
 
 ### Bylaw Viewer Feature
 
