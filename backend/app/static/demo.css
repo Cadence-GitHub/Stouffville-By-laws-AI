@@ -282,3 +282,25 @@ body.sidebar-open .container {
     border-radius: 4px;
     margin-bottom: 10px;
 }
+
+/* TTS button styles */
+.tts-button {
+    display: inline-block;
+    margin-left: 10px;
+    padding: 5px 10px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.9em;
+    cursor: pointer;
+}
+.tts-button:hover {
+    background-color: #218838;
+}
+/* TTS audio styles */
+.tts-audio {
+    display: block;
+    margin-top: 10px;
+    width: 100%;
+}

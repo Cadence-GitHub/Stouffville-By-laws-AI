@@ -718,4 +718,37 @@ ${answerContent}
             }
         });
     }
+
+    // TTS functionality for Speak aloud buttons
+    const ttsButtons = document.querySelectorAll('.tts-button');
+    ttsButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const answerContainer = this.closest('.answer-container');
+            const contentDiv = answerContainer.querySelector('div');
+            // Extract only the actual answer text (everything before "Source: ChromaDB")
+            let text = contentDiv.textContent.trim();
+            const sourceIndex = text.indexOf('Source: ChromaDB');
+            if (sourceIndex > -1) {
+                text = text.substring(0, sourceIndex).trim();
+            }
+            let audio = answerContainer.querySelector('.tts-audio');
+            if (!audio) {
+                audio = document.createElement('audio');
+                audio.className = 'tts-audio';
+                audio.controls = false;
+                audio.autoplay = true;
+                audio.style.display = 'none';
+                answerContainer.appendChild(audio);
+            }
+            playTTS(text, audio);
+        });
+    });
+
+    function playTTS(text, audioElement) {
+        console.log('Playing TTS via audio element GET for:', text);
+        const url = `/tts-stream?text=${encodeURIComponent(text)}`;
+        audioElement.src = url;
+        audioElement.load();
+        audioElement.play().catch(err => console.error('Error playing audio:', err));
+    }
 }); 
