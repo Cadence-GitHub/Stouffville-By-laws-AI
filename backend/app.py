@@ -19,6 +19,7 @@ from app import (
     MODEL_PRICING
 )
 from app.gemini_handler import process_voice_query
+from app.gemini_tts_handler import tts_bp
 
 # Load API keys and environment variables from .env file
 load_dotenv()
@@ -28,6 +29,7 @@ app = Flask(__name__,
             template_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'app', 'templates'),
             static_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'app', 'static'))
 CORS(app)
+app.register_blueprint(tts_bp)
 
 # Define paths to data files relative to the project root
 BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))

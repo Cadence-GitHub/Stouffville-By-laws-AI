@@ -18,6 +18,7 @@ A Flask-based backend service that provides AI-powered responses to questions ab
 - Performance metrics showing execution time for bylaw retrieval and each prompt (in demo interface)
 - Configurable number of bylaws to retrieve (5, 10, 15, or 20) in the demo interface
 - Intelligent autocomplete feature that provides suggestions as users type their queries (minimum 3 characters)
+- Voice query recording feature that allows users to ask questions by speaking instead of typing
 - Simple web-based demo interface for testing without the frontend
 - Simplified public demo interface with clean design and dark mode support
 - Interactive bylaw viewer with detailed information about specific bylaws
@@ -30,6 +31,7 @@ A Flask-based backend service that provides AI-powered responses to questions ab
 - ChromaDB vector search integration with dual Voyage AI embedding models:
   - `voyage-3-large` for the main by-laws collection for highest quality retrieval
   - `voyage-3-lite` for the questions collection used in autocomplete functionality
+- Text-to-speech (TTS) streaming using Google's Gemini Live API with "Iapetus" voice for natural-sounding speech synthesis
 
 ## API Endpoints
 
@@ -176,6 +178,37 @@ The demo page includes:
 - "Problem? Log a bug!" buttons under each answer type that capture complete context for GitHub Issues
 - Voice recording button and form to record your question via microphone and auto-fill the input (requires HTTPS on port 5443).
 
+### GET/POST `/tts-stream`
+
+Streams text-to-speech audio using Gemini Live API for converting AI responses to natural-sounding speech.
+
+**Request (GET):**
+```
+GET /tts-stream?text=Your text to convert to speech
+```
+
+**Request (POST):**
+```json
+{
+  "text": "Your text to convert to speech"
+}
+```
+
+**Response:**
+- Streams raw PCM audio data (24kHz, 16-bit, mono)
+- First chunk contains JSON header with format information:
+  ```json
+  {
+    "format": "pcm",
+    "sampleRate": 24000,
+    "channels": 1,
+    "bitsPerSample": 16
+  }
+  ```
+- Subsequent chunks contain raw PCM audio bytes
+- Uses Google's Gemini Live API with "Iapetus" voice for high-quality speech synthesis
+- Automatically adds context prefix for bylaw-related responses
+
 ### GET `/public-demo`
 
 Serves a simplified public-facing demo page with a clean, modern interface:
@@ -237,6 +270,7 @@ Frontend developers can directly use this production backend if they don't want 
   - `prompts.py`: AI prompt templates (including specialized template for inactive bylaws, layman's terms conversion, and enhanced search)
   - `chroma_retriever.py`: ChromaDB integration for vector search with direct active bylaw filtering
   - `gemini_handler.py`: Gemini AI model integration and response processing
+  - `gemini_tts_handler.py`: Text-to-speech streaming using Gemini Live API
   - `token_counter.py`: Token counting and cost calculation utilities
   - `templates/`: HTML templates for web interfaces
     - `demo.html`: Enhanced demo page with improved UI, model selection, and comparison features
@@ -332,9 +366,15 @@ The new public-facing demo interface provides:
 5. Simplified controls with only a search box and submit button
 6. Option to toggle between simple and detailed answers
 7. Intelligent autocomplete suggestions as users type
-8. Responsive design that works well on mobile and desktop devices
-9. Direct links to the bylaw viewer
-10. Clean error handling with helpful messages for users
+8. Voice recording capability that allows users to:
+   - Record questions by speaking instead of typing
+   - Start and stop recordings with dedicated buttons
+   - See a recording indicator when actively recording
+   - Get automatic transcription of their spoken questions
+   - Have transcribed questions automatically populated in the search field
+9. Responsive design that works well on mobile and desktop devices
+10. Direct links to the bylaw viewer
+11. Clean error handling with helpful messages for users
 
 ## Inactive Bylaw Handling
 
