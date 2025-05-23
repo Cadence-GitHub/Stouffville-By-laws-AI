@@ -142,6 +142,11 @@ In production, this application is deployed behind an NGINX reverse proxy which 
 - `POST /api/voice_query`: Processes a base64-encoded audio recording for bylaw questions.
   - Request JSON: `{ "audio_data": "<base64-encoded audio>", "mime_type": "<audio MIME type>" }`
   - Response: `{ "transcript": "<transcribed question or NO_BYLAW_QUESTION_DETECTED>" }` or `{ "error": "<error message>" }`
+- `GET/POST /tts-stream`: Streams text-to-speech audio using Gemini Live API
+  - GET: Uses `?text=` query parameter for the text to convert to speech
+  - POST: Uses JSON body with `text` field for the text to convert to speech
+  - Streams raw PCM audio data (24kHz, 16-bit, mono) with JSON header containing format information
+  - Uses Google's Gemini Live API with "Iapetus" voice for natural-sounding speech
 - `GET /public-demo`: Serves a simplified public-facing demo interface
 
 ### AI Integration
@@ -171,6 +176,7 @@ Dependencies for AI integration:
 - langchain
 - langchain-google-genai
 - google-generativeai
+- google-genai (for TTS streaming via Gemini Live API)
 - python-dotenv
 - chromadb
 - langchain-chroma
@@ -205,6 +211,13 @@ Dependencies for AI integration:
   - Automatic population of the transcribed question in the search field
   - Built-in timeout (30 seconds) to prevent excessively long recordings
   - Requires HTTPS connection for browser security requirements
+- **Text-to-Speech (TTS) Streaming**: Converts AI responses to natural-sounding speech audio:
+  - Uses Google's Gemini Live API with "Iapetus" voice for high-quality speech synthesis
+  - Streams real-time PCM audio (24kHz, 16-bit, mono) for immediate playback
+  - Web Audio API integration for smooth, low-latency audio playback in browsers
+  - "Speak aloud" buttons available for all AI responses in the demo interface
+  - Automatic resampling to match browser's native audio sample rate
+  - Real-time audio processing with background threading for responsive performance
 
 ### Bylaw Viewer Feature
 
@@ -287,6 +300,7 @@ graph TB
         PublicDemo["Public Demo (static/public_demo.html)"]
         BylawViewer["Bylaw Viewer (static/bylawViewer.html)"]
         Autocomplete["Autocomplete (static/demo.js)"]
+        TTSHandler["TTS Handler (gemini_tts_handler.py)"]
 
         %% Subgraph for API Calls
         subgraph APICalls["API Endpoints"]
@@ -296,6 +310,7 @@ graph TB
             API4["/api/bylaw/ (GET)"]
             API5["/api/autocomplete (POST)"]
             API6["/public-demo (GET)"]
+            API7["/tts-stream (GET/POST)"]
         end
     end
 

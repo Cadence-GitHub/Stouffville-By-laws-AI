@@ -31,6 +31,7 @@ A Flask-based backend service that provides AI-powered responses to questions ab
 - ChromaDB vector search integration with dual Voyage AI embedding models:
   - `voyage-3-large` for the main by-laws collection for highest quality retrieval
   - `voyage-3-lite` for the questions collection used in autocomplete functionality
+- Text-to-speech (TTS) streaming using Google's Gemini Live API with "Iapetus" voice for natural-sounding speech synthesis
 
 ## API Endpoints
 
@@ -177,6 +178,37 @@ The demo page includes:
 - "Problem? Log a bug!" buttons under each answer type that capture complete context for GitHub Issues
 - Voice recording button and form to record your question via microphone and auto-fill the input (requires HTTPS on port 5443).
 
+### GET/POST `/tts-stream`
+
+Streams text-to-speech audio using Gemini Live API for converting AI responses to natural-sounding speech.
+
+**Request (GET):**
+```
+GET /tts-stream?text=Your text to convert to speech
+```
+
+**Request (POST):**
+```json
+{
+  "text": "Your text to convert to speech"
+}
+```
+
+**Response:**
+- Streams raw PCM audio data (24kHz, 16-bit, mono)
+- First chunk contains JSON header with format information:
+  ```json
+  {
+    "format": "pcm",
+    "sampleRate": 24000,
+    "channels": 1,
+    "bitsPerSample": 16
+  }
+  ```
+- Subsequent chunks contain raw PCM audio bytes
+- Uses Google's Gemini Live API with "Iapetus" voice for high-quality speech synthesis
+- Automatically adds context prefix for bylaw-related responses
+
 ### GET `/public-demo`
 
 Serves a simplified public-facing demo page with a clean, modern interface:
@@ -238,6 +270,7 @@ Frontend developers can directly use this production backend if they don't want 
   - `prompts.py`: AI prompt templates (including specialized template for inactive bylaws, layman's terms conversion, and enhanced search)
   - `chroma_retriever.py`: ChromaDB integration for vector search with direct active bylaw filtering
   - `gemini_handler.py`: Gemini AI model integration and response processing
+  - `gemini_tts_handler.py`: Text-to-speech streaming using Gemini Live API
   - `token_counter.py`: Token counting and cost calculation utilities
   - `templates/`: HTML templates for web interfaces
     - `demo.html`: Enhanced demo page with improved UI, model selection, and comparison features
