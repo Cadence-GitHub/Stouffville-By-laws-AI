@@ -1,6 +1,5 @@
 from flask import Blueprint, Response, request, stream_with_context
 import os
-import time
 import sys
 import logging
 import threading
@@ -53,19 +52,15 @@ def tts_stream():
     # Add prefix to provide context for TTS
     text = "Read aloud the following response to a question about town's bylaws: " + text
 
-    logger.info(f"Received TTS request - text length: {len(text)} chars - first 50 chars: {text[:50]}...")
+    logger.info(f"TTS request - text length: {len(text)} chars")
     
     # Use a standard Python queue to avoid asyncio complexities in Flask context
     audio_queue = queue.Queue()
     end_event = threading.Event()
-    request_start_time = time.time() # Capture start time for overall request
     
     # Function to process text with Live API in a background thread
     def process_live_tts():
         try:
-            start_time = time.time()
-            logger.info("Starting Live API TTS session")
-            
             # Run asyncio event loop for Live API
             async def run_live_api():
                 try:
@@ -80,18 +75,15 @@ def tts_stream():
                         turn = session.receive()
                         async for response in turn:
                             if data := response.data:
-                                # Filter out JSON metadata frames (e.g. setupComplete)
-                                # These start with '{' when encoded
+                                # Filter out JSON metadata frames
                                 if isinstance(data, (bytes, bytearray)) and data.lstrip().startswith(b'{'):
                                     continue
                                 # Treat as raw PCM audio
                                 chunk_count += 1
-                                chunk_size = len(data)
-                                total_bytes += chunk_size
-                                logger.info(f"Received audio chunk #{chunk_count}: {chunk_size} bytes (total: {total_bytes} bytes)")
+                                total_bytes += len(data)
                                 audio_queue.put(data)
                         
-                        logger.info(f"TTS generation complete - received {chunk_count} chunks, {total_bytes} bytes in {time.time() - start_time:.2f}s")
+                        logger.info(f"TTS generation complete - {chunk_count} chunks, {total_bytes} bytes")
                 except Exception as e:
                     logger.error(f"Live API error: {str(e)}")
                 finally:
@@ -112,8 +104,6 @@ def tts_stream():
     # Stream raw PCM data directly to client
     @stream_with_context
     def generate_stream_internal():
-        stream_start_time = time.time()
-        logger.info("Starting to send raw PCM data to client")
         output_chunks = 0
         output_bytes = 0
         
@@ -125,20 +115,16 @@ def tts_stream():
                 "channels": 1,
                 "bitsPerSample": 16
             }
-            import json
             header = json.dumps(format_info).encode('utf-8') + b'\n'
             yield header
-            logger.info(f"Sent audio format header: {format_info}")
             
             while True:
                 try:
                     # Try to get PCM chunk from queue
-                    pcm_chunk = audio_queue.get(timeout=0.05)  # Shorter timeout for lower latency
+                    pcm_chunk = audio_queue.get(timeout=0.05)
                     yield pcm_chunk
                     output_chunks += 1
                     output_bytes += len(pcm_chunk)
-                    if output_chunks <= 5 or output_chunks % 10 == 0:  # Reduce logging frequency
-                        logger.info(f"Sent PCM chunk #{output_chunks}: {len(pcm_chunk)} bytes")
                 except queue.Empty:
                     # Check if we're done
                     if end_event.is_set():
@@ -149,18 +135,15 @@ def tts_stream():
                                 yield pcm_chunk
                                 output_chunks += 1
                                 output_bytes += len(pcm_chunk)
-                                logger.info(f"Sent final PCM chunk #{output_chunks}: {len(pcm_chunk)} bytes")
                             except queue.Empty:
                                 break
                         break
                     # Continue waiting if not done yet
                     continue
-            
-            logger.info(f"End of PCM stream - sent {output_chunks} chunks, {output_bytes} bytes in {time.time() - stream_start_time:.2f}s")
 
         except Exception as e:
-            logger.error(f"Error in generate_stream_internal: {str(e)}")
+            logger.error(f"Error in stream generation: {str(e)}")
         
-        logger.info(f"TTS stream processing completed in {time.time() - stream_start_time:.2f}s. Final status: {output_chunks} PCM chunks, {output_bytes} bytes.")
+        logger.info(f"TTS stream complete - {output_chunks} chunks, {output_bytes} bytes")
 
     return Response(generate_stream_internal(), mimetype="application/octet-stream") 
