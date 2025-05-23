@@ -731,24 +731,398 @@ ${answerContent}
             if (sourceIndex > -1) {
                 text = text.substring(0, sourceIndex).trim();
             }
-            let audio = answerContainer.querySelector('.tts-audio');
-            if (!audio) {
-                audio = document.createElement('audio');
-                audio.className = 'tts-audio';
-                audio.controls = false;
-                audio.autoplay = true;
-                audio.style.display = 'none';
-                answerContainer.appendChild(audio);
+            
+            // Stop any currently playing audio in this container
+            if (answerContainer.currentTTS) {
+                answerContainer.currentTTS.stop();
             }
-            playTTS(text, audio);
+            
+            // Test Web Audio API first, then start TTS
+            testWebAudioAPI().then((webAudioWorks) => {
+                if (webAudioWorks) {
+                    console.log('Web Audio API test passed, using PCM streaming');
+                    playTTSWebAudio(text, answerContainer);
+                } else {
+                    console.error('Web Audio API not available - TTS functionality disabled');
+                    alert('Audio playback is not available in your browser or requires user interaction. Please try again or check your browser settings.');
+                }
+            });
         });
     });
 
-    function playTTS(text, audioElement) {
-        console.log('Playing TTS via audio element GET for:', text);
-        const url = `/tts-stream?text=${encodeURIComponent(text)}`;
-        audioElement.src = url;
-        audioElement.load();
-        audioElement.play().catch(err => console.error('Error playing audio:', err));
+    // Test function to verify Web Audio API works
+    async function testWebAudioAPI() {
+        try {
+            console.log('Testing Web Audio API...');
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            console.log('Test: Audio context created, state:', audioContext.state);
+            
+            // Try to resume the context
+            if (audioContext.state === 'suspended') {
+                console.log('Test: Audio context suspended, attempting resume...');
+                await audioContext.resume();
+                console.log('Test: Audio context state after resume:', audioContext.state);
+            }
+            
+            // Create a short test tone
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            // Very quiet, short beep at 440Hz
+            oscillator.frequency.value = 440;
+            gainNode.gain.value = 0.01; // Very quiet
+            
+            const startTime = audioContext.currentTime;
+            const duration = 0.1; // 100ms
+            
+            gainNode.gain.setValueAtTime(0.01, startTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+            
+            oscillator.start(startTime);
+            oscillator.stop(startTime + duration);
+            
+            console.log('Test: Created test tone, context state:', audioContext.state);
+            
+            // Wait a bit for the test tone
+            await new Promise(resolve => setTimeout(resolve, 200));
+            
+            // Clean up
+            try {
+                oscillator.disconnect();
+                gainNode.disconnect();
+            } catch (e) {
+                // Already disconnected
+            }
+            
+            // If we got here without errors, Web Audio API is working
+            console.log('Test: Web Audio API test completed successfully');
+            return audioContext.state === 'running';
+            
+        } catch (error) {
+            console.error('Test: Web Audio API test failed:', error);
+            return false;
+        }
+    }
+
+    // Web Audio API based TTS player for smooth streaming
+    async function playTTSWebAudio(text, answerContainer) {
+        console.log('Playing TTS via Web Audio API for:', text);
+        
+        try {
+            // Initialize Web Audio Context
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            console.log('Audio context created, state:', audioContext.state);
+            console.log('Audio context sample rate:', audioContext.sampleRate);
+            
+            // Ensure context is running - handle autoplay policy
+            if (audioContext.state === 'suspended') {
+                console.log('Audio context suspended, attempting to resume...');
+                await audioContext.resume();
+                console.log('Audio context resumed, new state:', audioContext.state);
+            }
+            
+            const sourceSampleRate = 24000; // Gemini's sample rate
+            const targetSampleRate = audioContext.sampleRate; // Usually 44100
+            const resampleRatio = targetSampleRate / sourceSampleRate;
+            console.log(`Sample rate conversion: ${sourceSampleRate}Hz -> ${targetSampleRate}Hz (ratio: ${resampleRatio.toFixed(3)})`);
+            
+            let headerParsed = false;
+            let audioQueue = [];
+            let isPlaying = false;
+            let processingNode = null;
+            let gainNode = null;
+            let currentSampleIndex = 0;
+            let audioStarted = false;
+            
+            // Create a controller to manage the TTS session
+            const ttsController = {
+                stop: () => {
+                    console.log('Stopping TTS playback...');
+                    isPlaying = false;
+                    if (processingNode) {
+                        try {
+                            processingNode.disconnect();
+                            console.log('Processing node disconnected');
+                        } catch (e) {
+                            console.warn('Error disconnecting processing node:', e);
+                        }
+                        processingNode = null;
+                    }
+                    if (gainNode) {
+                        try {
+                            gainNode.disconnect();
+                            console.log('Gain node disconnected');
+                        } catch (e) {
+                            console.warn('Error disconnecting gain node:', e);
+                        }
+                        gainNode = null;
+                    }
+                    audioQueue = [];
+                    console.log('TTS playback stopped');
+                }
+            };
+            
+            // Store the controller for later cleanup
+            answerContainer.currentTTS = ttsController;
+            
+            // Create gain node for volume control
+            gainNode = audioContext.createGain();
+            gainNode.gain.value = 0.8; // Slightly reduce volume to prevent clipping
+            gainNode.connect(audioContext.destination);
+            console.log('Gain node created and connected to destination');
+            
+            // Use ScriptProcessorNode as it's widely supported
+            const bufferSize = 4096;
+            processingNode = audioContext.createScriptProcessor(bufferSize, 0, 1);
+            processingNode.connect(gainNode);
+            console.log('ScriptProcessorNode created with buffer size:', bufferSize);
+            
+            let audioProcessCallCount = 0;
+            let lastLogTime = Date.now();
+            
+            processingNode.onaudioprocess = function(event) {
+                audioProcessCallCount++;
+                
+                // Log every 100 calls (about every 9 seconds at 44.1kHz)
+                if (audioProcessCallCount % 100 === 0 || audioProcessCallCount <= 5) {
+                    const now = Date.now();
+                    console.log(`Audio process call #${audioProcessCallCount}, isPlaying: ${isPlaying}, queue length: ${audioQueue.length}, currentIndex: ${currentSampleIndex}, timeSinceLastLog: ${now - lastLogTime}ms`);
+                    lastLogTime = now;
+                }
+                
+                const outputBuffer = event.outputBuffer;
+                const outputData = outputBuffer.getChannelData(0);
+                
+                if (!isPlaying) {
+                    // Fill with silence when not playing
+                    outputData.fill(0);
+                    return;
+                }
+                
+                let samplesWritten = 0;
+                
+                // Fill output buffer with queued audio data
+                for (let i = 0; i < bufferSize; i++) {
+                    if (currentSampleIndex < audioQueue.length) {
+                        outputData[i] = audioQueue[currentSampleIndex];
+                        currentSampleIndex++;
+                        samplesWritten++;
+                    } else {
+                        outputData[i] = 0; // Silence if no data available
+                    }
+                }
+                
+                if (audioProcessCallCount <= 5 && samplesWritten > 0) {
+                    console.log(`First few audio process calls: wrote ${samplesWritten} samples, first few values:`, outputData.slice(0, 10));
+                }
+                
+                // Clean up old audio data to prevent memory growth
+                if (currentSampleIndex > targetSampleRate * 3) { // Keep 3 seconds of buffer
+                    const keepSamples = targetSampleRate;
+                    const removeCount = currentSampleIndex - keepSamples;
+                    audioQueue.splice(0, removeCount);
+                    currentSampleIndex = keepSamples;
+                    console.log(`Cleaned up ${removeCount} samples, kept ${keepSamples}`);
+                }
+            };
+            
+            console.log('ScriptProcessorNode event handler set up');
+            
+            // Simple linear interpolation resampler
+            function resampleAudio(inputSamples, inputRate, outputRate) {
+                if (inputRate === outputRate) {
+                    return inputSamples; // No resampling needed
+                }
+                
+                const ratio = inputRate / outputRate;
+                const outputLength = Math.floor(inputSamples.length / ratio);
+                const output = new Float32Array(outputLength);
+                
+                for (let i = 0; i < outputLength; i++) {
+                    const sourceIndex = i * ratio;
+                    const index = Math.floor(sourceIndex);
+                    const fraction = sourceIndex - index;
+                    
+                    if (index + 1 < inputSamples.length) {
+                        // Linear interpolation between adjacent samples
+                        output[i] = inputSamples[index] * (1 - fraction) + inputSamples[index + 1] * fraction;
+                    } else if (index < inputSamples.length) {
+                        output[i] = inputSamples[index];
+                    } else {
+                        output[i] = 0;
+                    }
+                }
+                
+                return output;
+            }
+            
+            // Fetch the audio stream
+            console.log('Fetching audio stream...');
+            const response = await fetch(`/tts-stream?text=${encodeURIComponent(text)}`);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            console.log('Audio stream response received');
+            
+            const reader = response.body.getReader();
+            let bytesBuffer = new Uint8Array(0);
+            let totalSamplesReceived = 0;
+            let totalResampledSamples = 0;
+            let chunkCount = 0;
+            
+            console.log('Starting to read audio stream chunks...');
+            
+            // Read stream chunks
+            while (true) {
+                const { done, value } = await reader.read();
+                
+                if (done) {
+                    console.log('Stream reading complete');
+                    break;
+                }
+                if (!isPlaying && !processingNode) {
+                    console.log('Stopping stream reading - user stopped playback');
+                    break;
+                }
+                
+                chunkCount++;
+                if (chunkCount <= 5 || chunkCount % 50 === 0) {
+                    console.log(`Received chunk #${chunkCount}, size: ${value.length} bytes`);
+                }
+                
+                // Append new data to buffer
+                const newBuffer = new Uint8Array(bytesBuffer.length + value.length);
+                newBuffer.set(bytesBuffer);
+                newBuffer.set(value, bytesBuffer.length);
+                bytesBuffer = newBuffer;
+                
+                // Parse header if not done yet
+                if (!headerParsed) {
+                    const headerEnd = bytesBuffer.indexOf(10); // Look for newline
+                    if (headerEnd !== -1) {
+                        const headerBytes = bytesBuffer.slice(0, headerEnd);
+                        const headerText = new TextDecoder().decode(headerBytes);
+                        try {
+                            const formatInfo = JSON.parse(headerText);
+                            console.log('Audio format parsed:', formatInfo);
+                            headerParsed = true;
+                            bytesBuffer = bytesBuffer.slice(headerEnd + 1); // Remove header from buffer
+                        } catch (e) {
+                            console.warn('Failed to parse header, assuming raw PCM');
+                            headerParsed = true;
+                        }
+                    } else {
+                        continue; // Wait for complete header
+                    }
+                }
+                
+                // Convert bytes to audio samples and add to queue
+                if (bytesBuffer.length >= 2) {
+                    const samplesCount = Math.floor(bytesBuffer.length / 2);
+                    
+                    // Create Int16Array from the bytes - handle potential endianness issues
+                    const int16Data = new Int16Array(samplesCount);
+                    const dataView = new DataView(bytesBuffer.buffer, bytesBuffer.byteOffset, samplesCount * 2);
+                    
+                    for (let i = 0; i < samplesCount; i++) {
+                        // Assuming little-endian format (standard for PCM)
+                        int16Data[i] = dataView.getInt16(i * 2, true);
+                    }
+                    
+                    // Convert to Float32Array for Web Audio API
+                    const float32Samples = new Float32Array(int16Data.length);
+                    for (let i = 0; i < int16Data.length; i++) {
+                        float32Samples[i] = int16Data[i] / 32768.0; // Convert to -1.0 to 1.0 range
+                    }
+                    
+                    // Resample if necessary
+                    const resampledSamples = resampleAudio(float32Samples, sourceSampleRate, targetSampleRate);
+                    
+                    // Add resampled samples to queue
+                    for (let i = 0; i < resampledSamples.length; i++) {
+                        audioQueue.push(resampledSamples[i]);
+                    }
+                    
+                    totalSamplesReceived += int16Data.length;
+                    totalResampledSamples += resampledSamples.length;
+                    
+                    // Log first few samples for debugging
+                    if (totalSamplesReceived <= 100) {
+                        console.log(`First PCM samples (count: ${totalSamplesReceived}):`, int16Data.slice(0, 5), 'resampled to:', resampledSamples.slice(0, 5));
+                    }
+                    
+                    // Start playback when we have enough data (about 0.1 seconds at target rate)
+                    if (!isPlaying && audioQueue.length >= targetSampleRate * 0.1) {
+                        console.log(`Starting playback with initial buffer of ${audioQueue.length} samples (${(audioQueue.length/targetSampleRate).toFixed(2)}s)`);
+                        console.log('Audio context state before starting:', audioContext.state);
+                        isPlaying = true;
+                        audioStarted = true;
+                        
+                        // Double check audio context is not suspended
+                        if (audioContext.state === 'suspended') {
+                            console.log('Audio context still suspended, trying to resume again...');
+                            await audioContext.resume();
+                            console.log('Audio context state after resume:', audioContext.state);
+                        }
+                    }
+                    
+                    // Update buffer to remaining bytes
+                    const remainingBytes = bytesBuffer.length % 2;
+                    if (remainingBytes > 0) {
+                        bytesBuffer = bytesBuffer.slice(samplesCount * 2);
+                    } else {
+                        bytesBuffer = new Uint8Array(0);
+                    }
+                    
+                    if (totalSamplesReceived % (sourceSampleRate / 2) === 0) { // Log every 0.5 seconds of original audio
+                        console.log(`Received ${totalSamplesReceived} samples (${(totalSamplesReceived/sourceSampleRate).toFixed(1)}s), resampled to ${totalResampledSamples} samples, queue length: ${audioQueue.length}`);
+                    }
+                }
+            }
+            
+            console.log(`TTS stream completed. Total samples: ${totalSamplesReceived} (${(totalSamplesReceived/sourceSampleRate).toFixed(1)}s), resampled to: ${totalResampledSamples} samples, queue length: ${audioQueue.length}`);
+            
+            // Start playback if we haven't already (in case we didn't have enough initial buffer)
+            if (!isPlaying && audioQueue.length > 0) {
+                console.log('Starting playback with all received data');
+                isPlaying = true;
+                audioStarted = true;
+                
+                // Double check audio context state
+                if (audioContext.state === 'suspended') {
+                    console.log('Audio context suspended, resuming...');
+                    await audioContext.resume();
+                    console.log('Audio context state after resume:', audioContext.state);
+                }
+            }
+            
+            // Wait for playback to finish
+            const checkPlaybackFinished = () => {
+                if (!isPlaying) {
+                    console.log('Playback check: not playing, stopping check');
+                    return; // Already stopped
+                }
+                
+                if (currentSampleIndex >= audioQueue.length && audioQueue.length > 0) {
+                    console.log('TTS playback completed naturally');
+                    ttsController.stop();
+                    answerContainer.currentTTS = null;
+                } else {
+                    setTimeout(checkPlaybackFinished, 500); // Check every 500ms
+                }
+            };
+            
+            setTimeout(checkPlaybackFinished, 500);
+            
+            // Log final state
+            console.log(`TTS setup complete. Audio started: ${audioStarted}, context state: ${audioContext.state}, queue length: ${audioQueue.length}`);
+            
+        } catch (error) {
+            console.error('TTS Web Audio error:', error);
+            alert('TTS playback failed. Please check the console for details and try again.');
+        }
     }
 }); 

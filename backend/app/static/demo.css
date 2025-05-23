@@ -298,9 +298,3 @@ body.sidebar-open .container {
 .tts-button:hover {
     background-color: #218838;
 }
-/* TTS audio styles */
-.tts-audio {
-    display: block;
-    margin-top: 10px;
-    width: 100%;
-}
