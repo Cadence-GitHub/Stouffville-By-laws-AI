@@ -7,6 +7,13 @@ from dotenv import load_dotenv
 import tiktoken  # Still needed for potential direct use elsewhere
 import re
 import datetime  # Added for timestamping log entries
+from app.input_validation import (
+    validate_api_request, 
+    validate_query_input, 
+    validate_bylaw_status_input, 
+    validate_autocomplete_query, 
+    sanitize_for_logging
+)
 
 # Import from app package using the simplified imports from __init__.py
 from app import (
@@ -53,13 +60,22 @@ def ask():
     Main API endpoint for the React frontend to query the AI.
     Expects a JSON payload with a 'query' field.
     """
-    data = request.get_json()
-    query = data.get('query', '')
-    model = 'gemini-mixed'  # Always use gemini-mixed
-    bylaw_status = data.get('bylaw_status', 'active')
+    # Validate request and parse data
+    request_valid, error_message, data = validate_api_request(request)
+    if not request_valid:
+        return jsonify({"error": error_message}), 400
     
-    if not query:
-        return jsonify({"error": "No query provided"}), 400
+    # Validate query
+    query_valid, query_error, query = validate_query_input(data)
+    if not query_valid:
+        return jsonify({"error": query_error}), 400
+    
+    # Validate bylaw status
+    status_valid, status_error, bylaw_status = validate_bylaw_status_input(data)
+    if not status_valid:
+        return jsonify({"error": status_error}), 400
+    
+    model = 'gemini-mixed'  # Always use gemini-mixed
     
     # Try to use ChromaDB to find relevant bylaws
     try:
@@ -114,12 +130,12 @@ def ask():
         if 'error' in response:
             return jsonify(response), 500
         
-        # Log the query and response in JSON format
+        # Log the query and response in JSON format with sanitization
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         log_entry = {
             "timestamp": timestamp,
-            "query": query,
-            "transformed_query": transformed_query,
+            "query": sanitize_for_logging(query),
+            "transformed_query": sanitize_for_logging(transformed_query),
             "original_bylaws": original_bylaw_ids,
             "additional_bylaws": transformed_bylaw_ids,
             "timings": {
@@ -154,7 +170,8 @@ def ask():
         return jsonify(response)
             
     except Exception as e:
-        return jsonify({"error": f"ChromaDB retrieval failed: {str(e)}"}), 500
+        error_message = sanitize_for_logging(str(e))
+        return jsonify({"error": f"ChromaDB retrieval failed: {error_message}"}), 500
 
 @app.route('/api/demo', methods=['GET', 'POST'])
 def demo():
@@ -388,12 +405,19 @@ def autocomplete():
     """
     API endpoint that returns autocomplete suggestions for a partial query.
     """
-    data = request.get_json()
-    partial_query = data.get('query', '')
+    # Validate request and parse data
+    request_valid, error_message, data = validate_api_request(request)
+    if not request_valid:
+        return jsonify({"error": error_message}), 400
+    
+    # Validate partial query with relaxed length requirements
+    query_valid, query_error, partial_query = validate_autocomplete_query(data)
+    if not query_valid:
+        return jsonify({"error": query_error}), 400
     
     if not partial_query or len(partial_query) < 3:
         return jsonify({"suggestions": []}), 200
-    
+
     # Try to use ChromaDB to find similar questions
     try:
         suggestions, retrieval_time, collection_exists = chroma_retriever.autocomplete_query(
@@ -412,7 +436,8 @@ def autocomplete():
         })
             
     except Exception as e:
-        return jsonify({"error": f"Autocomplete failed: {str(e)}"}), 500
+        error_message = sanitize_for_logging(str(e))
+        return jsonify({"error": f"Autocomplete failed: {error_message}"}), 500
 
 @app.route('/public-demo')
 def public_demo():
