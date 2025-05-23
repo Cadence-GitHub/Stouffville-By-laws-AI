@@ -762,6 +762,8 @@ ${answerContent}
             let processingNode = null;
             let gainNode = null;
             let currentSampleIndex = 0;
+            let streamCompleted = false;
+            let playbackStarted = false;
             
             // Create a controller to manage the TTS session
             const ttsController = {
@@ -854,105 +856,121 @@ ${answerContent}
                 return output;
             }
             
-            // Fetch the audio stream
-            const response = await fetch(`/tts-stream?text=${encodeURIComponent(text)}`);
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            
-            const reader = response.body.getReader();
-            let bytesBuffer = new Uint8Array(0);
-            
-            // Read stream chunks
-            while (true) {
-                const { done, value } = await reader.read();
-                
-                if (done) break;
-                if (!isPlaying && !processingNode) break;
-                
-                // Append new data to buffer
-                const newBuffer = new Uint8Array(bytesBuffer.length + value.length);
-                newBuffer.set(bytesBuffer);
-                newBuffer.set(value, bytesBuffer.length);
-                bytesBuffer = newBuffer;
-                
-                // Parse header if not done yet
-                if (!headerParsed) {
-                    const headerEnd = bytesBuffer.indexOf(10);
-                    if (headerEnd !== -1) {
-                        const headerBytes = bytesBuffer.slice(0, headerEnd);
-                        const headerText = new TextDecoder().decode(headerBytes);
-                        try {
-                            JSON.parse(headerText); // Validate header format
-                            headerParsed = true;
-                            bytesBuffer = bytesBuffer.slice(headerEnd + 1);
-                        } catch (e) {
-                            headerParsed = true;
-                        }
-                    } else {
-                        continue;
-                    }
+            // Fetch and process the audio stream
+            try {
+                const response = await fetch(`/tts-stream?text=${encodeURIComponent(text)}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
                 
-                // Convert bytes to audio samples and add to queue
-                if (bytesBuffer.length >= 2) {
-                    const samplesCount = Math.floor(bytesBuffer.length / 2);
+                const reader = response.body.getReader();
+                let bytesBuffer = new Uint8Array(0);
+                
+                // Read stream chunks
+                while (true) {
+                    const { done, value } = await reader.read();
                     
-                    // Create Int16Array from the bytes
-                    const int16Data = new Int16Array(samplesCount);
-                    const dataView = new DataView(bytesBuffer.buffer, bytesBuffer.byteOffset, samplesCount * 2);
+                    if (done) {
+                        streamCompleted = true;
+                        break;
+                    }
+                    if (!isPlaying && !processingNode) break;
                     
-                    for (let i = 0; i < samplesCount; i++) {
-                        int16Data[i] = dataView.getInt16(i * 2, true);
+                    // Append new data to buffer
+                    const newBuffer = new Uint8Array(bytesBuffer.length + value.length);
+                    newBuffer.set(bytesBuffer);
+                    newBuffer.set(value, bytesBuffer.length);
+                    bytesBuffer = newBuffer;
+                    
+                    // Parse header if not done yet
+                    if (!headerParsed) {
+                        const headerEnd = bytesBuffer.indexOf(10);
+                        if (headerEnd !== -1) {
+                            const headerBytes = bytesBuffer.slice(0, headerEnd);
+                            const headerText = new TextDecoder().decode(headerBytes);
+                            try {
+                                JSON.parse(headerText); // Validate header format
+                                headerParsed = true;
+                                bytesBuffer = bytesBuffer.slice(headerEnd + 1);
+                            } catch (e) {
+                                headerParsed = true;
+                            }
+                        } else {
+                            continue;
+                        }
                     }
                     
-                    // Convert to Float32Array
-                    const float32Samples = new Float32Array(int16Data.length);
-                    for (let i = 0; i < int16Data.length; i++) {
-                        float32Samples[i] = int16Data[i] / 32768.0;
-                    }
-                    
-                    // Resample if necessary
-                    const resampledSamples = resampleAudio(float32Samples, sourceSampleRate, targetSampleRate);
-                    
-                    // Add resampled samples to queue
-                    for (let i = 0; i < resampledSamples.length; i++) {
-                        audioQueue.push(resampledSamples[i]);
-                    }
-                    
-                    // Start playback when we have enough data
-                    if (!isPlaying && audioQueue.length >= targetSampleRate * 0.1) {
-                        isPlaying = true;
+                    // Convert bytes to audio samples and add to queue
+                    if (bytesBuffer.length >= 2) {
+                        const samplesCount = Math.floor(bytesBuffer.length / 2);
                         
-                        if (audioContext.state === 'suspended') {
-                            await audioContext.resume();
+                        // Create Int16Array from the bytes
+                        const int16Data = new Int16Array(samplesCount);
+                        const dataView = new DataView(bytesBuffer.buffer, bytesBuffer.byteOffset, samplesCount * 2);
+                        
+                        for (let i = 0; i < samplesCount; i++) {
+                            int16Data[i] = dataView.getInt16(i * 2, true);
+                        }
+                        
+                        // Convert to Float32Array
+                        const float32Samples = new Float32Array(int16Data.length);
+                        for (let i = 0; i < int16Data.length; i++) {
+                            float32Samples[i] = int16Data[i] / 32768.0;
+                        }
+                        
+                        // Resample if necessary
+                        const resampledSamples = resampleAudio(float32Samples, sourceSampleRate, targetSampleRate);
+                        
+                        // Add resampled samples to queue
+                        for (let i = 0; i < resampledSamples.length; i++) {
+                            audioQueue.push(resampledSamples[i]);
+                        }
+                        
+                        // Start playback when we have enough data
+                        if (!isPlaying && audioQueue.length >= targetSampleRate * 0.1) {
+                            isPlaying = true;
+                            playbackStarted = true;
+                            
+                            if (audioContext.state === 'suspended') {
+                                await audioContext.resume();
+                            }
+                        }
+                        
+                        // Update buffer to remaining bytes
+                        const remainingBytes = bytesBuffer.length % 2;
+                        if (remainingBytes > 0) {
+                            bytesBuffer = bytesBuffer.slice(samplesCount * 2);
+                        } else {
+                            bytesBuffer = new Uint8Array(0);
                         }
                     }
+                }
+                
+                // Start playback if we haven't already
+                if (!isPlaying && audioQueue.length > 0) {
+                    isPlaying = true;
+                    playbackStarted = true;
                     
-                    // Update buffer to remaining bytes
-                    const remainingBytes = bytesBuffer.length % 2;
-                    if (remainingBytes > 0) {
-                        bytesBuffer = bytesBuffer.slice(samplesCount * 2);
-                    } else {
-                        bytesBuffer = new Uint8Array(0);
+                    if (audioContext.state === 'suspended') {
+                        await audioContext.resume();
                     }
                 }
-            }
-            
-            // Start playback if we haven't already
-            if (!isPlaying && audioQueue.length > 0) {
-                isPlaying = true;
                 
-                if (audioContext.state === 'suspended') {
-                    await audioContext.resume();
+            } catch (streamError) {
+                // Only show error if playback never started or if it's a real error (not just stream completion)
+                if (!playbackStarted) {
+                    throw streamError; // Re-throw if playback never started
                 }
+                // If playback started, just mark stream as completed and let audio finish
+                streamCompleted = true;
             }
             
             // Wait for playback to finish
             const checkPlaybackFinished = () => {
                 if (!isPlaying) return;
                 
-                if (currentSampleIndex >= audioQueue.length && audioQueue.length > 0) {
+                // Only stop if stream is complete AND we've played all queued audio
+                if (streamCompleted && currentSampleIndex >= audioQueue.length && audioQueue.length > 0) {
                     ttsController.stop();
                     answerContainer.currentTTS = null;
                 } else {
@@ -964,6 +982,7 @@ ${answerContent}
             
         } catch (error) {
             console.error('TTS playback failed:', error);
+            // Only show error popup for actual failures, not stream completion issues
             alert('TTS playback failed. Please try again.');
         }
     }
