@@ -12,6 +12,7 @@ from app.input_validation import (
     validate_query_input, 
     validate_bylaw_status_input, 
     validate_autocomplete_query, 
+    validate_bylaw_number,
     sanitize_for_logging
 )
 
@@ -37,6 +38,14 @@ app = Flask(__name__,
             static_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'app', 'static'))
 CORS(app)
 app.register_blueprint(tts_bp)
+
+# Add security headers to all responses
+@app.after_request
+def set_security_headers(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    return response
 
 # Define paths to data files relative to the project root
 BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -366,9 +375,14 @@ def get_bylaw_json(bylaw_number):
     """
     API endpoint that returns the full JSON data for a specific bylaw by its number.
     """
+    # Validate the bylaw number parameter
+    validated_number, is_valid, error_message = validate_bylaw_number(bylaw_number)
+    if not is_valid:
+        return jsonify({"error": f"Invalid bylaw number: {error_message}"}), 400
+    
     try:
-        # First try with the original bylaw number
-        exact_match, retrieval_time, collection_exists = chroma_retriever.retrieve_bylaw_by_number(bylaw_number)
+        # Use the validated bylaw number for the search
+        exact_match, retrieval_time, collection_exists = chroma_retriever.retrieve_bylaw_by_number(validated_number)
         
         # Handle collection issues
         if not collection_exists:
@@ -377,15 +391,15 @@ def get_bylaw_json(bylaw_number):
         # If no exact match with original number, try with cleaned version
         if exact_match is None:
             # Use regex to remove -XX pattern (dash followed by two capital letters) if present
-            clean_bylaw_number = re.sub(r'-[A-Z]{2}$', '', bylaw_number)
+            clean_bylaw_number = re.sub(r'-[A-Z]{2}$', '', validated_number)
             
             # Only try the clean version if it's different from the original
-            if clean_bylaw_number != bylaw_number:
+            if clean_bylaw_number != validated_number:
                 exact_match, retrieval_time, collection_exists = chroma_retriever.retrieve_bylaw_by_number(clean_bylaw_number)
         
         # If still no match after trying both versions, return 404
         if exact_match is None:
-            return jsonify({"error": f"No bylaws found matching {bylaw_number}"}), 404
+            return jsonify({"error": f"No bylaws found matching {validated_number}"}), 404
             
         # Prepare response
         response = jsonify(exact_match)
@@ -398,7 +412,8 @@ def get_bylaw_json(bylaw_number):
         return response
         
     except Exception as e:
-        return jsonify({"error": f"Error retrieving bylaw information: {str(e)}"}), 500
+        error_message = sanitize_for_logging(str(e))
+        return jsonify({"error": f"Error retrieving bylaw information: {error_message}"}), 500
 
 @app.route('/api/autocomplete', methods=['POST'])
 def autocomplete():
@@ -499,5 +514,3 @@ if __name__ == '__main__':
     else:
         # Use standard HTTP
         app.run(host='0.0.0.0', port=5000, debug=True)
-
-

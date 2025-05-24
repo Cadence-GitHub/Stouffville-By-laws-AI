@@ -3,6 +3,7 @@ Input validation and security utilities for the Stouffville By-laws AI API.
 """
 
 import html
+import re
 import unicodedata
 from typing import Tuple, Any, Optional
 
@@ -64,15 +65,15 @@ def validate_json_request(request_data: Any) -> Tuple[bool, Optional[str]]:
 def sanitize_for_logging(text: str) -> str:
     """
     Sanitize text for safe logging to prevent log injection.
-    
-    Args:
-        text: Text to sanitize for logging
-        
-    Returns:
-        str: HTML-escaped text safe for logging
     """
-    # HTML escape to prevent log injection
-    return html.escape(text)
+    if not isinstance(text, str):
+        text = str(text)
+
+    # Remove newlines and control characters to prevent log injection
+    sanitized = text.replace('\n', ' ').replace('\r', ' ').replace('\t', ' ')
+
+    # HTML escape for additional safety
+    return html.escape(sanitized)
 
 
 def validate_api_request(request) -> Tuple[bool, Optional[str], Optional[dict]]:
@@ -138,6 +139,33 @@ def validate_bylaw_status_input(data: dict) -> Tuple[bool, Optional[str], str]:
     return True, None, bylaw_status
 
 
+def validate_bylaw_number(bylaw_number: Any) -> Tuple[str, bool, Optional[str]]:
+    """
+    Validate and normalize bylaw number format using business logic.
+
+    Args:
+        bylaw_number: Input bylaw number (any type, will be validated)
+
+    Returns:
+        tuple: (normalized_number, is_valid, error_message)
+    """
+    if not isinstance(bylaw_number, (str, int)):
+        return "", False, "Bylaw number must be a string or integer"
+
+    # Convert to string and normalize
+    number_str = str(bylaw_number).strip()
+
+    if not number_str:
+        return "", False, "Bylaw number cannot be empty"
+
+    # Basic format validation for Stouffville bylaws
+    # Accept: alphanumeric characters and dashes only
+    if not re.match(r'^[a-zA-Z0-9\-]+$', number_str):
+        return "", False, "Invalid bylaw number format. Only alphanumeric characters and dashes allowed"
+
+    return number_str, True, None
+
+
 def validate_autocomplete_query(data: dict) -> Tuple[bool, Optional[str], str]:
     """
     Extract and validate partial query for autocomplete with relaxed length requirements.
@@ -156,11 +184,14 @@ def validate_autocomplete_query(data: dict) -> Tuple[bool, Optional[str], str]:
     if not raw_partial_query:
         return True, None, ""
     
-    # Use sanitize_query but handle length validation locally for autocomplete
-    partial_query, query_valid, query_error = sanitize_query(raw_partial_query)
+    if not isinstance(raw_partial_query, str):
+        return False, "Query must be a string", ""
     
-    # Only reject if there's an actual security issue, not just length
-    if not query_valid and "potentially malicious content" in query_error:
-        return False, f"Invalid query: {query_error}", ""
+    # Basic sanitization (same as sanitize_query but without strict length restrictions)
+    partial_query = unicodedata.normalize("NFKC", raw_partial_query.replace("\x00", "")).strip()
+    
+    # More permissive length validation for autocomplete
+    if len(partial_query) > 500:
+        return False, "Query too long for autocomplete", ""
     
     return True, None, partial_query 
