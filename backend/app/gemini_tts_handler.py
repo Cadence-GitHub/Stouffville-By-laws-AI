@@ -1,3 +1,24 @@
+"""
+TTS (Text-to-Speech) Handler - ALPHA IMPLEMENTATION
+
+This module provides streaming TTS functionality using Google's Gemini Live API.
+This is an ALPHA-level implementation with custom asyncio/threading integration.
+
+FUTURE MIGRATION PLAN:
+Once LangChain adds native support for Gemini TTS streaming, this implementation
+should be migrated to use LangChain's standardized TTS interface for better
+maintainability and consistency with the rest of the application.
+
+Current implementation uses:
+- Direct Gemini Live API calls
+- Custom asyncio/threading bridge for Flask compatibility
+- Manual PCM audio processing and streaming
+- Custom queue management for real-time delivery
+
+This approach was necessary due to the lack of LangChain TTS support for Gemini
+at the time of implementation.
+"""
+
 from flask import Blueprint, Response, request, stream_with_context
 import os
 import sys
@@ -39,7 +60,14 @@ LIVE_MODEL = "models/gemini-2.5-flash-preview-native-audio-dialog"
 
 @tts_bp.route('/tts-stream', methods=['GET', 'POST'])
 def tts_stream():
-    """Stream TTS audio using Gemini Live API"""
+    """
+    Stream TTS audio using Gemini Live API
+    
+    ALPHA IMPLEMENTATION NOTE:
+    This endpoint uses a custom asyncio/threading bridge to integrate
+    Gemini's async Live API with Flask's synchronous request handling.
+    This should be replaced with LangChain TTS integration when available.
+    """
     # Support both GET (query param) and POST (JSON body) for 'text'
     if request.method == 'POST':
         data = request.get_json(silent=True) or {}
@@ -60,6 +88,15 @@ def tts_stream():
     
     # Function to process text with Live API in a background thread
     def process_live_tts():
+        """
+        ALPHA IMPLEMENTATION: Custom asyncio/threading bridge
+        
+        This function runs the async Gemini Live API in a separate thread
+        with its own event loop, then communicates with the main Flask thread
+        via a queue. This is a workaround for Flask's synchronous nature.
+        
+        TODO: Replace with LangChain TTS when available.
+        """
         try:
             # Run asyncio event loop for Live API
             async def run_live_api():
@@ -104,6 +141,15 @@ def tts_stream():
     # Stream raw PCM data directly to client
     @stream_with_context
     def generate_stream_internal():
+        """
+        ALPHA IMPLEMENTATION: Custom streaming generator
+        
+        This generator function bridges the asyncio-based audio generation
+        with Flask's streaming response. It manually handles PCM audio
+        formatting and real-time delivery.
+        
+        TODO: Replace with LangChain streaming interface when available.
+        """
         output_chunks = 0
         output_bytes = 0
         

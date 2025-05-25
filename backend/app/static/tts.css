@@ -1,0 +1,51 @@
+/* TTS (Text-to-Speech) Functionality Styles */
+/* Alpha implementation - separate from main application styles */
+
+.tts-button {
+    display: inline-block;
+    margin-left: 10px;
+    padding: 5px 10px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.tts-button:hover {
+    background-color: #218838;
+}
+
+.tts-button:active {
+    background-color: #1e7e34;
+}
+
+.tts-button:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* TTS status indicators */
+.tts-button.playing {
+    background-color: #dc3545;
+}
+
+.tts-button.playing:hover {
+    background-color: #c82333;
+}
+
+.tts-button.loading {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.tts-button.loading:hover {
+    background-color: #e0a800;
+} 

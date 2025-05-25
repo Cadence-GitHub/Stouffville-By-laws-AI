@@ -211,13 +211,7 @@ Dependencies for AI integration:
   - Automatic population of the transcribed question in the search field
   - Built-in timeout (30 seconds) to prevent excessively long recordings
   - Requires HTTPS connection for browser security requirements
-- **Text-to-Speech (TTS) Streaming**: Converts AI responses to natural-sounding speech audio:
-  - Uses Google's Gemini Live API with "Iapetus" voice for high-quality speech synthesis
-  - Streams real-time PCM audio (24kHz, 16-bit, mono) for immediate playback
-  - Web Audio API integration for smooth, low-latency audio playback in browsers
-  - "Speak aloud" buttons available for all AI responses in the demo interface
-  - Automatic resampling to match browser's native audio sample rate
-  - Real-time audio processing with background threading for responsive performance
+- **Text-to-Speech (TTS) Streaming**: Converts AI responses to natural-sounding speech audio using Google's Gemini Live API. See `backend/app/TTS_README.md` for complete technical documentation and implementation details.
 
 ### Bylaw Viewer Feature
 
