@@ -33,10 +33,19 @@ from google.genai import types
 # Blueprint for text-to-speech streaming
 tts_bp = Blueprint('tts', __name__)
 
-# Configure logging
-logging.basicConfig(stream=sys.stdout, level=logging.INFO, 
-                    format='%(asctime)s [TTS] %(message)s')
+# Configure logging for TTS handler only (don't affect global logging)
 logger = logging.getLogger('tts_handler')
+logger.setLevel(logging.INFO)
+
+# Create a handler for this specific logger if it doesn't have one
+if not logger.handlers:
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setLevel(logging.INFO)
+    formatter = logging.Formatter('%(asctime)s [TTS] %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    # Prevent this logger from propagating to the root logger
+    logger.propagate = False
 
 # Initialize Gemini client
 client = genai.Client(
