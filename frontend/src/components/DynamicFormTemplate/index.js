@@ -5,7 +5,8 @@ import Image from "next/image";
 import CustomInput from "../CustomInput";
 import CustomTextArea from "../CustomTextArea";
 import MyPlaceHolders from "../PlaceHolderQueries";
-
+import santizeInput from "../santizeInput";
+import { FallbackMode } from "next/dist/lib/fallback";
 
 const DynamicFormTemplate = () => {
     
@@ -23,7 +24,6 @@ const DynamicFormTemplate = () => {
         setUseFormLabel("Switch to Advanced search");
     }
 
-
     // Officer type output flag *TODO feature*
     const [isOfficerFlag, useOfficerFlag] = useState(false);
     const HandleClick = (e) => {
@@ -36,10 +36,25 @@ const DynamicFormTemplate = () => {
     // TODO: Get the information the user has passed and pipe it to the backend for processing.
     // TODO: Sanitize input as well.
     // TODO: Disable submitting after user has submitted query, then re-enable after backend has reponded.
-    const router = useRouter();
-    const handleSubmit = (e) => {
+    
+    const router = useRouter();        
+    const [userQueryText, setUserQueryText] = useState('');
+    const handleSubmit = (e, userTextEntered) => {
         e.preventDefault();
         
+        // Capture user query
+        console.log(userTextEntered);
+        console.log("DynamicFormTemp: \"Handle Submit\"");
+        
+        // sanitize input 
+        // santizeInput(userQueryText);
+        
+        // set flag for advanced (legalese) or simple response - i am an officer
+        // construct JSON payload                
+        
+        // recieve backend response and send it to the chatpage to be rendered
+        
+        // route user to chat-page
         router.push("/chat-page")
 
     }
@@ -47,9 +62,9 @@ const DynamicFormTemplate = () => {
     
     return (
         <div>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={(e, userText) => handleSubmit(e, userText)}>
                 
-                {!useAdvancedForm ? (<SimpleForm placeholder={MyPlaceHolders()} sendTo={handleSubmit}/>) : (<AdvancedForm placeholder={MyPlaceHolders()} sendTo={handleSubmit}/>)}
+                {!useAdvancedForm ? (<SimpleForm placeholder={MyPlaceHolders()}/>) : (<AdvancedForm placeholder={MyPlaceHolders()}/>)}
                 
                 <div>
                     <p className="clickable-text" onClick={handleSwitch} style={{fontSize: "15px", fontWeight: "550"}}>                        
@@ -71,21 +86,21 @@ const DynamicFormTemplate = () => {
 
 export default DynamicFormTemplate;
 
-const SimpleForm = ({placeholder, sendTo}) => {
-    
+const SimpleForm = ({placeholder}) => {    
+
     return (
-        <CustomTextArea placeholder={placeholder} sendTo={sendTo}/>
+        <CustomTextArea placeholder={placeholder}/>
     );
 };
 
 
-const AdvancedForm = ({placeholder, sendTo}) => {
+const AdvancedForm = ({placeholder}) => {
     
     return (
         <div className="form">
             <CustomInput displayValue={"Category"}/>
             <CustomInput displayValue={"Keywords (separated by \',\')"}/>
-            <CustomTextArea placeholder={placeholder} sendTo={sendTo}/>
+            <CustomTextArea placeholder={placeholder}/>
         </div>
     );
 };

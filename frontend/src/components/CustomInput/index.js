@@ -1,34 +1,40 @@
 'use Client'
 import styles from "./CustomInput.module.css";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import MyPlaceHolders from "../PlaceHolderQueries";
 
 
 const CustomInput = ({displayValue}) => {
 
-    const [userQuery, setUserQuery] = useState(displayValue === '' ? defaulttMessage() : displayValue);
-    
-    // Triggers when input loses focus from user
-    const handleBlur = () => {
-        if (userQuery == "") {
-            setUserQuery(displayValue === '' ? MyPlaceHolders() : displayValue);
-        }
+    let inputRef = useRef(null);
+    let userQuery = null;
+
+    // This also grabs the text user enetered when they press enter    
+    const handleEnter = (e) => {                
+        
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();    
+            
+            userQuery = inputRef.current?.value;
+            if(userQuery === null || userQuery === "") {
+                userQuery = displayValue
+                console.log(userQuery);
+            }
+            else {
+                console.log(userQuery);
+            }
+        }                  
     }
-    
-    // Update input value when user types
-    const handleChange = (e) => {
-        setUserQuery(e.target.value);
-    };
+
 
     return (
         <input 
             className={styles.input}
             name="userQuery" 
+            ref={inputRef}
             type="text" 
-            value={userQuery} 
-            onChange={handleChange} // triggers user starts typing
-            onBlur={handleBlur} // When the input loses focus, check and reset if empty
-            onClick={e => setUserQuery('')}
+            placeholder={displayValue}
+            onKeyDown={handleEnter}
         />
     );
 }
