@@ -229,7 +229,7 @@ Frontend developers can directly use this production backend if they don't want 
    pip install flask flask-cors langchain langchain-google-genai langchain-chroma langchain-voyageai chromadb python-dotenv tiktoken cryptography
 
    # Run the application
-   python app.py
+   python main.py
    ```
 
    The server will run at:
@@ -246,7 +246,7 @@ Frontend developers can directly use this production backend if they don't want 
 
 ## Project Structure
 
-- `app.py`: Main Flask application
+- `main.py`: Main Flask application
 - `app/`: Application package
   - `__init__.py`: Package initialization with simplified imports
   - `prompts.py`: AI prompt templates (including specialized template for inactive bylaws, layman's terms conversion, and enhanced search)

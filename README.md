@@ -89,7 +89,7 @@ In production, this application is deployed behind an NGINX reverse proxy which 
 ### Development Workflow
 
 - **Backend Files**: The backend code is in the `backend/` directory
-  - `app.py`: Main Flask application
+  - `main.py`: Main Flask application
   - `app/`: Application package containing templates, prompts, and ChromaDB integration
   - `requirements.txt`: Python dependencies
   - `Dockerfile`: Container configuration
@@ -285,7 +285,7 @@ graph TB
 
     %% Components in Backend
     subgraph BackendComponents["Backend"]
-        FlaskApp["Backend App (app.py)"]
+        FlaskApp["Backend App (main.py)"]
         ChromaRetriever["ChromaDB Retriever (chroma_retriever.py)"]
         GeminiHandler["Gemini Handler (gemini_handler.py)"]
         PromptsModule["Prompts Module (prompts.py)"]
