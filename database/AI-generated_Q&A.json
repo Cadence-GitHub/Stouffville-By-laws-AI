@@ -1,0 +1,775 @@
+    {"questions_and_answers": [
+      {
+        "question": "My neighbour's lawn is really overgrown and full of weeds. Is there a rule about how high grass can be?",
+        "answer": "Yes, the Property Standards By-law (like 98-176-RE) requires yards to be kept free from noxious weeds and excessive growth of other weeds and grass. If it's unreasonably overgrown compared to the neighbourhood, it might be a violation. You can contact the Town's By-law Enforcement."
+      },
+      {
+        "question": "I want to build a small shed in my backyard. How close can I build it to my property line?",
+        "answer": "According to the General Zoning By-law (like 87-34), accessory buildings like sheds generally must be set back at least 1.2 metres (about 4 feet) from the rear lot line and cannot be located in a minimum required side yard. There are also rules about height and total lot coverage, so it's best to check the specifics for your zone."
+      },
+      {
+        "question": "Can I park my car on the street overnight during the winter?",
+        "answer": "No, generally you cannot. The Town's parking by-law (like 2002-85-TR) prohibits parking on any highway (street) between 2:00 a.m. and 5:00 a.m. from December 1st to March 31st each year. This is mainly to allow for snow removal. There might be very specific exceptions listed, but assume it's not allowed on most streets."
+      },
+      {
+        "question": "I want to put up a sign to advertise my home-based business. Is that allowed?",
+        "answer": "Generally, no. The General Zoning By-law (like 87-34) usually prohibits signs related to home occupations in residential zones to maintain the residential character of the neighbourhood. The Sign By-law (like 2002-209-RE) also has rules about signs in residential areas."
+      },
+      {
+        "question": "My neighbour has an old, rusty car sitting in their driveway that hasn't moved in months. Is that allowed?",
+        "answer": "The Property Standards By-law (like 98-176-RE) requires properties to be kept free from wrecked, dismantled, inoperative, or unlicensed vehicles, unless it's a licensed business. If the car looks like it doesn't run or isn't licensed, it might be a violation you can report to the Town."
+      },
+      {
+        "question": "How do I find out the specific zoning for my property?",
+        "answer": "The Town's Zoning By-laws (like 72-7 or 87-34) include zoning maps (often called Schedule A). You can usually view these maps at the Town offices or potentially on the Town's website to find the specific zone designation (like R1, C1, etc.) for your property."
+      },
+      {
+        "question": "I want to put up a temporary sign for a garage sale this weekend. Are there rules for that?",
+        "answer": "Yes, the Sign By-law (like 2002-209-RE) usually permits temporary signs for things like garage sales or community events, but there are size restrictions (often around 0.5 sq metres or about 5 sq feet) and rules about when they can be put up and when they must be taken down (usually shortly after the event)."
+      },
+      {
+        "question": "My neighbour's fence is falling down and looks terrible. Is there a bylaw about fence maintenance?",
+        "answer": "Yes, the Property Standards By-law (like 98-176-RE) requires fences to be kept in a structurally sound condition, in good repair, and free from hazards so they don't look unsightly or become dangerous. You can report a dilapidated fence to Town By-law Enforcement."
+      },
+      {
+        "question": "Can I operate a small daycare from my home?",
+        "answer": "Home Day Care Centres (usually caring for fewer than 6 children not living there) are generally permitted as a 'Home Occupation' under the General Zoning By-law (like 87-34), provided you meet certain conditions like living in the home and not changing the residential appearance. Larger 'Day Care Centres' have different rules and may only be allowed in specific zones."
+      },
+      {
+        "question": "Is there a limit on how many unrelated people can live in one house?",
+        "answer": "The definition of 'Family' in the Zoning By-law (like 87-34) often limits the number of unrelated people living together as a single housekeeping unit (sometimes allowing up to two unrelated people in addition to a traditional family). Rooming houses have specific definitions and are only permitted in certain zones."
+      },
+      {
+        "question": "I saw a taxi driver not using the meter for a trip within Stouffville. Is that allowed?",
+        "answer": "No. According to the Taxicab Licensing By-law (like 2004-180-LI), the meter must be engaged for all trips within the Town. Flat rates are only potentially allowed if the trip destination is outside the Town boundaries, and even then, the meter must be engaged while within Town limits."
+      },
+      {
+        "question": "How long can a construction company leave a temporary building or sign up at a building site?",
+        "answer": "Temporary uses incidental to construction (like tool sheds or signs) are generally permitted by the Zoning By-law (like 87-34) only for as long as the work is actively in progress and hasn't been finished or abandoned, and provided a valid building permit is in force."
+      },
+      {
+        "question": "What are the rules for putting up election signs?",
+        "answer": "The Sign By-law (like 2002-209-RE, Schedule C) has specific rules for election signs. They are generally permitted during an election period but have size limits, placement restrictions (e.g., distance from curbs/sidewalks, not obstructing views), and must be removed within a set time after the election (usually 3 days). A permit and deposit might be needed for signs on municipal property."
+      },
+      {
+        "question": "Can my neighbour store their large RV or boat in their front driveway all year?",
+        "answer": "Usually not. The General Zoning By-law (like 87-34) often restricts the outdoor storage of boats, tourist trailers, or similar vehicles in residential zones. Typically, only one such vehicle is allowed, and it must be stored in the rear yard, not the front yard or driveway."
+      },
+      {
+        "question": "I want to speak to Council about an issue. How do I do that?",
+        "answer": "According to the Procedural By-law (like 2003-187-MS), you should request to be a 'Delegation' at a Committee meeting rather than Council. You need to submit a written request to the Town Clerk, usually by noon on the Monday before the meeting, stating what you want to talk about. There are time limits for speaking (usually 8-10 minutes)."
+      },
+      {
+        "question": "Are Council meetings open to the public?",
+        "answer": "Yes, the Procedural By-law (like 2003-187-MS) states that all Council and Committee meetings must be open to the public, except for specific confidential matters (like personnel issues, land acquisition, or legal advice) which can be discussed 'in camera' (privately) after a resolution is passed in the open meeting."
+      },
+      {
+        "question": "What happens if there's a tie vote at a Council meeting?",
+        "answer": "Generally, if there's a tie vote on a motion at a Council meeting, the motion is lost (defeated). This is outlined in the Procedural By-law (like 2003-187-MS)."
+      },
+      {
+        "question": "Can I install a swimming pool in my side yard?",
+        "answer": "Yes, potentially. The General Zoning By-law (like 87-34) usually permits swimming pools in side yards, but they cannot be located closer to the property line than the required setback for the main house. There are also rules about the pool's height relative to the ground."
+      },
+      {
+        "question": "My neighbour's house looks like it's falling apart. What can the Town do?",
+        "answer": "The Property Standards By-law (like 98-176-RE) requires all parts of a building to be maintained in a structurally sound condition. If a building is dilapidated or unsafe, the Town's Property Standards Officer can order the owner to make repairs or, in severe cases, require the building to be demolished and the site cleared."
+      },
+      {
+        "question": "Is there a limit on how many taxi licences the Town issues?",
+        "answer": "Yes, the Taxicab Licensing By-law (like 2004-180-LI) sets a maximum number of taxi plates (licences for cars) based on the Town's population (e.g., 1 plate per 1,700 residents). There's also usually a limit on how many plates one person or company can hold."
+      },
+      {
+        "question": "I want to sell some second-hand items at the Stouffville Country Market. Do I need a special licence?",
+        "answer": "According to the Second Hand Goods By-law (like 2002-201-LI), transient vendors at the Stouffville Country Market are generally exempt from needing a specific Second Hand Vendor licence, but they still need to follow certain rules like keeping records and providing ID if asked by an officer."
+      },
+      {
+        "question": "How often do taxi drivers in Stouffville need to get their vehicles inspected?",
+        "answer": "The Taxicab Licensing By-law (like 2004-180-LI) requires taxicabs to meet Safety Standards Certificate requirements. While vehicles generally can't be older than 5 years, extensions might be possible if the owner submits the vehicle for semi-annual inspections and provides current Safety Standards Certificates."
+      },
+      {
+        "question": "Can a business put up a big inflatable sign?",
+        "answer": "Yes, but with restrictions. The Sign By-law (like 2002-209-RE) usually allows inflatable signs in Commercial, Industrial, and Institutional zones with a permit. However, the permit is typically only valid for a short period (e.g., 30 days), and there's a limit on how many times per year a business can get such a permit (e.g., twice). There are also rules about placement to ensure safety."
+      },
+      {
+        "question": "What are the rules about putting garbage out for collection?",
+        "answer": "The Property Standards By-law (like 98-176-RE) requires that garbage and refuse be stored safely in containers and removed according to the Town's specific Garbage By-laws. Containers usually need to be kept covered and screened from public view."
+      },
+      {
+        "question": "My neighbour is draining their pool water onto my property. Is that allowed?",
+        "answer": "No. The Property Standards By-law (like 98-176-RE) states that property areas must be graded to prevent drainage issues and that storm-water run-off should be contained within the property limits or directed to an appropriate drainage system (swale, storm sewer). Draining water directly onto an adjacent property is generally not permitted."
+      },
+      {
+        "question": "I'm selling my house. What kind of 'For Sale' sign can I put up?",
+        "answer": "The Sign By-law (like 2002-209-RE) permits temporary real estate signs. In residential zones, these signs usually have a size limit (e.g., 0.5 sq metres or about 5 sq feet). You typically don't need a permit for this type of sign, and it must be removed once the property is sold or no longer for lease/rent."
+      },
+      {
+        "question": "What happens if a Council meeting falls on a public holiday?",
+        "answer": "The Procedural By-law (like 2003-187-MS) usually states that if a regular meeting falls on a public holiday, the meeting will automatically be rescheduled to the next business day (often the Wednesday) at the same time, without needing special notice."
+      },
+      {
+        "question": "Can I record a Town Council meeting?",
+        "answer": "Yes, generally. The Procedural By-law (like 2003-187-MS) allows meetings open to the public to be taped, televised, or otherwise recorded, provided it's done from the designated audience area and doesn't disrupt the meeting. It's requested that you inform the Clerk or Council beforehand."
+      },
+      {
+        "question": "How much does it cost to get a copy of the Town's Official Plan?",
+        "answer": "The Town's Fees By-law (like 2004-117-FI) lists the costs for various documents. As of the 2004 bylaw, a copy of the Official Plan cost $26.00 plus G.S.T. You should check the current fee schedule for the most up-to-date price."
+      },
+      {
+        "question": "Is there a fee to apply for a minor variance from the Committee of Adjustment?",
+        "answer": "Yes, there is an application fee for Minor Variances. According to the 2004 Fees By-law (2004-117-FI), the fee was $575.00 at that time. There might also be an additional fee if your property uses private sewage disposal. Check the current fee schedule for the latest costs."
+      },
+      {
+        "question": "What is the penalty for parking illegally in Stouffville, like in a No Parking zone?",
+        "answer": "The Parking By-law (like 2002-085-TR) includes a schedule of penalties (Schedule IX). For parking in a No Parking zone, the reduced fine payable within 7 days was typically around $20.00 (as of 2002). Fines can be higher for more serious violations like parking in a fire route or disabled space."
+      },
+      {
+        "question": "Are there specific times when parking is restricted on most streets?",
+        "answer": "Yes, besides the winter overnight parking ban (Dec 1 - Mar 31, 2am-5am), the Parking By-law (like 2002-085-TR) often prohibits parking on any street for longer than three (3) consecutive hours at any time, unless signs specifically permit longer parking."
+      },
+      {
+        "question": "Can a business on Main Street put up a projecting sign that hangs over the sidewalk?",
+        "answer": "Yes, within limits. The Sign By-law (like 2002-209-RE) has special rules for the B.I.A. District (Schedule B). Projecting signs are allowed but have size restrictions (e.g., max 1.0 sq metre per face) and height requirements (min 2.438m above sidewalk). If it projects over public property, the business owner needs B.I.A. Committee approval and must provide the Town with proof of insurance and an indemnification letter."
+      },
+      {
+        "question": "My neighbour has garbage piling up in their backyard. Is this against the bylaws?",
+        "answer": "Yes, the Property Standards By-law (like 98-176-RE) requires yards to be kept free from rubbish, garbage, waste, litter, and debris. Accumulations of garbage are not permitted and can be reported to Town By-law Enforcement."
+      },
+      {
+        "question": "What happens if I start building something, like a deck, before I get a building permit?",
+        "answer": "If you start work that requires a permit before getting one, the Town can issue a Stop Work Order. Additionally, the Fees By-law (like 2004-117-FI) states that a \"Special Investigation\" fee, equal to 100% of the regular permit fee, will be charged on top of the normal permit cost."
+      },
+      {
+        "question": "How much does it cost to get a marriage licence from the Town?",
+        "answer": "According to the fee schedule in By-law 2004-117-FI, the fee for a marriage licence was $100.00 as of January 1, 1997. You should confirm the current fee with the Clerk's department."
+      },
+      {
+        "question": "Can I operate a business like a small engine repair shop out of my garage in a residential area?",
+        "answer": "Likely not. While some 'Home Occupations' are permitted under the Zoning By-law (like 87-34), they usually cannot involve mechanical equipment beyond what's normal for domestic use, cannot create noise or smells that disturb neighbours, and cannot involve outdoor storage or significant traffic. A repair shop would likely violate these conditions."
+      },
+      {
+        "question": "Is angle parking allowed anywhere on Main Street?",
+        "answer": "You would need to check the specific schedules in the current Parking By-law (like Schedule I in 2002-85-TR). Generally, parking on Main Street is parallel, but specific sections might be designated for angle parking with appropriate signs and markings."
+      },
+      {
+        "question": "What is the maximum height a house can be in a typical residential zone?",
+        "answer": "The General Zoning By-law (like 87-34) sets maximum height limits for buildings in different zones. For many residential zones, the maximum height for a main building is often around 11 metres (about 36 feet), but this can vary, so you need to check the specific regulations for your zone."
+      },
+      {
+        "question": "My neighbour has a really bright security light that shines right into my bedroom window. Is there a rule about that?",
+        "answer": "The Sign By-law (like 2002-209-RE) includes a general provision (Section 4.8) that light sources illuminating signs must be shielded so the light source isn't visible off the property. While this specifically mentions signs, the principle might apply to other nuisance lighting. You could contact By-law Enforcement to inquire about nuisance lighting regulations."
+      },
+      {
+        "question": "Can I put up a small sign in my window advertising piano lessons?",
+        "answer": "Possibly, but likely not if it's considered a business sign. Home occupations generally cannot have signs (Zoning By-law 87-34). While the Sign By-law (2002-209-RE) allows small resident identification signs, commercial advertising is usually restricted in residential zones. Interior signs not intended to be seen from off the premises are generally allowed without a permit."
+      },
+      {
+        "question": "How much does it cost to rent ice time at the arena in the summer?",
+        "answer": "According to the 2004 Fees By-law (2004-117-FI), summer ice time (May-August) was $120.00/hour + GST for Prime Time and $80.00/hour + GST for Non-Prime Time as of Jan 22, 2002. Check the current Town fee schedule for updated rates."
+      },
+      {
+        "question": "Is there a limit to how many garage sales I can have per year?",
+        "answer": "Yes. The Second Hand Goods By-law (like 2002-201-LI) defines a 'Garage Sale' as occurring no more than two times per year from the same residential premises and lasting no longer than two days each time."
+      },
+      {
+        "question": "Can a taxi driver charge extra if they have to wait for me?",
+        "answer": "Yes. The Taxicab Licensing By-law (like 2004-180-LI) states that for prearranged trips, if the driver notifies the passenger of arrival and waits a reasonable time, they can engage the meter, and the waiting time will be included in the fare according to the approved tariff."
+      },
+      {
+        "question": "What happens if I don't pay my water bill?",
+        "answer": "If you don't pay your water bill by the due date, the Waterworks By-law (like 96-187-WS) states a penalty (e.g., 10%) will be applied. If the charges remain unpaid, the Town can add the amount owing, plus interest (e.g., 1.25% per month), to your property tax bill for collection."
+      },
+      {
+        "question": "Do I need a permit to put up a temporary tent for a backyard party?",
+        "answer": "Yes, if the tent is large enough. The Fees By-law (like 2004-117-FI, Item 88) lists a permit fee for the 'Erection and Removal of Temporary Tents', suggesting a permit is required under the Building Code Act for tents exceeding a certain size or duration, even if temporary (less than 30 days)."
+      },
+      {
+        "question": "Can a store on Main Street have a large flashing neon sign?",
+        "answer": "No. The Sign By-law (like 2002-209-RE) prohibits signs with flashing or moving illumination (Section 3a). Additionally, Schedule B for the B.I.A. District often restricts internal illumination for wall and projection signs."
+      },
+      {
+        "question": "My neighbour is building an addition without a permit. What should I do?",
+        "answer": "Building permits are required for most construction, including additions, under the Building Code Act and Town bylaws. You can report suspected work being done without a permit to the Town's Building Department or By-law Enforcement."
+      },
+      {
+        "question": "Is there a bylaw about noise from neighbours, like loud music late at night?",
+        "answer": "While these specific bylaws don't detail noise regulations, municipalities typically have separate Noise Bylaws that restrict noise levels and times, especially late at night or early in the morning. You would need to consult the Town's Noise By-law or contact By-law Enforcement for specifics."
+      },
+      {
+        "question": "How much does it cost to get a dog licence?",
+        "answer": "Dog licensing fees are not covered in the provided fee bylaws (which focus on services, development, facilities etc.). You would need to check the Town's specific Animal Control By-law or contact the Town Clerk's department or Animal Services for current dog licence fees."
+      },
+    {
+      "question": "My neighbour is doing a big landscaping project and bringing in truckloads of dirt. Do they need permission from the Town?",
+      "answer": "Yes, generally, a permit is required for placing or dumping fill or altering the grade of land in Whitchurch-Stouffville. There are some exceptions for very minor work (like less than 50 cubic meters not near water) or normal farming activities. For larger projects, especially over 5000 cubic meters or changing the grade significantly, a more detailed review and agreement with the Town might be needed. (Based on Site Alteration By-law 2008-016-RE)"
+    },
+    {
+      "question": "We're having a community garage sale next month to raise money for the local school. Can we put up temporary signs around the neighbourhood?",
+      "answer": "Yes, temporary signs advertising special events for charitable or public service groups are generally permitted. According to By-law 2004-212-RE, these signs shouldn't exceed 0.5 square meters (about 5.4 square feet). Remember to remove them within 48 hours after the event."
+    },
+    {
+      "question": "I just bought a house on Joseph Todd Road, and the number on the house seems different from what the previous owner told me. How can I confirm my official house number?",
+      "answer": "The Town assigns official building numbers through bylaws. By-law 2012-101-RD specifically updated numbers for Registered Plan 65M-3890, including Joseph Todd Road. You can check Schedule A of that bylaw or contact the Town planning or building department to confirm the officially assigned number for your specific lot."
+    },
+    {
+      "question": "My street, Walter Sangster Road, is listed in By-law 2012-101-RD. Does this mean I have to put the assigned number on my house?",
+      "answer": "Yes, By-law 2012-101-RD states that it's the obligation of the owner or occupant to affix the assigned building number to the building. It should be placed where the Fire Department finds it satisfactory, likely meaning clearly visible from the street."
+    },
+    {
+      "question": "I'm selling my house. How big can my 'For Sale' sign be?",
+      "answer": "For a temporary real estate sign in a residential zone, the Sign By-law (2004-212-RE) allows a maximum size of 0.5 square meters (about 5.38 square feet). In other zones (like commercial or industrial), the limit is larger, up to 2.0 square meters."
+    },
+    {
+      "question": "Can I put up one of those big inflatable tube guys outside my store for our anniversary sale?",
+      "answer": "Yes, inflatable signs are generally permitted for commercial businesses for special events, but you need a permit. According to the Sign By-law (2004-212-RE), the permit is usually for a maximum of 30 days, and you can typically only get two such permits per year for the same location. There are also rules about where it can be placed (not blocking parking or walkways) and how it's secured."
+    },
+    {
+      "question": "I want to put a small sandwich board sign on the sidewalk outside my shop on Main Street. Is that allowed?",
+      "answer": "Yes, sandwich board signs (A-frames) are permitted for businesses in the B.I.A. District (Main Street from Albert to Park), according to Schedule B of the Sign By-law (2004-212-RE). There are size restrictions (max 10 sq ft per face, 4 ft dimension), and you need to ensure it doesn't block pedestrian traffic (minimum 5 ft clearance). You'll also need B.I.A. Committee approval and potentially provide proof of insurance ($2 million liability) if it's on municipal property like the sidewalk."
+    },
+    {
+      "question": "My neighbour's construction site looks messy and maybe unsafe. Who enforces the rules about keeping construction sites tidy?",
+      "answer": "The Building By-law (2012-004-BU) includes provisions for site safety, like requiring fences if a hazard exists (Section 25). If you have concerns about safety or tidiness related to construction, you can contact the Town's Building Department or By-law Enforcement."
+    },
+    {
+      "question": "I'm building a small shed in my backyard (less than 10 square meters). Do I still need a building permit?",
+      "answer": "Generally, structures occupying an area greater than ten square meters require a building permit according to the Building Code Act, as referenced in the preamble of By-law 2012-004-BU. Since your shed is less than 10 square meters, it likely falls under the category of construction not requiring a permit (Section 7), but it's always best to confirm with the Town's Building Department, as other rules (like zoning setbacks) still apply."
+    },
+    {
+      "question": "How long does the Town keep building permit records? I need information about work done on my house years ago.",
+      "answer": "According to the Records Retention By-law (2009-154-RE), Building Permit records (Class Code P10) are generally kept permanently ('P') by the Building department, although there's a note about 5 years off-site storage for residential permits. You should contact the Town's Building Department to inquire about accessing historical permit information for your property."
+    },
+    {
+      "question": "I live in the North Shore Community of Preston Lake. I heard something about a special fee for road maintenance. Is that true?",
+      "answer": "Yes, bylaws like 2009-078-TX and 2010-094-TX established annual fees ($620 in 2009, $1200 in 2010) per household in the North Shore Community of Preston Lake specifically for maintaining the road network there. These fees were added to the property tax bills for the specified years."
+    },
+    {
+      "question": "I own a business downtown and want to renovate my building's storefront. Are there any Town programs to help with the cost?",
+      "answer": "Yes, the Downtown Stouffville Community Improvement Plan (adopted by By-law 2009-100-OP) includes programs that might help. There's a Building, Façade and Signage Improvement Loan Program offering no-interest loans (up to $15,000 matching funds) and potentially a Fee Grant Program covering certain Town fees. You should contact the Town's Planning or Economic Development department for details and eligibility."
+    },
+    {
+      "question": "My property taxes seem higher this year because of improvements I made, which were part of the Downtown Community Improvement Plan. Is there any way to get some of that tax increase back?",
+      "answer": "Yes, the Downtown Stouffville Community Improvement Plan (By-law 2009-100-OP) includes a Redevelopment/Rehabilitation Grant Program. If your project qualified and increased your property's assessed value, you might be eligible for an annual grant for up to 10 years, based on a percentage of the *Town's portion* of the tax increase caused by the improvements. You would need to have applied and entered into an agreement with the Town."
+    },
+    {
+      "question": "I bought a townhouse block (Block 187 on Plan 65M-4208) and want to sell the individual units. Do I need special permission to divide the block?",
+      "answer": "No, By-law 2011-107-MS specifically exempts Blocks 186 through 193 on Plan 65M-4208 from Part Lot Control under the Planning Act. This means you can divide Block 187 into the five individual freehold townhouse units as shown on the corresponding survey plan (65R-32956) without needing further municipal consent for the division itself."
+    },
+    {
+      "question": "I want to speak at the next Council meeting about a local issue. How do I get on the agenda?",
+      "answer": "According to the Procedural By-law (2008-112-MS), if you want to speak about something *not* already on the agenda (a 'Delegation'), you need to register with the Town Clerk by 12:00 noon on the Monday before the meeting, stating what you want to talk about. There's a limit of 3 delegations per meeting. If you want to speak about an item *already* on the agenda, you can ask for the item to be discussed separately when the agenda is confirmed at the meeting, and you'll be allowed to speak (usually for 5 minutes) when that item comes up."
+    },
+    {
+      "question": "How late do Council meetings usually run? Is there a set end time?",
+      "answer": "The Procedural By-law (2008-112-MS) states that the Chair should normally adjourn meetings scheduled for 7:00 p.m. if they are still going at 11:00 p.m. However, the Council members present can vote (by a 'Fifty Percent plus One' majority) to extend the meeting beyond that time if needed."
+    },
+    {
+      "question": "Can I record a Council meeting with my phone?",
+      "answer": "Yes, the Procedural By-law (2008-112-MS) generally permits the public and media to tape, televise, or otherwise record open Council meetings, as long as it's not disruptive. The Chair has the discretion to decide where recording equipment can be placed and can stop recordings if they become disruptive."
+    },
+    {
+      "question": "What happens if a Council member has a conflict of interest on an agenda item?",
+      "answer": "If a Council member has a pecuniary (financial) interest in a matter being discussed, the Procedural By-law (2008-112-MS) requires them to declare the interest and its nature before the item is considered. They must then leave the meeting for the duration of the discussion and vote on that specific matter and cannot try to influence the outcome."
+    },
+    {
+      "question": "I missed putting out my garbage this week. Can I put out six bags next week?",
+      "answer": "No, the limit for regular garbage collection for residential properties is three untagged containers (bags or cans) per collection day. You can put out up to three additional containers, for a maximum of six, but each extra one must have a special tag purchased from the Town. (Based on Waste Collection By-law 2007-144-GA)"
+    },
+    {
+      "question": "My blue box is broken. Can I get a new one from the Town?",
+      "answer": "Yes, the Town provides blue boxes for sale. According to By-law 2007-144-GA, if your box is damaged, the Town will replace it at no cost if you return the damaged box to the Town offices or another designated facility."
+    },
+    {
+      "question": "When does the Town collect yard waste like leaves and branches?",
+      "answer": "Yard waste collection typically happens every other week between April 1st and November 30th each year, on designated collection days. Branches must be bundled and meet size requirements (e.g., under 4 feet long, 4 inches diameter). (Based on Waste Collection By-law 2007-144-GA)"
+    },
+    {
+      "question": "Can I put food scraps like meat bones and vegetable peelings in my green bin?",
+      "answer": "Yes, the Town's waste collection system includes Source Separated Organics (SSO) collection using the green bin. Accepted items generally include kitchen waste like fruit and vegetable scraps, meat, fish, bones, dairy products, coffee grounds, paper towels, diapers, and more, as listed in Schedule B of By-law 2007-144-GA."
+    },
+    {
+      "question": "I saw someone going through my neighbour's recycling bins before the collection truck came. Is that allowed?",
+      "answer": "No, that's considered scavenging and it's prohibited. Once recycling or garbage is placed out for collection by the Town or its contractor, it's considered the property of the Town or its agent, and no one else is allowed to interfere with it or remove items without authorization. (Based on Waste Collection By-law 2007-144-GA, Section 9.2)"
+    },
+    {
+      "question": "I want to drive a taxi in Stouffville. Besides a regular driver's licence, what else do I need?",
+      "answer": "To get a Taxi Driver's Licence in Stouffville, according to By-law 2012-121-LI, you need more than just a Class G licence. You'll also need to provide proof of completing a Taxi Training Course, get a Police Vulnerable Sector Check (or Police Information Check for renewals), provide recent photos, possibly a medical letter, and potentially a letter from the taxi company you plan to drive for. You also need to meet citizenship/work authorization requirements."
+    },
+    {
+      "question": "Is there a limit on how old a car can be to be used as a taxi in town?",
+      "answer": "Yes, generally, a vehicle cannot be older than five years (from its manufacturing date) to get or renew a taxi plate (owner's licence). However, the Plate Holder can request an extension from the Licensing Officer if they provide semi-annual mechanical inspection certificates and Safety Standards Certificates. (Based on Taxicab Licensing By-law 2012-121-LI, Section 8.2 & 8.3)"
+    },
+    {
+      "question": "My neighbour parks his large work truck on the street overnight in our residential area. Is that permitted?",
+      "answer": "No, generally parking a Commercial Motor Vehicle (which includes many types of work trucks) on a highway within a residential zone is prohibited according to the Parking By-law (2008-114-PR, Section 6(c)). There's an exception if the operator is actively delivering goods or services, but overnight parking is typically not allowed."
+    },
+    {
+      "question": "I see cars parked on the street overnight all the time, but I thought there was a winter parking ban?",
+      "answer": "You are right, there is an overnight winter parking ban. From December 1st to March 31st, you cannot park on any Town highway between 2:00 a.m. and 6:00 a.m. This is mainly to allow for snow clearing. There are a few specific street sections listed as exceptions in the bylaw. (Based on Parking By-law 2008-114-PR, Section 17)"
+    },
+    {
+      "question": "How close to a fire hydrant can I legally park?",
+      "answer": "You cannot park within three (3) metres of a fire hydrant. This rule applies even if there isn't a 'No Parking' sign posted there. (Based on Parking By-law 2008-114-PR, Section 6(a)(ii))"
+    },
+    {
+      "question": "Can I park my car facing the wrong way on the street?",
+      "answer": "No, you cannot park your vehicle facing opposite to the direction of traffic flow on that side of the street. You must park with the right wheels closest to the right curb (or edge of roadway) on a two-way street, or with the appropriate side wheels closest to the curb on a one-way street. (Based on Parking By-law 2008-114-PR, Sections 3, 4, 6(a)(xviii))"
+    },
+    {
+      "question": "I need to get a copy of my property tax certificate. How much does that cost?",
+      "answer": "According to the Fees and Charges By-law schedule from 2007 (2007-076-FI, Schedule B), the fee for a Tax Certificate was $55.00 per account. You could also get a combined Tax & Water Certificate for $80.00. It's best to check the current Fees and Charges By-law or contact the Treasury Department for the most up-to-date fee."
+    },
+    {
+      "question": "What's the fee for a marriage licence in Stouffville?",
+      "answer": "Based on the 2007 Fees and Charges By-law (2007-076-FI, Schedule A), the fee for a Marriage Licence was $100.00. You should confirm the current fee with the Clerk's department."
+    },
+    {
+      "question": "I want to rent the arena ice for my kid's hockey team. What are the approximate hourly rates?",
+      "answer": "The rates vary depending on the time (prime vs. non-prime) and user group (minor vs. adult vs. commercial). According to the 2007 Fees and Charges By-law (2007-076-FI, Schedule H, effective July 1, 2007), Minor Prime time was $153/hour + GST and Adult Prime time was $165/hour + GST. Non-prime was cheaper. It's best to contact Leisure Services for the current rates and availability."
+    },
+    {
+      "question": "My business wants to bid on a contract with the Town. Are there rules about employees accepting gifts from potential suppliers?",
+      "answer": "Yes, the Town's Procurement Policy (e.g., By-law 2008-115-FI, Section 5.8) strictly prohibits Town officials, employees, or their family members from accepting rebates, gifts, or money from any company that might be awarded a contract, except as defined in the Corporate Administrative Procedures Manual."
+    },
+    {
+      "question": "If a Town employee has a relative who owns a company bidding on a Town project, what should happen?",
+      "answer": "The Town's Procurement Policy (e.g., By-law 2008-115-FI, Section 5.9) requires employees and officials to declare any potential Conflict of Interest, which could include a relative's business interest. The person with the conflict must refrain from participating in the procurement process related to that company."
+    },
+    {
+      "question": "Does the Town ever buy things without getting multiple quotes or tenders?",
+      "answer": "Yes, under specific circumstances outlined in the Procurement Policy (e.g., By-law 2008-115-FI, Section 7.2.12), the Town can make a 'Sole Source Purchase'. This might happen if only one supplier can provide the required item (like for compatibility with existing equipment), during emergencies, for testing purposes, or for confidential matters. These purchases still require specific approvals depending on the cost."
+    },
+    {
+      "question": "I'm building an addition and the plans need to be reviewed by the Town. What kind of information do they need besides the basic drawings?",
+      "answer": "The Building By-law (2012-004-BU) and its Schedule A outline the requirements. Besides architectural drawings (floor plans, elevations, sections), you'll likely need a site plan showing property lines and building location, structural plans (especially if not standard wood framing), potentially HVAC, plumbing, and electrical plans, energy efficiency documentation, and possibly soil reports or professional engineer reviews depending on the project's complexity."
+    },
+    {
+      "question": "My contractor finished framing, but we decided to change a window location. Do I need to tell the Town?",
+      "answer": "Yes, if you want to make changes to the plans that were approved when your building permit was issued, you need to file an application for a revision to the permit with the Town's Building Department. You may need to submit updated drawings showing the change. There might also be a fee associated with the revision. (Based on Building By-law 2012-004-BU, Section 17)"
+    },
+    {
+      "question": "How much notice do I need to give the Town before I cover up work that needs an inspection, like the foundation drains?",
+      "answer": "You need to give the Building Department notice at least two business days before you plan to cover the work. This notice should be in writing (which can include fax or e-mail) and doesn't count the day you send the notice. It's your responsibility to make sure they received the notice. (Based on Building By-law 2012-004-BU, Section 28)"
+    },
+    {
+      "question": "I want to operate a food truck in Stouffville. Do I need a special licence?",
+      "answer": "Yes, operating a food truck (referred to as a Refreshment Vehicle) requires a licence from the Town according to the Licensing By-law (2012-120-LI, Schedule E). You'll need to meet requirements related to the vehicle itself (safety, sanitation, equipment), provide proof of insurance, get approvals from the Health Unit, and follow rules about where and when you can operate."
+    },
+    {
+      "question": "Are there restrictions on where a licensed food truck can operate within Stouffville?",
+      "answer": "Yes, the Licensing By-law (2012-120-LI, Schedule E, Section 5) includes location restrictions. Generally, food trucks cannot operate on Town roads or highways, directly in front of building entrances/exits, in Town parks (without special event permission), or within certain distances of intersections or park entrances. They must also operate on land zoned appropriately for retail sales."
+    },
+    {
+      "question": "I want to board dogs at my rural property. What kind of rules does the Town have for kennels?",
+      "answer": "Operating a kennel requires a Town licence (By-law 2012-120-LI, Schedule B). Key requirements include having a property of at least 5 acres zoned 'Rural', ensuring the kennel building is at least 100 feet from property lines, meeting specific construction standards (like impermeable floors if attached to a house), potentially needing fenced outdoor runs, and maintaining sanitary conditions. You'll need to provide details about the kennel and number/breed of animals in your application."
+    },
+    {
+      "question": "If the Town issues an order to stop illegal dumping on my property, what happens if I don't comply?",
+      "answer": "If you don't comply with an order issued under the Site Alteration By-law (2008-016-RE), such as an Order to Discontinue Activity or a Work Order to fix the problem, the Town has the authority to do the work itself and charge the costs back to you, the property owner. These costs can be added to your property tax bill and collected like taxes. You could also face fines for the initial contravention and for failing to comply with the order."
+    },
+    {
+      "question": "I want to put up a temporary banner for my store's grand opening. How long can I keep it up?",
+      "answer": "For special events like a new business opening, the Sign By-law (2004-212-RE) allows temporary signs, which could include banners, for a maximum period of thirty (30) days. For other types of special events (not charitable/public service), the display period is typically shorter, usually not exceeding fifteen (15) days, and must be removed within 48 hours after the event. You generally need a permit for these types of temporary signs."
+    },
+    {
+      "question": "Are there any rules against flashing or moving signs for businesses?",
+      "answer": "Yes, the Sign By-law (2004-212-RE, Section 3(a)) prohibits signs that incorporate flashing or moving illumination that varies in intensity or colour, or signs with visible moving parts or apparent movement (except for basic time/temperature signs, if permitted otherwise)."
+    },
+    {
+      "question": "Can I operate a limousine service based out of my home in Stouffville?",
+      "answer": "Operating a limousine service requires licences for both the owner and the drivers under By-law 2004-231-LI. While the bylaw doesn't explicitly prohibit home-based operation, you would need to ensure your property complies with any applicable zoning regulations for home-based businesses and meets any requirements for vehicle storage, etc. You would also need to meet all the licensing requirements, including insurance, vehicle inspections, and driver qualifications."
+    },
+    {
+      "question": "What kind of insurance do I need to operate a licensed limousine in Stouffville?",
+      "answer": "The Limousine Licensing By-law (2004-231-LI, Section 9(3)(c)) requires proof of insurance with a limit of at least $2,000,000 (exclusive of interest and costs) covering property damage and bodily injury/death. The policy must also include an endorsement stating the Town's Licensing Officer will be given at least 10 days' notice of any cancellation, expiry, or change in the policy amount."
+    },
+    {
+      "question": "I want to set up a small stall at the Farmers' Market. Do I need a Mobile Vendor licence?",
+      "answer": "No, according to the Licensing By-law (2012-120-LI, Schedule C, Section 2.3c), you do not need a Mobile Vendor licence if you are selling products *in conjunction with and as part of* the Farmers' Market operated by the Town, provided you have written permission from the market organizers to sell within the designated market area."
+    },
+    {
+      "question": "My neighbour's grass is really long and full of weeds. Is there a rule about how high grass can be?",
+      "answer": "Yes, the Town's Clean Yards By-law (2016-068-RE) requires grass in turf areas to be cut so its height is maintained below 20 cm (about 8 inches). Property owners are also required to remove weeds from their yards."
+    },
+    {
+      "question": "I want to start composting in my backyard. Are there any specific rules I need to follow?",
+      "answer": "Yes, the Clean Yards By-law (2016-068-RE) has rules for composting. It's only permitted in the rear yard, must be in a container, pile, or digester (limit of two, max 1.5 cubic metres total), can't contain feces, must not create offensive odours, and needs to be at least 60 cm from any lot line."
+    },
+    {
+      "question": "My neighbour has an old car sitting in their driveway with no plates. Is that allowed?",
+      "answer": "The Clean Yards By-law (2016-068-RE) requires properties to be kept free of unlicensed or derelict vehicles, unless it's part of a licensed auto wrecking or repair business that follows zoning rules. An unlicensed vehicle is one without plates or current validation stickers."
+    },
+    {
+      "question": "There's graffiti on the park fence near my house. Who is responsible for cleaning it?",
+      "answer": "Graffiti is prohibited. While the Clean Yards By-law (2016-068-RE) requires property owners or occupants to keep their buildings free of graffiti, for graffiti on public property like a park fence, you should report it to the Town of Stouffville for removal."
+    },
+    {
+      "question": "My landlord hasn't fixed a broken window in my apartment for weeks. What can I do?",
+      "answer": "The Property Standards By-law (2018-049-RE) requires owners to keep windows in good repair. You should notify your landlord in writing. If they still don't fix it, you can contact the Town's By-law Enforcement department. They can inspect the property and issue an order to the owner to make the necessary repairs."
+    },
+    {
+      "question": "What's the minimum temperature my apartment needs to be heated to in the winter?",
+      "answer": "According to the Property Standards By-law (2018-049-RE), if your landlord provides the heat, they must ensure your dwelling unit is heated to a minimum air temperature of 21°C."
+    },
+    {
+      "question": "The vacant house on my street looks like it's falling apart and kids are going inside. Is there anything the Town can do?",
+      "answer": "Yes, the Property Standards By-law (2018-049-RE) requires owners of vacant buildings to protect them against fire, accidents, and unauthorized entry, often by boarding them up according to the Town's specific by-law. If a building is derelict and beyond reasonable repair, the Town can order it demolished or removed."
+    },
+    {
+      "question": "I want to operate a food truck in Stouffville this summer. Do I need a special license?",
+      "answer": "Yes, operating a food truck (classified as a Refreshment Vehicle) requires a license from the Town according to the Licensing By-law (2013-120-LI). You'll need to meet specific requirements outlined in Schedule E of the by-law, including inspections and insurance."
+    },
+    {
+      "question": "My neighbour wants to start a dog boarding business in their home. Do they need a license?",
+      "answer": "Yes, operating a kennel, which includes boarding dogs, requires a Kennel Licence from the Town according to the Licensing By-law (2013-120-LI), Schedule B. There are also specific requirements regarding property size, zoning, and kennel construction."
+    },
+    {
+      "question": "I run a small business from home. Do I need a business license from the Town?",
+      "answer": "The main Licensing By-law (2013-120-LI) lists specific business classes that require licensing (like ice cream trucks, kennels, mobile vendors, places of amusement, refreshment vehicles, tourist camps). If your home business doesn't fall into one of these specific categories listed in the by-law, you likely don't need a license under this particular by-law, but you should always check with the Town Clerk's office for any other applicable regulations."
+    },
+    {
+      "question": "How many garbage bags can I put out for collection each week?",
+      "answer": "According to the Waste Collection By-law (2018-035-GA), residential properties can set out a maximum of three (3) untagged garbage containers or bags per dwelling unit each collection day. You can put out up to six (6) total, but the extra ones (bags 4, 5, and 6) must each have a paid garbage tag affixed."
+    },
+    {
+      "question": "What time do my garbage and recycling bins need to be at the curb?",
+      "answer": "The Waste Collection By-law (2018-035-GA) states you should not put your bins out before 5:00 p.m. on the day before your collection day, and they must be out no later than 7:00 a.m. on the morning of collection. You also need to remove empty bins or uncollected items by 8:00 p.m. on collection day."
+    },
+    {
+      "question": "Can I put old electronics like a computer monitor or TV out with my regular garbage?",
+      "answer": "No, electronic waste (like computers, monitors, TVs, printers, etc.) is listed as Non-Collectible Waste in Schedule A and C of the Waste Collection By-law (2018-035-GA). You need to take these items to a designated drop-off location or special collection event for proper recycling."
+    },
+    {
+      "question": "My neighbour keeps putting their garbage out in flimsy grocery bags and it spills everywhere. Is that allowed?",
+      "answer": "No, the Waste Collection By-law (2018-035-GA) requires garbage to be set out in approved receptacles. For non-reusable containers, this means waterproof plastic bags designed for refuse, sealed to prevent spillage, and meeting size/weight limits (max 76 litres, max 22 kg). Flimsy grocery bags that spill easily would likely not meet these requirements."
+    },
+    {
+      "question": "I'm doing some landscaping and want to add about 6 inches of topsoil to my garden beds. Do I need a permit?",
+      "answer": "Generally, no. The Site Alteration By-law (2019-068-RE) allows for minor landscaping like adding soil for lawn dressing or gardens without a permit, provided the ground elevation isn't raised by more than 200 mm (about 8 inches) and it doesn't significantly change drainage onto neighbouring properties. There are also volume limits based on property size for importing fill without a permit (e.g., max 10 cubic metres for properties 0.1 ha or less)."
+    },
+    {
+      "question": "Can I use fill that came from an old industrial site for my backyard project?",
+      "answer": "No, the Site Alteration By-law (2019-068-RE) requires that any fill used must meet applicable provincial Site Condition Standards, be inert (chemically inactive), not contain garbage or organic waste, and be free of pests like termites or invasive species seeds/eggs. Fill from potentially contaminated sites would likely not meet these standards without proper testing and documentation approved by the Town."
+    },
+    {
+      "question": "I want to connect my new house to the Town's sewer system. How do I do that?",
+      "answer": "You need to apply for a 'Permit to Connect' from the Town's Public Works department, as outlined in the Sewer Use By-law (2018-056-WS). This involves submitting an application, potentially a site servicing plan prepared by an engineer, paying fees and deposits, and having the connection inspected. Work within the Town's right-of-way is typically done by the Town's contractor at your expense."
+    },
+    {
+      "question": "My restaurant kitchen produces a lot of grease. Are there special sewer requirements?",
+      "answer": "Yes, the Sewer Use By-law (2018-056-WS) requires commercial establishments discharging matter containing grease, oil, or grit to pass it through an approved 'interceptor' (grease trap) before it enters the municipal sewer line. You are responsible for installing and maintaining this interceptor."
+    },
+    {
+      "question": "Can I drain my sump pump into the floor drain in my basement, which connects to the sanitary sewer?",
+      "answer": "No, the Sewer Use By-law (2018-056-WS) explicitly prohibits connecting a sump pump, or similar device, to a sanitary sewer or any pipe that connects to it. Sump pump discharge should be directed onto your property away from buildings, ensuring it doesn't affect neighbours or create hazards."
+    },
+    {
+      "question": "I saw a company bid much lower for a Town project, but they didn't get the contract. Why would that happen?",
+      "answer": "The Town's Procurement By-law (2013-136-FI) states that the lowest bid may not necessarily be accepted. The Town aims for the 'best value', considering factors beyond just price, like quality, operating costs, maintenance, warranty, and the bidder's ability to meet all requirements. If the lowest bid isn't chosen, the Town must provide written justification if the 'privilege clause' is invoked."
+    },
+    {
+      "question": "My cousin owns a local construction company. Can they get preferential treatment when bidding on Town contracts?",
+      "answer": "No, the Procurement By-law (2013-136-FI) explicitly states that the Town will not practice local preference in awarding purchases to ensure fairness and comply with provincial acts."
+    },
+    {
+      "question": "A Town employee lives near me. Can they use their position to influence who the Town buys supplies from?",
+      "answer": "No, the Procurement By-law (2013-136-FI) has strict Conflict of Interest rules. Town employees involved in purchasing cannot have a direct or indirect financial interest in any contract or bid, unless it's properly disclosed and follows the rules outlined in the Municipal Conflict of Interest Act."
+    },
+    {
+      "question": "I just moved to a new house on Amos Lehman Way. How do I find out my official house number?",
+      "answer": "The official building numbers for streets on Registered Plan 65M-3890, including Amos Lehman Way, are assigned in Schedule A of the Town's Road Numbering By-law 2016-069-RD. You can likely find this bylaw on the Town's website or by contacting the Town Clerk's office."
+    },
+    {
+      "question": "Is it mandatory to display my house number?",
+      "answer": "Yes, the Road Numbering By-law (e.g., 2016-069-RD for Plan 65M-3890) makes it the obligation of the owner or occupant to affix the assigned number to the building. It should be placed in a location satisfactory to the Fire Department for emergency response purposes."
+    },
+    {
+      "question": "How does the Town decide which staff members can approve things like permits or agreements?",
+      "answer": "Council passes a Delegation By-law (like 2021-065-RE) which outlines specific routine powers and duties that are delegated to specific staff positions (like Directors, Managers, Clerk, Treasurer). This allows staff to handle day-to-day approvals efficiently without requiring a Council vote for every item."
+    },
+    {
+      "question": "Can a Town Director approve a major change to a subdivision plan without Council's input?",
+      "answer": "Generally, routine approvals related to subdivision plans (like endorsing notices after Council draft approval or approving designs that conform to approved plans) can be delegated to staff like the Director of Development Services under the Delegation By-law (2021-065-RE). However, significant or controversial applications, or major changes not conforming to Council's original approval, would likely still require Council's consideration."
+    },
+    {
+      "question": "Who is responsible for the Town's Emergency Plan?",
+      "answer": "The Town's Emergency Response By-law (2021-017-FR, as amended by 2021-067-FR) designates the Fire Chief as the Community Emergency Management Coordinator (CEMC), responsible for the overall program. An Emergency Management Program Committee (EMPC) advises Council and reviews the plan, while the Municipal Emergency Control Group (MECG), typically led by the CAO, directs the response during an actual emergency."
+    },
+    {
+      "question": "What happens if there's a major flood or storm declared an emergency in Stouffville?",
+      "answer": "The Town's Emergency Response Plan (Schedule A of By-law 2021-017-FR, as amended) would be activated. The Municipal Emergency Control Group (MECG) would meet at the Emergency Operations Centre (EOC) to coordinate the response, manage resources, communicate with the public, and support emergency services working at the scene, following the Incident Management System (IMS)."
+    },
+    {
+      "question": "I'm interested in serving on a Town committee, like the Heritage or Accessibility committee. How does that work?",
+      "answer": "The Town establishes committees like these via by-law (e.g., 2022-131-RE). When vacancies occur, the Town advertises for members (usually residents). Applications are reviewed, and Council makes the appointments, typically for a four-year term concurrent with Council's term. There are rules about attendance, conduct, and potential term limits."
+    },
+    {
+      "question": "Can I attend meetings of the Committee of Adjustment or the Appeals Committee?",
+      "answer": "Yes, under the CAC Procedural By-law (part of 2022-131-RE), all Council Appointed Committee meetings, including quasi-judicial ones like the Committee of Adjustment and Appeals Committee, must be open to the public."
+    },
+    {
+      "question": "What's the difference between a 'Delegation' and a 'Speaker' at a committee meeting?",
+      "answer": "According to the CAC Procedural By-law (Appendix A of 2022-131-RE), a 'Delegation' is someone who has pre-registered to speak about a topic *not* on the meeting agenda. A 'Speaker' is someone who registers (often at the meeting) to speak about a specific item that *is* on the agenda."
+    },
+    {
+      "question": "I received a parking ticket. Do I have to go to provincial court?",
+      "answer": "No, parking tickets issued for violating designated Town by-laws (like the main parking by-law 2008-114-PR) are handled through the Town's Administrative Monetary Penalty System (AMPS), established by By-law 2023-097-LL. You can pay the penalty or request reviews through Town Screening and Hearing Officers, not the provincial court."
+    },
+    {
+      "question": "How long do I have to request a review if I get a parking penalty notice?",
+      "answer": "Under the AMPS By-law (2023-097-LL), you have thirty (30) calendar days after the penalty notice is served (e.g., placed on your vehicle) to request a review by a Screening Officer. You can request an extension up to sixty (60) days if there are extenuating circumstances."
+    },
+    {
+      "question": "What happens if I just ignore a parking penalty notice from the Town?",
+      "answer": "Ignoring the penalty notice means you are deemed to have waived your right to a review, and the penalty is affirmed. If you don't pay within the specified timeframes, late fees and MTO search fees will be added. Eventually, the Town can notify the Ministry of Transportation, which can prevent you from renewing your vehicle's licence plate sticker until the penalty and all associated fees are paid (Plate Denial)."
+    },
+    {
+      "question": "A developer is proposing a large condo building next to my house. Will they have to consider the impact on my property?",
+      "answer": "Yes. Official Plan Amendments (like 2022-058-OP for 12049 Hwy 48) and the Property Standards By-law include policies requiring consideration of impacts on adjacent properties. This often involves studies (noise, lighting, traffic, air quality), design measures (setbacks, stepbacks, height transitions, screening), and adherence to Urban Design Guidelines to ensure compatibility."
+    },
+    {
+      "question": "Is the Town encouraging specific types of businesses in the new development area near the Old Elm GO Station?",
+      "answer": "Yes, OPA 155 (By-law 2023-001-OP) encourages a mix of uses including residential (apartments, townhouses), commercial (retail, restaurants, services), offices, and community facilities to create a complete, transit-supportive community. Specific policies encourage active ground-floor uses along main streets like Tenth Line."
+    },
+    {
+      "question": "Can a business grow cannabis outdoors on farmland near Stouffville?",
+      "answer": "Yes, Official Plan Amendment 157 (By-law 2022-100-OP) permits outdoor cannabis cultivation in Agricultural Areas, subject to obtaining a Health Canada license, getting a specific Zoning By-law amendment from the Town, meeting strict separation distances (1000m) from residential and other sensitive areas, and complying with regulations to mitigate nuisances like odour and light."
+    },
+    {
+      "question": "Are there restrictions on where cannabis processing facilities can be located?",
+      "answer": "Yes, OPA 157 (By-law 2022-100-OP) generally permits cannabis processing only as an accessory use to cultivation in agricultural/rural areas (and only if locating in a settlement area isn't feasible). Processing as a primary use is permitted in designated Industrial Areas, subject to licensing, separation distances (1000m), municipal servicing, site plan control, and a Zoning By-law amendment."
+    },
+    {
+      "question": "A large tree on the edge of my property might be affected by my neighbour's development application. What protection does it have?",
+      "answer": "If the tree is considered a 'Mature Tree' (30cm diameter or more) and the property is in a Secondary Plan area subject to a development application, By-law 2023-060-RE applies. The developer must identify the tree, protect it during construction (Tree Protection Zone), and generally cannot remove it without Town approval and compensation (replacement trees or cash-in-lieu). If it's a 'Boundary Tree' (straddling the property line), your consent would be needed for removal."
+    },
+    {
+      "question": "What happens if a developer removes a protected mature tree without permission?",
+      "answer": "Removing a Mature Tree without authorization under By-law 2023-060-RE is an offence. The Town can issue Orders and levy significant fines (starting at $500 per tree, potentially much higher for repeat/multiple offences). A court could also order the property owner to replant trees or undertake other rehabilitation measures."
+    },
+    {
+      "question": "My neighbour doesn't clean up after their dog on walks. Is there a bylaw about that?",
+      "answer": "Yes, the Animal Services By-law (2019-047-RE) has a 'Stoop and Scoop' rule. It requires dog owners to immediately remove and properly dispose of excrement left by their dog on any public or private property, other than their own property."
+    },
+    {
+      "question": "How many dogs am I allowed to have at my house in Stouffville?",
+      "answer": "In most residential zones, the Animal Services By-law (2019-047-RE) limits you to keeping a maximum of three (3) dogs per property or dwelling unit. The total number of all animals (including dogs) is limited to six (6) per single dwelling unit."
+    },
+    {
+      "question": "My neighbour's dog barks constantly when left outside. What can I do?",
+      "answer": "The Animal Services By-law (2019-047-RE) prohibits dog owners from allowing their dog to cause a nuisance through repetitive barking or howling that is likely to disturb inhabitants. You can report this issue to the Town's By-law Enforcement or Animal Services for investigation."
+    },
+    {
+      "question": "Are there any animals that are completely banned as pets in Stouffville?",
+      "answer": "Yes, Section 6 of the Animal Services By-law (2019-047-RE) lists prohibited animals. This includes wild animals like monkeys, bears, large wild cats/dogs, raccoons, skunks (except domestic ferrets), elephants, certain large snakes (pythons/boas), venomous reptiles, crocodiles, and others not typically kept as domestic pets."
+    },
+    {
+      "question": "I like feeding birds in my backyard. Is that allowed?",
+      "answer": "Feeding songbirds is generally allowed under the Animal Services By-law (2019-047-RE), provided the feeder is placed high enough off the ground so it doesn't attract other wildlife (like raccoons or squirrels), it doesn't attract large flocks of pigeons, and any spilled seed is cleaned up promptly."
+    },
+    {
+      "question": "My neighbour's pool water looks green and stagnant. Is that a violation?",
+      "answer": "Yes, the Clean Yards By-law (2016-068-RE) requires owners of pools, hot tubs, or artificial ponds to maintain them in good repair. Purification systems must be maintained so the water doesn't become a health hazard. Standing water is not permitted to remain for more than 3 days."
+    },
+    {
+      "question": "Can I drain my chlorinated pool water into the storm sewer at the end of my driveway?",
+      "answer": "No, not directly. The Clean Yards By-law (2016-068-RE) requires that chlorinated or chemically treated water (like from a pool or hot tub) must be dechlorinated *before* being discharged to a storm sewer."
+    },
+    {
+      "question": "I'm worried about snow and ice falling off my neighbour's roof onto my walkway. Is there a rule about that?",
+      "answer": "Yes, the Clean Yards By-law (2016-068-RE) requires property owners to remove snow and ice from roofs and eaves if it could pose a health and safety hazard to people or property below, especially in areas like walkways, driveways, and entrances."
+    },
+    {
+      "question": "If the Town issues an order to fix something on my property under the Property Standards By-law, can I appeal it?",
+      "answer": "Yes, if you receive an order under the Property Standards By-law (2018-049-RE) and disagree with it, you can appeal to the Town's Appeals Committee within 14 days of being served the order. There is a fee for the appeal. The Committee can confirm, modify, or cancel the order. Their decision (except for property standards matters) is usually final, but property standards decisions can potentially be appealed further to the Superior Court of Justice."
+    },
+    {
+      "question": "How long do I actually have to pay a parking ticket (Penalty Notice) before extra fees get added?",
+      "answer": "According to By-law 2024-039-RE, you have 30 calendar days from the date you received the Penalty Notice to pay it. Fees like late payment fees or MTO search fees can be added on or after day 31."
+    },
+    {
+      "question": "I missed the 30-day deadline to request a review of my parking ticket. Is it too late?",
+      "answer": "By-law 2024-039-RE states you might still be able to request an extension from the Screening Officer within 30 days *after* the original due date, but only if you can show there were extenuating circumstances. If you don't request the review or the extension in time, the penalty is considered final."
+    },
+    {
+      "question": "I requested a review for my parking ticket with the Screening Officer, but I disagree with their decision. What now?",
+      "answer": "If you disagree with the Screening Officer's decision, By-law 2024-039-RE allows you to request a second review by a Hearing Officer. You must make this request within 30 days of the Screening Officer's decision date."
+    },
+    {
+      "question": "What happens if I don't show up for my scheduled Screening Review meeting for a penalty notice?",
+      "answer": "According to By-law 2024-039-RE (Section 8.10), if you requested a review but fail to appear at the scheduled time (or fail to remain present), you'll be considered to have abandoned your request. You'll have to pay the original penalty amount, and you'll also be charged a Screening Non-Appearance Fee (listed as $60 in Schedule B of the amending bylaw 2024-141-RE)."
+    },
+    {
+      "question": "What happens if I don't show up for my scheduled Hearing Review meeting?",
+      "answer": "Similar to the screening review, By-law 2024-039-RE (Section 9.18) states that if you fail to appear for your Hearing Review, you're deemed to have abandoned the hearing. The Screening Officer's previous decision will be confirmed as final, and you'll have to pay a Hearing Non-Appearance Fee (listed as $60 in Schedule B of the amending bylaw 2024-141-RE) on top of the penalty."
+    },
+    {
+      "question": "I received a penalty notice but I'm facing financial difficulties. Can the penalty be reduced?",
+      "answer": "By-law 2024-039-RE (Section 12.2) allows a Screening Officer or Hearing Officer to consider reducing a penalty or extending the payment time if they are satisfied it's necessary to reduce undue hardship. You would likely need to provide proof of financial assistance (like Old Age Security, Disability Pension, OSAP, etc.)."
+    },
+    {
+      "question": "If I don't pay my parking tickets, can the Town really stop me from renewing my licence plate sticker?",
+      "answer": "Yes. According to By-law 2024-039-RE (Section 15.5), if an Administrative Penalty and any related fees are not paid within 60 days after they become due, the Town can notify the Ministry of Transportation (MTO). The MTO can then refuse to validate your vehicle permit (sticker) or issue a new one until the penalty and fees are paid. There's also an extra Plate Denial Fee added."
+    },
+    {
+      "question": "Can unpaid Town by-law fines (like parking or noise tickets) end up on my property taxes?",
+      "answer": "Yes, By-law 2024-039-RE (Section 14.4) states that if an Administrative Penalty and fees are not paid by the due date, the Town can deem the outstanding amount to be unpaid taxes and add it to the property tax roll for collection."
+    },
+    {
+      "question": "My neighbour keeps making loud noise late at night. Can they get a ticket under the new penalty system?",
+      "answer": "Yes, the Town's Noise By-law (2019-092 RE) is included as a Designated By-law in Schedule A of the Administrative Monetary Penalty System By-law (2024-039-RE). This means the Town can issue penalty notices for noise violations, with fines starting at $500 and increasing for repeat offences within a year."
+    },
+    {
+      "question": "I saw someone parked in a Fire Route. What's the fine for that under the Town's system?",
+      "answer": "Parking in a fire route is covered under the Fire Route By-law (2008-123 FR), which is included in the Administrative Monetary Penalty System By-law (2024-039-RE). According to Schedule A, the penalty for parking in a fire route is $250."
+    },
+    {
+      "question": "I got a second parking ticket for the same thing within a few months. Is the fine higher?",
+      "answer": "It depends on the specific violation. By-law 2024-039-RE (Section 5.4) and Schedule A indicate that for some offences (like noise or short-term rental violations), the penalty amount increases for second and third offences if they occur within 365 days of the previous one. For many standard parking violations listed, the penalty amount appears to stay the same for repeat offences based on the schedule provided in the bylaw."
+    },
+    {
+      "question": "I want to build a new house in Stouffville. Do I have to pay extra fees called 'Development Charges'?",
+      "answer": "Yes, generally you do. Bylaws like 2023-146-FI (Parks/Rec), 2023-147-FI (Fire), 2023-148-FI (Library), 2023-149-FI (By-law Enforcement), 2023-150-FI (Highway Services), 2023-151-FI (Wastewater), and 2023-152-FI (Water) establish development charges. These are fees collected when new development occurs (like building a house) to help pay for the increased demand on Town services caused by growth."
+    },
+    {
+      "question": "I'm adding a small sunroom onto my existing house. Do I need to pay development charges?",
+      "answer": "Likely not. The development charge bylaws (like 2023-146-FI, Section 3.5a) state that development charges are generally not imposed for an enlargement to an existing dwelling unit."
+    },
+    {
+      "question": "I want to add a basement apartment to my single-detached house. Will I have to pay development charges?",
+      "answer": "Generally, no, provided the apartment meets certain conditions. The development charge bylaws (like 2023-146-FI, Section 3.5b) exempt the creation of one or two additional dwelling units in an existing single-detached dwelling, as long as the total floor area of the new unit(s) doesn't exceed the floor area of the original house (Section 3.5f)."
+    },
+    {
+      "question": "I'm building a new house with a separate coach house apartment in the backyard. Are there development charges on both units?",
+      "answer": "Potentially only on the main house. The development charge bylaws (like 2023-146-FI, Section 3.5e and the table on Page 12) exempt the creation of a second dwelling unit in certain *new* residential buildings, including ancillary structures (like a coach house), provided the main house only contains one unit and the ancillary unit's floor area is equal to or less than the main house's floor area."
+    },
+    {
+      "question": "I'm a developer building a new rental apartment building. Are there any breaks on development charges?",
+      "answer": "Yes. The development charge bylaws (like 2023-146-FI, Page 13) offer discounts for rental housing developments with four or more units. The discount is based on the number of bedrooms: 25% reduction for units with 3+ bedrooms, 20% for 2-bedroom units, and 15% for units with fewer bedrooms."
+    },
+    {
+      "question": "I bought an old house, planning to tear it down and build a new one. Do I get any credit on development charges for the house I'm demolishing?",
+      "answer": "Yes, you likely will. The development charge bylaws (like 2023-146-FI, Section 3.10) state that if you redevelop land and demolish an existing house that was there within the last 60 months (5 years), the development charges for the new house will be reduced by an amount calculated based on the demolished unit. The credit can't be more than the total charge for the new house."
+    },
+    {
+      "question": "When do I actually have to pay the development charges if I'm building a house?",
+      "answer": "According to the development charge bylaws (like 2023-146-FI, Section 3.12), the development charge is typically calculated and payable in full on the date the first building permit is issued for your house. There are different rules for certain services in subdivisions (like water/wastewater) and for rental/institutional projects."
+    },
+    {
+      "question": "I want to cut down a large maple tree in my backyard because I'm building a pool. It's about 40cm wide. Do I need permission?",
+      "answer": "Yes, you almost certainly need permission. By-law 2023-060-RE defines a 'Mature Tree' as one with a diameter (DSH) of 30cm or greater. You cannot remove or injure a Mature Tree on private property in designated Secondary Plan areas for development purposes without Town approval, which is typically handled through the site plan or building permit process. You'll likely need an Arborist Report."
+    },
+    {
+      "question": "The Town approved the removal of a 40cm Mature Tree for my development project. Do I have to plant new trees?",
+      "answer": "Yes, compensation is required under By-law 2023-060-RE (Section 2.4d). For removing a Mature Tree between 30cm and 49cm in diameter, you are required to plant 3 replacement trees on the property. If planting isn't feasible on your property (as determined by the Town), you'll have to pay 'Cash-in-lieu Compensation' instead."
+    },
+    {
+      "question": "What if the Mature Tree I need to remove is 60cm wide? How many replacement trees are needed then?",
+      "answer": "According to By-law 2023-060-RE (Section 2.4d), for Mature Trees 50cm in diameter or larger, the replacement ratio is 5:1. So, for a 60cm tree, you would need to plant 5 replacement trees, or potentially 1 replacement tree for every 10cm removed (which would be 6 trees in this case), subject to the Town Director's approval based on site conditions. Alternatively, you might pay cash-in-lieu if planting isn't feasible."
+    },
+    {
+      "question": "There's a big tree right on the property line between my neighbour and me. Can I cut it down if they agree?",
+      "answer": "If it's a Mature Tree (30cm+ diameter), you still need Town approval as per By-law 2023-060-RE, especially if it's related to development. Because it's a 'Boundary Tree', Section 2.4(e) requires you to provide the Town with written consent from the other property owner(s) as part of your application process."
+    },
+    {
+      "question": "What's the fine if I cut down a Mature Tree without getting Town approval first?",
+      "answer": "By-law 2023-060-RE (Section 10.3) outlines significant penalties. For a first conviction, the fine is between $500 and $50,000. For subsequent convictions, it can be up to $100,000. Cutting down multiple trees can result in multiple fines."
+    },
+    {
+      "question": "I have a large tree that looks dead or dying. Do I still need a permit under the Tree By-law (2023-060-RE) to remove it?",
+      "answer": "While the by-law aims to protect Mature Trees, Section 2.4(b) lists conditions under which removal *may* be permitted, including if the tree is 'Dead or Dying' (defined as having 70% or more dead crown or certified by an Arborist). You would still likely need Town approval through the permit process, including potentially an Arborist's assessment confirming its condition, before removing it, especially if it's related to a development application."
+    },
+    {
+      "question": "I'm doing construction and need to protect a tree the Town identified. What does the 'Tree Protection Zone' involve?",
+      "answer": "By-law 2023-060-RE (Section 2.2d) requires a Tree Protection Zone (TPZ). This usually means putting up sturdy hoarding (at least 1.2m high, like plywood or strong fencing) around the tree. The minimum radius is typically 2.5 metres for the first 30cm of tree diameter, increasing by 0.5 metres for every additional 10cm of diameter. Nothing (materials, equipment) can go inside this zone, and it must be inspected by the Town Arborist before construction starts."
+    },
+    {
+      "question": "I want to add about 20 cubic metres of topsoil to level my backyard (which is about 0.15 hectares). Do I need a permit?",
+      "answer": "Yes, you likely do. By-law 2024-037-RE (Section 3.2b) allows properties between 0.1 and 0.2 hectares to place a maximum of 50 cubic metres of fill *once* without a permit. Since 20 cubic metres is less than 50, you might be exempt *if* this is the first time you're adding fill under this bylaw. However, Section 2.5 requires source testing for any imported fill over 30 cubic metres, so even if exempt from a permit, you might need testing if importing more than that amount. It's best to check with the Town."
+    },
+    {
+      "question": "My neighbour is bringing in truckloads of fill for their property. How do I know if it's clean?",
+      "answer": "By-law 2024-037-RE requires property owners to ensure any fill used meets provincial Site Condition Standards and is free of contaminants, waste, and invasive species (Section 2.12). If they are importing more than 30 cubic metres, they must provide the Town with chemical testing results from the source site, satisfactory to the Town's Commissioner (Section 2.5). If it's a Large Site Alteration (over 4,000 cubic metres), a detailed Fill Management Plan and likely a public meeting were required."
+    },
+    {
+      "question": "How much fill can I bring onto my large property (over 0.5 hectares) without needing a Site Alteration Permit?",
+      "answer": "According to By-law 2024-037-RE (Section 3.2d), on properties 0.5 hectares or larger, you can place a maximum of 450 cubic metres of fill *once* without needing a Site Alteration Permit. Any amount over that, or any subsequent fill placement, requires a permit."
+    },
+    {
+      "question": "I need to store a large amount of soil (over 100 cubic metres) on my property for about 8 months while I plan a project. Is that allowed without a permit?",
+      "answer": "No, that's likely considered prohibited storage under By-law 2024-037-RE (Section 2.4). Storing fill outside in amounts over 100 cubic metres for 182 days (about 6 months) or more requires that the storage be permitted by the Town's Zoning By-law and likely a Site Alteration Permit. Temporary storage (less than 182 days) might be allowed under different conditions, but storing it for 8 months would likely trigger these rules."
+    },
+    {
+      "question": "Can I change the way water drains across my property, like filling in a ditch or swale?",
+      "answer": "Not without permission. By-law 2024-037-RE (Section 2.11) prohibits altering, filling, or blocking any drainage on any property without prior written approval from the Town's Commissioner."
+    },
+    {
+      "question": "What happens if I get caught altering my property's grade without a required permit?",
+      "answer": "Under By-law 2024-037-RE, a By-law Enforcement Officer can issue an Order requiring you to stop work and/or correct the violation (Section 7.1). Failure to comply can lead to the Town doing the work at your expense and significant fines upon conviction (up to $50,000 for a first offence, potentially more for repeat or ongoing offences) (Section 10.3)."
+    },
+    {
+      "question": "I want to speak at a Heritage Advisory Committee meeting about a local issue. How do I do that?",
+      "answer": "According to the CAC Procedural By-law (2024-117-RE, Appendix A, Section 9.7), you need to submit a Deputation request form to the Council/Committee Coordinator, detailing what you want to talk about, by noon seven business days before the meeting. There's a limit of 3 deputations per meeting on items not already on the agenda."
+    },
+    {
+      "question": "How are members chosen for committees like the Committee of Adjustment?",
+      "answer": "The CAC Procedural By-law (2024-117-RE, Appendix A, Section 5) outlines the process. Vacancies are advertised, residents apply, applications are reviewed (sometimes with interviews), and Council makes the final appointments by by-law. For the Committee of Adjustment, specific qualifications related to understanding planning documents and impartiality are sought (Appendix D)."
+    },
+    {
+      "question": "Can Town staff approve minor changes to zoning rules, or does it always have to go to Council?",
+      "answer": "Yes, for certain minor changes. The Delegation of Authority By-law (2024-123-RE, Schedule D) allows the Commissioner of Development Services to pass minor zoning by-laws, such as removing holding symbols or authorizing temporary uses, provided the Official Plan allows for this delegation. Council must be advised electronically before the by-law is executed."
+    },
+    {
+      "question": "Who approves temporary road closures for events?",
+      "answer": "The Delegation of Authority By-law (2024-123-RE, Schedule G) gives the Commissioner of Engineering & Public Works (or their designate) the authority to approve temporary road closures of Town roads. Council needs to be advised electronically two weeks before the closure."
+    },
+    {
+      "question": "Can the Town CAO approve large contracts if Council isn't meeting, like during the summer?",
+      "answer": "Yes, in specific situations. The Procurement By-law (2024-032-FI, Schedule A) allows the CAO to approve contracts that would normally require Council approval during a Council Recess Period, provided the contract resulted from a proper competitive process outlined in the by-law. A report detailing these approvals must go to Council within 30 days after the recess ends."
+    },
+    {
+      "question": "How does the Town ensure they get fair prices when buying goods or services?",
+      "answer": "The Procurement By-law (2024-032-FI) sets out rules to ensure fairness, transparency, and best value. Section 7 outlines various competitive methods (like Tenders, Proposals, Quotations) that must generally be used, depending on the value and type of purchase. The goal is to encourage competition among vendors (Section 2.1)."
+    },
+    {
+      "question": "Are there rules about Town staff accepting gifts from companies trying to get Town business?",
+      "answer": "Yes. The Procurement By-law (2024-032-FI, Section 5) requires ethical conduct and compliance with the Municipal Conflict of Interest Act and the Town's Code of Conduct. The Vendor Code of Conduct (Schedule C) specifically prohibits vendors from offering gifts or favours to Town staff or officials."
+    },
+    {
+      "question": "I saw parking restriction signs on Yonge Street (a Regional Road). Are those enforced by the Town or the Region?",
+      "answer": "Parking rules on Regional Roads like Yonge Street are set by Regional By-law R-1102-96-100. Section 9.1 states that enforcement can be done by York Regional Police, Regional by-law officers, *or* provincial offences officers appointed by the local area municipality (like Stouffville). So, a Town officer could potentially enforce Regional parking rules on a Regional road within Stouffville."
+    },
+    {
+      "question": "How close am I allowed to park to an intersection on a Regional Road like Woodbine Avenue?",
+      "answer": "Regional By-law R-1102-96-100 (Section 3.1) prohibits parking within 9 metres of an intersection on a Regional highway. If the intersection has traffic signals, you must park at least 15 metres away."
+    },
+    {
+      "question": "Can I park on Bloomington Road (Regional Road 40) near Woodbine Avenue?",
+      "answer": "According to Schedule A of Regional By-law R-1102-96-100 (Item 29), parking is prohibited ('Anytime') on both sides of Woodbine Avenue (YR 8) from the north limit of Bloomington Road (YR 40) to a point 100 metres north of Bloomington Road. You would need to check specific signs on Bloomington Road itself, as the schedule focuses on restrictions *on* the listed Regional Road."
+    },
+    {
+      "question": "I'm building a house in the area shown on Schedule C of the Development Charge bylaws (Water/Wastewater). Do I pay extra charges?",
+      "answer": "Yes. Bylaws 2023-151-FI (Wastewater) and 2023-152-FI (Water) apply specifically to lands within the serviced areas shown on their respective Schedule C maps. If you are building within that area, you will have to pay the development charges outlined in those bylaws for water and wastewater services, in addition to other applicable Town-wide charges."
+    },
+    {
+      "question": "What are the 'Water Services' development charges for a new single-detached house in the serviced area?",
+      "answer": "According to Schedule B of By-law 2023-152-FI, the development charge for Water Services for a new single-detached dwelling unit in the urban serviced area is $2,780 (as of the bylaw's effective date, subject to annual indexing)."
+    },
+    {
+      "question": "What are the 'Wastewater Services' development charges for a new non-residential building?",
+      "answer": "According to Schedule B of By-law 2023-151-FI, the development charge for Wastewater Services for non-residential development is $2.88 per square foot of Gross Floor Area (as of the bylaw's effective date, subject to annual indexing)."
+    },
+    {
+      "question": "When are the Water and Wastewater development charges due if I'm building a subdivision?",
+      "answer": "Unlike other development charges typically due at building permit issuance, the Water (By-law 2023-152-FI, Section 3.13) and Wastewater (By-law 2023-151-FI, Section 3.13) components for residential developments requiring a subdivision agreement are calculated and payable when the subdivision agreement between the Town and the owner is executed."
+    },
+    {
+      "question": "What is the development charge for Fire Protection Services for a new apartment building?",
+      "answer": "The charge depends on the apartment size. According to Schedule B of By-law 2023-147-FI, the Fire Protection Services charge is $1,438 for apartments with 2+ bedrooms and $985 for bachelor/1-bedroom apartments (as of the bylaw's effective date, subject to annual indexing)."
+    },
+    {
+      "question": "Is there a development charge related to By-law Enforcement when I build?",
+      "answer": "Yes. By-law 2023-149-FI establishes development charges for 'Provincial Offences Act, Including By-law Enforcement Services'. For a single-detached house, the charge listed in Schedule B is $10 (as of the bylaw's effective date, subject to annual indexing)."
+    }
+]
+}

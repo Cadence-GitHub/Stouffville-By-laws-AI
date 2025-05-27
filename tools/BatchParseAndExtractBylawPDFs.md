@@ -13,6 +13,7 @@
 7.  [Workflow Diagram](#workflow-diagram)
 8.  [Core Components](#core-components)
     *   [Logging (`setup_logging`)](#logging-setup_logging)
+    *   [URL Mappings (`load_url_mappings`)](#url-mappings-load_url_mappings)
     *   [Rate Limiter (`RateLimiter` Class)](#rate-limiter-ratelimiter-class)
     *   [File Upload (`upload_file`)](#file-upload-upload_file)
     *   [File Deletion (`delete_file`)](#file-deletion-delete_file)
@@ -45,6 +46,7 @@ The primary use case is extracting specific information (like bylaw details, leg
 *   **PDF Processing:** Accepts a single PDF file or a directory of PDF files as input.
 *   **Gemini API Integration:** Leverages the Gemini API for advanced data extraction capabilities.
 *   **File Upload:** Uses the Gemini API's resumable upload feature for potentially large PDF files.
+*   **URL Mapping:** Supports linking PDF files to source URLs via a CSV mapping file, which are included in the output JSON.
 *   **Structured Data Extraction:** Employs a specific prompt and a predefined JSON schema to guide the Gemini model in extracting relevant information.
 *   **Rate Limiting:** Implements a robust `RateLimiter` class to manage and respect Google's API limits (Requests Per Minute, Tokens Per Minute, Requests Per Day). Automatically waits when limits are approached or reached.
 *   **Token Counting:** Estimates the token count for each PDF before the main extraction call.
@@ -62,6 +64,7 @@ The primary use case is extracting specific information (like bylaw details, leg
 *   **Google Gemini API Key:** You need an API key from Google Cloud Platform with the Gemini API enabled. See [Google AI documentation](https://ai.google.dev/) for instructions on obtaining a key.
 *   **Python Libraries:**
     *   `requests`: For making HTTP requests to the Gemini API.
+    *   `csv`: Standard library module for handling CSV files (included in Python).
 
 ---
 
@@ -78,6 +81,7 @@ The primary use case is extracting specific information (like bylaw details, leg
 ## 5. Configuration
 
 *   **API Key:** The Gemini API key is the most critical configuration element. It must be provided via the `--api-key` or `-k` command-line argument every time the script is run. **Treat your API key securely and avoid hardcoding it directly into the script, especially if sharing or committing to version control.** Consider using environment variables or secure secret management solutions for production environments.
+*   **URL Mappings (Optional):** Prepare a CSV file with mappings between PDF filenames and their source URLs. The CSV should have columns for filename and URL (with or without a header row).
 
 ---
 
@@ -96,11 +100,12 @@ python your_script_name.py --api-key YOUR_API_KEY --input /path/to/input --outpu
 | `--api-key`      | `-k`  | Yes      |                      | Your Google Gemini API key.                                              |
 | `--input`        | `-i`  | Yes      |                      | Path to the input PDF file or a directory containing PDF files.          |
 | `--output`       | `-o`  | Yes      |                      | Path to the directory where output JSON files will be saved.             |
-| `--model`        | `-m`  | No       | `gemini-2.0-flash` | The Gemini model ID to use for extraction (e.g., `gemini-1.5-pro-latest`). |
+| `--model`        | `-m`  | No       | `gemini-2.0-flash`   | The Gemini model ID to use for extraction (e.g., `gemini-1.5-pro-latest`). |
 | `--rpm`          |       | No       | `15`                 | Rate limit: Maximum Requests Per Minute allowed.                         |
 | `--tpm`          |       | No       | `1000000`            | Rate limit: Maximum Tokens Per Minute allowed (sum of tokens in requests). |
 | `--rpd`          |       | No       | `1500`               | Rate limit: Maximum Requests Per Day allowed.                            |
 | `--log-file`     | `-l`  | No       | `pdf_extraction.log` | Path to the file where logs will be written.                             |
+| `--csv-file`     | `-c`  | No       |                      | Path to CSV file with filename-URL mappings.                             |
 
 ### Examples
 
@@ -125,6 +130,15 @@ python your_script_name.py --api-key YOUR_API_KEY --input /path/to/input --outpu
         -l "/var/log/pdf_extractor.log"
     ```
 
+3.  **Process PDF files with URL mappings:**
+    ```bash
+    python pdf_extractor.py \
+        -k "YOUR_SECRET_API_KEY" \
+        -i "/home/user/bylaw_documents/" \
+        -o "/home/user/extracted_data/" \
+        -c "/home/user/pdf_url_mapping.csv"
+    ```
+
 ---
 
 ## 7. Workflow Diagram
@@ -136,9 +150,10 @@ graph TD
     A[Start] --> B{Parse CLI Arguments};
     B --> C{Initialize Logging};
     C --> D{Initialize RateLimiter};
-    D --> E{Check Input Path};
-    E -- File --> F[Get Single PDF Path];
-    E -- Directory --> G[Glob PDF Files in Directory];
+    D --> E1{Load URL Mappings};
+    E1 --> E2{Check Input Path};
+    E2 -- File --> F[Get Single PDF Path];
+    E2 -- Directory --> G[Glob PDF Files in Directory];
     F --> H{Process Files Loop};
     G --> H;
     H -- For Each PDF --> I[process_pdf_file];
@@ -146,9 +161,10 @@ graph TD
     J --> K(Count Tokens);
     K --> L(Extract Structured Data);
     L --> M{Validate JSON Response};
-    M -- Valid --> N[Save Success JSON];
+    M -- Valid --> N1{Add URL from Mapping};
+    N1 --> N2[Save Success JSON];
     M -- Invalid --> O[Save Error JSON];
-    N --> P(Delete Uploaded File);
+    N2 --> P(Delete Uploaded File);
     O --> P;
     P --> H;
     H -- Loop Finished --> Q[Log Summary];
@@ -182,6 +198,18 @@ graph TD
     *   Defines a consistent timestamped format for log messages.
     *   Adds both handlers to the logger.
 *   **Usage:** Called once at the beginning of the `main` function to establish logging for the entire script execution.
+
+### URL Mappings (`load_url_mappings`)
+
+*   **Purpose:** Loads mappings between PDF filenames and their source URLs from a CSV file.
+*   **Functionality:**
+    *   Takes a CSV file path as input.
+    *   Reads the CSV file, handling both header and no-header formats.
+    *   Creates a dictionary mapping PDF filenames to their respective URLs.
+    *   Includes error handling for missing files or invalid CSV content.
+    *   Logs the process and number of URLs loaded.
+*   **Returns:** A dictionary where keys are PDF filenames and values are their corresponding URLs.
+*   **Usage:** Called in the `main` function if the `--csv-file` argument is provided.
 
 ### Rate Limiter (`RateLimiter` Class)
 
@@ -237,10 +265,10 @@ graph TD
     *   **Request Body:**
         *   `contents`: Contains the prompt and the reference to the uploaded PDF (`file_data` with `mime_type` and `file_uri`).
         *   `generationConfig`:
-            *   `temperature`: Controls randomness (set to 1.0).
+            *   `temperature`: Controls randomness (set to 0.3 for more consistent outputs).
             *   `responseSchema`: Defines the **required JSON structure** for the output (see [JSON Schema](#json-schema) section). This instructs the model to format its response accordingly.
             *   `responseMimeType`: Explicitly set to `application/json` to enforce JSON output.
-    *   **Prompt:** A detailed set of instructions telling the model how to act (parser of legal documents), what information to extract for each field in the schema, and specific formatting requirements (e.g., handling tables, dates, separating paragraphs/pages in `extractedText`).
+    *   **Prompt:** A detailed set of instructions telling the model how to act (parser of legal documents), what information to extract for each field in the schema, and specific formatting requirements. The prompt uses a clearer, more structured format with field names followed by descriptions.
     *   Includes rate limiting checks.
     *   Records the request *along with the previously estimated `token_count`* (`rate_limiter.record_request(token_count)`). This is crucial for TPM tracking.
     *   Implements a retry mechanism with exponential backoff.
@@ -254,6 +282,7 @@ graph TD
 *   **Functionality:**
     *   Checks if the top-level key `candidates` exists. Its presence often indicates an API error response rather than the desired structured JSON.
     *   Checks if a minimum percentage (70%) of key fields defined in the `expected_fields` list are present in the top level of the response dictionary. This helps distinguish between a valid (though potentially incomplete) extraction and a completely different response structure.
+    *   The `expected_fields` list now includes the new field `bylawHeader` in addition to the other fields.
 *   **Returns:** `True` if the response structure seems plausible, `False` otherwise.
 *   **Note:** This is **not** a rigorous validation against the full JSON schema definition but a quick check to catch common API error formats.
 
@@ -261,12 +290,13 @@ graph TD
 
 *   **Purpose:** Orchestrates the entire sequence of operations for a single PDF file.
 *   **Functionality:**
-    *   Takes API key, PDF path, output directory, model, and rate limiter as input.
+    *   Takes API key, PDF path, output directory, model, rate limiter, and URL mapping as input.
     *   Determines the output JSON filename based on the input PDF filename.
     *   Calls `upload_file` to upload the PDF.
     *   Calls `count_tokens` to estimate token usage.
     *   Calls `extract_structured_data` to get the structured data.
     *   Calls `validate_json_schema` to perform the heuristic check on the response.
+    *   If valid and URL mapping is available, adds the URL to the JSON response.
     *   If validation fails, adjusts the output filename to include `-error` and logs a warning.
     *   Saves the resulting Python dictionary (either the extracted data or the error response) to the determined output JSON file, ensuring the output directory exists.
     *   Calls `delete_file` to remove the uploaded file from Gemini storage.
@@ -277,13 +307,14 @@ graph TD
 
 *   **Purpose:** Entry point of the script; handles command-line arguments and manages the overall execution flow.
 *   **Functionality:**
-    *   Uses `argparse` to define and parse command-line arguments.
+    *   Uses `argparse` to define and parse command-line arguments, including the new `--csv-file` argument.
     *   Calls `setup_logging` to initialize the logger.
     *   Creates an instance of the `RateLimiter` class using the limits provided via arguments.
+    *   If a CSV file path is provided with `--csv-file`, calls `load_url_mappings` to load URL mappings.
     *   Checks if the `--input` path is a file or a directory.
     *   If it's a directory, uses `glob` to find all `.pdf` files within it.
     *   Iterates through the list of PDF files.
-    *   Calls `process_pdf_file` for each PDF, passing necessary arguments including the `rate_limiter` instance.
+    *   Calls `process_pdf_file` for each PDF, passing necessary arguments including the `rate_limiter` instance and URL mappings.
     *   Keeps track of successfully processed files.
     *   Logs the final summary (number of files processed successfully/total).
     *   Returns an exit code (0 for complete success, 1 if any file failed or errors occurred).
@@ -303,21 +334,41 @@ Example structure (simplified):
   "bylawNumber": "BL-123-2024",
   "bylawYear": "2024",
   "bylawType": "Zoning Order",
+  "bylawHeader": "CORPORATION OF THE CITY OF ANYTOWN BYLAW BL-123-2024",
   "extractedText": [
     "Page 1 text...\n\n\nParagraph 2 text...",
-    "----------",
     "Page 2 text..."
   ],
-  "legalTopics": "Land use planning, Zoning regulations",
-  "legislation": "Planning Act, R.S.O. 1990, c. P.13, Section 34",
-  "whyLegislation": "The bylaw is enacted under the authority of Section 34 of the Planning Act.",
-  "otherBylaws": "Bylaw AZ-45-2010",
-  "whyOtherBylaws": "Amends Bylaw AZ-45-2010 regarding permitted uses.",
+  "legalTopics": [
+    "Land use planning",
+    "Zoning regulations"
+  ],
+  "legislation": [
+    "Planning Act, R.S.O. 1990, c. P.13, Section 34"
+  ],
+  "whyLegislation": [
+    "The bylaw is enacted under the authority of Section 34 of the Planning Act."
+  ],
+  "otherBylaws": [
+    "Bylaw AZ-45-2010"
+  ],
+  "whyOtherBylaws": [
+    "Amends Bylaw AZ-45-2010 regarding permitted uses."
+  ],
   "condtionsAndClauses": "Subject to site plan control approval.",
-  "entityAndDesignation": "John Smith, Mayor | Jane Doe, Clerk",
-  "otherEntitiesMentioned": "ABC Development Corp.",
-  "locationAddresses": "123 Main Street, Anytown",
-  "moneyAndCategories": "$5000 application fee (revenue)",
+  "entityAndDesignation": [
+    "John Smith, Mayor",
+    "Jane Doe, Clerk"
+  ],
+  "otherEntitiesMentioned": [
+    "ABC Development Corp."
+  ],
+  "locationAddresses": [
+    "123 Main Street, Anytown"
+  ],
+  "moneyAndCategories": [
+    "$5000 application fee (revenue)"
+  ],
   "table": [
     "Header1 | Header2 | Header3",
     "Row1Col1 | Row1Col2 | Row1Col3"
@@ -325,12 +376,13 @@ Example structure (simplified):
   "keywords": [ "zoning", "amendment", "land use", "planning act", "site plan" ],
   "keyDatesAndInfo": [ "15-JUL-2024 - Bylaw passed by Council" ],
   "otherDetails": "This bylaw rezones the property to permit mixed-use development.",
-  "newsSources": "None",
+  "newsSources": [ "None" ],
   "hasEmbeddedImages": false,
-  "imageDesciption": "None",
+  "imageDesciption": [ "None" ],
   "hasEmbeddedMaps": true,
-  "mapDescription": "Map 1: Location Map showing the subject property outlined in red.",
-  "laymanExplanation": "This document changes the rules for the property at 123 Main Street to allow a mix of shops and apartments to be built there, based on Section 34 of the provincial Planning Act. It updates a previous rule (Bylaw AZ-45-2010). The developer, ABC Development Corp., must pay a $5000 fee and get site plan approval. The change was approved on July 15, 2024."
+  "mapDescription": [ "Map 1: Location Map showing the subject property outlined in red." ],
+  "laymanExplanation": "This document changes the rules for the property at 123 Main Street to allow a mix of shops and apartments to be built there, based on Section 34 of the provincial Planning Act. It updates a previous rule (Bylaw AZ-45-2010). The developer, ABC Development Corp., must pay a $5000 fee and get site plan approval. The change was approved on July 15, 2024.",
+  "urlOriginalDocument": "https://anytown.gov/bylaws/BL-123-2024.pdf"
 }
 ```
 
@@ -340,7 +392,7 @@ If the `validate_json_schema` function determines the response from Gemini is li
 
 ### JSON Schema
 
-This is the schema provided to the Gemini API (`extract_structured_data` function) to structure its JSON output.
+This is the updated schema provided to the Gemini API (`extract_structured_data` function) to structure its JSON output.
 
 ```json
 {
@@ -349,38 +401,47 @@ This is the schema provided to the Gemini API (`extract_structured_data` functio
     "bylawNumber": {"type": "string"},
     "bylawYear": {"type": "string"},
     "bylawType": {"type": "string"},
+    "bylawHeader": {"type": "string"},
     "extractedText": {  "type": "array",  "items": {    "type": "string"  }},
-    "legalTopics": {"type": "string"},
-    "legislation": {"type": "string"},
-    "whyLegislation": {"type": "string"},
-    "otherBylaws": {"type": "string"},
-    "whyOtherBylaws": {"type": "string"},
+    "legalTopics": {  "type": "array",  "items": {    "type": "string"  }},
+    "legislation": {  "type": "array",  "items": {    "type": "string"  }},
+    "whyLegislation": {  "type": "array",  "items": {    "type": "string"  }},
+    "otherBylaws": {  "type": "array",  "items": {    "type": "string"  }},
+    "whyOtherBylaws": {  "type": "array",  "items": {    "type": "string"  }},
     "condtionsAndClauses": {"type": "string"},
-    "entityAndDesignation": {"type": "string"},
-    "otherEntitiesMentioned": {"type": "string"},
-    "locationAddresses": {"type": "string"},
-    "moneyAndCategories": {"type": "string"},
+    "entityAndDesignation": {  "type": "array",  "items": {    "type": "string"  }},
+    "otherEntitiesMentioned": {  "type": "array",  "items": {    "type": "string"  }},
+    "locationAddresses": {  "type": "array",  "items": {    "type": "string"  }},
+    "moneyAndCategories": {  "type": "array",  "items": {    "type": "string"  }},
     "table": {  "type": "array",  "items": {    "type": "string"  }},
     "keywords": {  "type": "array",  "items": {    "type": "string"  }},
     "keyDatesAndInfo": {  "type": "array",  "items": {    "type": "string"  }},
     "otherDetails": {"type": "string"},
-    "newsSources": {"type": "string"},
+    "newsSources": {  "type": "array",  "items": {    "type": "string"  }},
     "hasEmbeddedImages": {"type": "boolean"},
-    "imageDesciption": {"type": "string"},
+    "imageDesciption": {  "type": "array",  "items": {    "type": "string"  }},
     "hasEmbeddedMaps": {"type": "boolean"},
-    "mapDescription": {"type": "string"},
-    "laymanExplanation": {"type": "string"}
+    "mapDescription": {  "type": "array",  "items": {    "type": "string"  }},
+    "laymanExplanation": {"type": "string"},
+    "urlOriginalDocument": {"type":"string"}
   },
   "required": [
-    "bylawNumber", "bylawYear", "bylawType", "extractedText", "legalTopics",
+    "bylawNumber", "bylawYear", "bylawType", "bylawHeader", "extractedText", "legalTopics",
     "legislation", "otherBylaws", "condtionsAndClauses", "entityAndDesignation",
     "otherEntitiesMentioned", "locationAddresses", "moneyAndCategories", "table",
     "otherDetails", "hasEmbeddedImages", "hasEmbeddedMaps", "keywords",
     "laymanExplanation", "keyDatesAndInfo", "imageDesciption", "mapDescription",
-    "whyLegislation", "whyOtherBylaws", "newsSources"
+    "whyLegislation", "whyOtherBylaws", "newsSources", "urlOriginalDocument"
   ]
 }
 ```
+
+Key changes in the schema:
+1. Added a new field `bylawHeader` to capture the document title/header
+2. Changed many fields from `string` type to `array` of strings to better structure multiple entries:
+   - `legalTopics`, `legislation`, `whyLegislation`, `otherBylaws`, `whyOtherBylaws`
+   - `entityAndDesignation`, `otherEntitiesMentioned`, `locationAddresses`, `moneyAndCategories`
+   - `newsSources`, `imageDesciption`, `mapDescription`
 
 ---
 
@@ -389,6 +450,7 @@ This is the schema provided to the Gemini API (`extract_structured_data` functio
 *   **API Request Retries:** The functions `upload_file`, `delete_file`, `count_tokens`, and `extract_structured_data` implement a retry mechanism for API calls (`requests.post`, `requests.delete`). If a request fails due to a network issue or a server-side error (indicated by a non-2xx HTTP status code), the script will wait for an increasing amount of time (exponential backoff: 2s, 4s, 8s...) before retrying, up to a maximum of 3 attempts.
 *   **File Processing Errors:** The `process_pdf_file` function catches general exceptions that might occur during the processing of a single file (e.g., file not found, critical API error after retries, issues saving output). When an error occurs for a specific file, it's logged, and the script proceeds to the next file (if processing a directory). The function returns `False` in case of an error.
 *   **Invalid JSON Response:** If the response from `extract_structured_data` doesn't seem to match the expected structure (as checked by `validate_json_schema`), the script logs a warning and saves the raw response to an `-error.json` file for manual inspection.
+*   **URL Mapping Errors:** The script gracefully handles missing or invalid CSV files for URL mapping, logging appropriate warnings and continuing with the extraction process without URLs if needed.
 *   **Logging:** All errors, warnings, retry attempts, and successful operations are logged to both the console and the specified log file, providing a detailed trace of the execution.
 
 ---
@@ -415,9 +477,11 @@ This proactive approach helps the script run smoothly over extended periods and 
 
 ## 12. Customization
 
-*   **Gemini Model:** Change the model used for extraction via the `--model` argument (e.g., use `gemini-1.5-pro-latest` for potentially higher quality but slower/more expensive processing).
+*   **Gemini Model:** Change the model used for extraction via the `--model` argument (e.g., use `gemini-2.5-pro-exp-03-25` for potentially higher quality but slower/more expensive processing).
 *   **Rate Limits:** Adjust `--rpm`, `--tpm`, `--rpd` based on your specific Google Cloud project quotas or desired processing speed. Be cautious not to exceed Google's hard limits.
-*   **Extraction Schema and Prompt:** The core logic for *what* data to extract resides within the `schema` dictionary and the `prompt` string inside the `extract_structured_data` function. Modifying these allows you to tailor the extraction to different types of documents or information needs. Remember that the `required` list in the schema should match the fields you expect the model to always provide.
+*   **URL Mappings:** Customize the CSV format for URL mappings or extend the function to support additional metadata fields.
+*   **Extraction Schema and Prompt:** The core logic for *what* data to extract resides within the `schema` dictionary and the `prompt` string inside the `extract_structured_data` function. Modifying these allows you to tailor the extraction to different types of documents or information needs. The prompt now uses a clearer format with field names prefixed with "+" for better organization.
+*   **Generation Temperature:** The temperature parameter in the Gemini API call has been lowered from 1.0 to 0.3 to produce more consistent results. Adjust this value as needed for your specific use case (higher values for more creative responses, lower values for more deterministic outputs).
 *   **Retry Logic:** The `max_retries` and `retry_delay` variables within the API-calling functions (`upload_file`, `delete_file`, etc.) can be adjusted if needed, although the defaults are generally reasonable.
 *   **Validation Logic:** The `validate_json_schema` function provides a basic check. For more rigorous validation, you could implement a library like `jsonschema` to validate the response against the defined `schema`.
 
@@ -430,7 +494,16 @@ This proactive approach helps the script run smoothly over extended periods and 
     *   During upload: Check if the PDF file is valid and not corrupted.
     *   During extraction: Ensure the `file_uri` is correct. Check the prompt and schema for syntax errors, although the API is usually robust to minor prompt issues. The model might also refuse if the content violates safety policies.
 *   **`403 Permission Denied` Errors:** Verify your API key is correct, active, and has the Gemini API (generativelanguage.googleapis.com) enabled in your Google Cloud project. Ensure billing is enabled if required.
+*   **CSV Parsing Issues:** If you encounter problems with URL mappings:
+    *   Ensure your CSV file is properly formatted with columns for filename and URL.
+    *   Check for BOM (Byte Order Mark) or encoding issues in your CSV file.
+    *   Try with and without headers to see which format works best.
+    *   Inspect the log for specific CSV parsing error messages.
 *   **`JSONDecodeError` in Output:** The model failed to produce valid JSON conforming to the schema. Check the corresponding `-error.json` file for the raw output. This might require adjusting the prompt or schema, or the specific PDF might be challenging for the model.
-*   **Slow Processing:** Large PDF files or complex prompts can take time. Using more powerful models (like `gemini-1.5-pro`) might also increase latency compared to `flash` models. Rate limiting will also introduce delays if processing many files quickly. Check the logs for "Rate limited. Waiting..." messages.
-*   **Inaccurate Extractions:** The quality of extraction depends on the model, the clarity of the prompt, the document's layout/quality, and the complexity of the requested information. Refining the prompt in `extract_structured_data` is the primary way to improve accuracy. Consider providing few-shot examples within the prompt if necessary.
+*   **Slow Processing:** Large PDF files or complex prompts can take time. Using more powerful models (like `gemini-2.5-pro`) might also increase latency compared to `flash` models. Rate limiting will also introduce delays if processing many files quickly. Check the logs for "Rate limited. Waiting..." messages.
+*   **Inaccurate Extractions:** The quality of extraction depends on the model, the clarity of the prompt, the document's layout/quality, and the complexity of the requested information. The updated prompt with clearer field instructions should help. The lower temperature setting (0.3) should also produce more consistent results.
 *   **File Not Found Errors:** Ensure the `--input` path is correct and the script has read permissions for the input file(s)/directory. Ensure the `--output` directory exists or the script has write permissions to create it.
+*   **Missing URLs in Output:** If URLs are not appearing in your output:
+    *   Confirm the CSV file exists and is properly formatted.
+    *   Check that PDF filenames in the CSV exactly match the filenames being processed.
+    *   Look for warnings in the log about missing URL mappings.

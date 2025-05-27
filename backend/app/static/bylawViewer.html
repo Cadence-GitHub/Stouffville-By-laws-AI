@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Stouffville Bylaw Viewer</title>
+    <link rel="stylesheet" href="bylawViewer.css">
+</head>
+<body>
+    <header>
+        <div class="header-title">
+            <h1>Stouffville Bylaw Viewer</h1>
+        </div>
+        <div class="theme-toggle">
+            <span class="toggle-label">Dark Mode</span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="theme-toggle">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+    </header>
+
+    <button id="close-button" class="close-button" title="Close viewer">×</button>
+
+    <main class="content" id="content">
+        <div class="loading">
+            <div class="spinner"></div>
+            <span>Loading bylaw...</span>
+        </div>
+    </main>
+
+    <script src="bylawViewer.js"></script>
+</body>
+</html>

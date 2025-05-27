@@ -1,0 +1,488 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 800 400" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="xMidYMid meet">
+  <!-- 8-bit pixel background - removed for transparency -->
+  
+  <!-- Room background - 8-bit style -->
+  <rect x="50" y="50" width="700" height="300" fill="#5588aa"/>
+  
+  <!-- Floor - 8-bit style -->
+  <rect x="50" y="250" width="700" height="100" fill="#aa8855"/>
+  
+  <!-- Floor grid pattern - 8-bit style -->
+  <g id="floorPattern">
+    <rect x="100" y="275" width="50" height="50" fill="#997744"/>
+    <rect x="200" y="275" width="50" height="50" fill="#997744"/>
+    <rect x="300" y="275" width="50" height="50" fill="#997744"/>
+    <rect x="400" y="275" width="50" height="50" fill="#997744"/>
+    <rect x="500" y="275" width="50" height="50" fill="#997744"/>
+    <rect x="600" y="275" width="50" height="50" fill="#997744"/>
+    <rect x="150" y="325" width="50" height="25" fill="#997744"/>
+    <rect x="250" y="325" width="50" height="25" fill="#997744"/>
+    <rect x="350" y="325" width="50" height="25" fill="#997744"/>
+    <rect x="450" y="325" width="50" height="25" fill="#997744"/>
+    <rect x="550" y="325" width="50" height="25" fill="#997744"/>
+    <rect x="650" y="325" width="50" height="25" fill="#997744"/>
+  </g>
+  
+  <!-- Door - 8-bit style -->
+  <rect x="700" y="150" width="40" height="100" fill="#cc9966"/>
+  <rect x="710" y="190" width="8" height="8" fill="#ffcc77"/>
+  
+  <!-- Left bookshelf - 8-bit style -->
+  <g id="leftBookshelf">
+    <!-- Bookshelf structure -->
+    <rect x="80" y="100" width="120" height="150" fill="#884422"/>
+    <rect x="80" y="130" width="120" height="10" fill="#773311"/>
+    <rect x="80" y="170" width="120" height="10" fill="#773311"/>
+    <rect x="80" y="210" width="120" height="10" fill="#773311"/>
+    <rect x="80" y="240" width="120" height="10" fill="#773311"/>
+    
+    <!-- Books - 8-bit style (top shelf) -->
+    <rect x="85" y="100" width="15" height="30" fill="#dd5555"/>
+    <rect x="100" y="100" width="15" height="30" fill="#55dd55"/>
+    <rect x="115" y="100" width="15" height="30" fill="#5555dd"/>
+    <rect x="130" y="100" width="15" height="30" fill="#dddd55"/>
+    <rect x="145" y="100" width="15" height="30" fill="#dd55dd"/>
+    <rect x="160" y="100" width="15" height="30" fill="#55dddd"/>
+    <rect x="175" y="100" width="15" height="30" fill="#dd7755"/>
+    
+    <!-- Books - 8-bit style (second shelf) -->
+    <rect x="85" y="140" width="15" height="30" fill="#55dd55"/>
+    <rect x="100" y="140" width="15" height="30" fill="#5555dd"/>
+    <rect x="115" y="140" width="15" height="30" fill="#dddd55"/>
+    <rect x="130" y="140" width="15" height="30" fill="#dd55dd"/>
+    <rect x="145" y="140" width="15" height="30" fill="#55dddd"/>
+    <rect x="160" y="140" width="15" height="30" fill="#dd5555"/>
+    <rect x="175" y="140" width="15" height="30" fill="#55dd55"/>
+    
+    <!-- Books - 8-bit style (third shelf) -->
+    <rect x="85" y="180" width="15" height="30" fill="#dddd55"/>
+    <rect x="100" y="180" width="15" height="30" fill="#dd55dd"/>
+    <rect x="115" y="180" width="15" height="30" fill="#55dddd"/>
+    <rect x="130" y="180" width="15" height="30" fill="#dd5555"/>
+    <rect x="145" y="180" width="15" height="30" fill="#55dd55"/>
+    <rect x="160" y="180" width="15" height="30" fill="#5555dd"/>
+    <rect x="175" y="180" width="15" height="30" fill="#dddd55"/>
+    
+    <!-- Books - 8-bit style (bottom shelf) -->
+    <rect x="85" y="220" width="15" height="30" fill="#55dddd"/>
+    <rect x="100" y="220" width="15" height="30" fill="#dd5555"/>
+    <rect x="115" y="220" width="15" height="30" fill="#55dd55"/>
+    <rect x="130" y="220" width="15" height="30" fill="#5555dd"/>
+    <rect x="145" y="220" width="15" height="30" fill="#dddd55"/>
+    <rect x="160" y="220" width="15" height="30" fill="#dd55dd"/>
+    <rect x="175" y="220" width="15" height="30" fill="#55dddd"/>
+  </g>
+  
+  <!-- Right bookshelf - 8-bit style -->
+  <g id="rightBookshelf">
+    <!-- Bookshelf structure -->
+    <rect x="600" y="100" width="120" height="150" fill="#884422"/>
+    <rect x="600" y="130" width="120" height="10" fill="#773311"/>
+    <rect x="600" y="170" width="120" height="10" fill="#773311"/>
+    <rect x="600" y="210" width="120" height="10" fill="#773311"/>
+    <rect x="600" y="240" width="120" height="10" fill="#773311"/>
+    
+    <!-- Books - 8-bit style (top shelf) -->
+    <rect x="605" y="100" width="15" height="30" fill="#5555dd"/>
+    <rect x="620" y="100" width="15" height="30" fill="#dddd55"/>
+    <rect x="635" y="100" width="15" height="30" fill="#dd55dd"/>
+    <rect x="650" y="100" width="15" height="30" fill="#55dddd"/>
+    <rect x="665" y="100" width="15" height="30" fill="#dd5555"/>
+    <rect x="680" y="100" width="15" height="30" fill="#55dd55"/>
+    <rect x="695" y="100" width="15" height="30" fill="#5555dd"/>
+    
+    <!-- Books - 8-bit style (second shelf) -->
+    <rect x="605" y="140" width="15" height="30" fill="#dd55dd"/>
+    <rect x="620" y="140" width="15" height="30" fill="#55dddd"/>
+    <rect x="635" y="140" width="15" height="30" fill="#dd5555"/>
+    <rect x="650" y="140" width="15" height="30" fill="#55dd55"/>
+    <rect x="665" y="140" width="15" height="30" fill="#5555dd"/>
+    <rect x="680" y="140" width="15" height="30" fill="#dddd55"/>
+    <rect x="695" y="140" width="15" height="30" fill="#dd55dd"/>
+    
+    <!-- Books - 8-bit style (third shelf) -->
+    <rect x="605" y="180" width="15" height="30" fill="#55dd55"/>
+    <rect x="620" y="180" width="15" height="30" fill="#5555dd"/>
+    <rect x="635" y="180" width="15" height="30" fill="#dddd55"/>
+    <rect x="650" y="180" width="15" height="30" fill="#dd55dd"/>
+    <rect x="665" y="180" width="15" height="30" fill="#55dddd"/>
+    <rect x="680" y="180" width="15" height="30" fill="#dd5555"/>
+    <rect x="695" y="180" width="15" height="30" fill="#55dd55"/>
+    
+    <!-- Books - 8-bit style (bottom shelf) -->
+    <rect x="605" y="220" width="15" height="30" fill="#dddd55"/>
+    <rect x="620" y="220" width="15" height="30" fill="#dd55dd"/>
+    <rect x="635" y="220" width="15" height="30" fill="#55dddd"/>
+    <rect x="650" y="220" width="15" height="30" fill="#dd5555"/>
+    <rect x="665" y="220" width="15" height="30" fill="#55dd55"/>
+    <rect x="680" y="220" width="15" height="30" fill="#5555dd"/>
+    <rect x="695" y="220" width="15" height="30" fill="#dddd55"/>
+  </g>
+  
+  <!-- Desk - 8-bit style -->
+  <g id="desk">
+    <!-- Main desk surface -->
+    <rect x="280" y="200" width="240" height="50" fill="#88aa77"/>
+    <!-- Desk front panel -->
+    <rect x="280" y="200" width="240" height="10" fill="#669966"/>
+    <!-- Desk legs -->
+    <rect x="290" y="250" width="20" height="25" fill="#669966"/>
+    <rect x="490" y="250" width="20" height="25" fill="#669966"/>
+    
+    <!-- Computer - 8-bit style -->
+    <rect x="390" y="150" width="60" height="50" fill="#333355"/>
+    <rect x="400" y="160" width="40" height="30" fill="#aaccee"/>
+    
+    <!-- Keyboard - 8-bit style -->
+    <rect x="395" y="210" width="50" height="10" fill="#aaaaaa"/>
+    <rect x="400" y="212" width="40" height="6" fill="#888888"/>
+    
+    <!-- Mouse - 8-bit style -->
+    <rect x="455" y="210" width="15" height="10" fill="#aaaaaa"/>
+    
+    <!-- Document pile - 8-bit style -->
+    <rect x="310" y="190" width="40" height="10" fill="#ffffff"/>
+    <rect x="315" y="180" width="40" height="10" fill="#ffffff"/>
+    <rect x="320" y="170" width="40" height="10" fill="#ffffff"/>
+    
+    <!-- Telephone - 8-bit style -->
+    <rect x="500" y="190" width="30" height="10" fill="#333333"/>
+    <rect x="505" y="180" width="20" height="10" fill="#444444"/>
+    
+    <!-- Coffee mug - 8-bit style -->
+    <rect x="550" y="190" width="20" height="20" fill="#dd5555"/>
+    <rect x="552" y="190" width="16" height="5" fill="#ffaaaa"/>
+  </g>
+  
+  <!-- Chair - 8-bit style -->
+  <g id="chair">
+    <rect x="380" y="260" width="40" height="10" fill="#555577"/>
+    <rect x="385" y="270" width="30" height="30" fill="#444466"/>
+    <rect x="390" y="250" width="20" height="10" fill="#333355"/>
+  </g>
+  
+  <!-- Book highlight effects -->
+  <g id="documentEffect1" opacity="0">
+    <rect x="115" y="100" width="15" height="30" fill="#ffff00" fill-opacity="0.7"/>
+    <animate attributeName="opacity" 
+             values="0;0;0;0;0;0;1;1;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0" 
+             dur="24s"
+             repeatCount="indefinite"/>
+  </g>
+  
+  <g id="documentEffect2" opacity="0">
+    <rect x="650" y="140" width="15" height="30" fill="#ffff00" fill-opacity="0.7"/>
+    <animate attributeName="opacity" 
+             values="0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;1;1;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0" 
+             dur="24s"
+             repeatCount="indefinite"/>
+  </g>
+  
+  <g id="documentEffect3" opacity="0">
+    <rect x="160" y="180" width="15" height="30" fill="#ffff00" fill-opacity="0.7"/>
+    <animate attributeName="opacity" 
+             values="0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;1;1;0;0;0;0;0;0;0;0;0;0" 
+             dur="24s"
+             repeatCount="indefinite"/>
+  </g>
+  
+  <g id="documentEffect4" opacity="0">
+    <rect x="635" y="220" width="15" height="30" fill="#ffff00" fill-opacity="0.7"/>
+    <animate attributeName="opacity" 
+             values="0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;1;1;0;0" 
+             dur="24s"
+             repeatCount="indefinite"/>
+  </g>
+  
+  <!-- Officer character - STATIC POSITIONS -->
+  
+  <!-- Officer 1: At Desk -->
+  <g id="officerAtDesk">
+    <!-- Head -->
+    <rect x="388" y="230" width="24" height="24" fill="#ffcc99"/>
+    <!-- Hair -->
+    <rect x="388" y="230" width="24" height="8" fill="#8b4513"/>
+    <!-- Eyes -->
+    <rect x="393" y="238" width="4" height="4" fill="#000000"/>
+    <rect x="403" y="238" width="4" height="4" fill="#000000"/>
+    <!-- Mouth -->
+    <rect x="398" y="248" width="4" height="2" fill="#000000"/>
+    <!-- Body - shirt -->
+    <rect x="388" y="254" width="24" height="20" fill="#5577cc"/>
+    <!-- Arms -->
+    <rect x="380" y="254" width="8" height="16" fill="#5577cc"/>
+    <rect x="412" y="254" width="8" height="16" fill="#5577cc"/>
+    <!-- Legs -->
+    <rect x="392" y="274" width="8" height="20" fill="#333355"/>
+    <rect x="400" y="274" width="8" height="20" fill="#333355"/>
+    
+    <!-- Thinking bubble - 8-bit style -->
+    <g xmlns="http://www.w3.org/2000/svg" id="thinkBubble1">
+      <rect width="10" height="10" fill="#ffffff" y="230" x="415"/>
+      <rect width="10" height="10" fill="#ffffff" y="220" x="435"/>
+      <rect width="30" height="20" fill="#ffffff" y="210" x="455"/>
+
+      <!-- Binary code in bubble - 8-bit style -->
+      <text font-family="monospace" font-size="6" fill="#000000" x="458" y="218">1010101</text>
+      <text font-family="monospace" font-size="6" fill="#000000" x="458" y="228">0101010</text>
+    </g>
+    
+    <animate attributeName="opacity"
+             values="1;1;1;1;0;0;0;0;0;0;0;0;1;1;1;1;0;0;0;0;0;0;0;0;1;1;1;1;0;0;0;0;0;0;0;0;1;1;1;1;0;0;0;0;0;0;0;0"
+             dur="24s"
+             repeatCount="indefinite"/>
+  </g>
+  
+  <!-- Officer 2: At Left Shelf Position 1 -->
+  <g id="officerAtLeftShelf1">
+    <!-- Head -->
+    <rect x="128" y="230" width="24" height="24" fill="#ffcc99"/>
+    <!-- Hair -->
+    <rect x="128" y="230" width="24" height="8" fill="#8b4513"/>
+    <!-- Eyes -->
+    <rect x="133" y="238" width="4" height="4" fill="#000000"/>
+    <rect x="143" y="238" width="4" height="4" fill="#000000"/>
+    <!-- Mouth -->
+    <rect x="138" y="248" width="4" height="2" fill="#000000"/>
+    <!-- Body - shirt -->
+    <rect x="128" y="254" width="24" height="20" fill="#5577cc"/>
+    <!-- Arms -->
+    <rect x="120" y="254" width="8" height="16" fill="#5577cc"/>
+    <rect x="152" y="254" width="8" height="16" fill="#5577cc"/>
+    <!-- Legs -->
+    <rect x="132" y="274" width="8" height="20" fill="#333355"/>
+    <rect x="140" y="274" width="8" height="20" fill="#333355"/>
+    
+    <animate attributeName="opacity"
+             values="0;0;0;0;1;1;1;1;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0"
+             dur="24s"
+             repeatCount="indefinite"/>
+  </g>
+  
+  <!-- Officer 3: Walking from Left Shelf to Desk with Document -->
+  <g id="officerToDesk1">
+    <!-- Head -->
+    <rect x="208" y="230" width="24" height="24" fill="#ffcc99"/>
+    <!-- Hair -->
+    <rect x="208" y="230" width="24" height="8" fill="#8b4513"/>
+    <!-- Eyes -->
+    <rect x="213" y="238" width="4" height="4" fill="#000000"/>
+    <rect x="223" y="238" width="4" height="4" fill="#000000"/>
+    <!-- Mouth -->
+    <rect x="218" y="248" width="4" height="2" fill="#000000"/>
+    <!-- Body - shirt -->
+    <rect x="208" y="254" width="24" height="20" fill="#5577cc"/>
+    <!-- Arms -->
+    <rect x="200" y="254" width="8" height="16" fill="#5577cc"/>
+    <rect x="232" y="254" width="8" height="16" fill="#5577cc"/>
+    <!-- Legs -->
+    <rect x="212" y="274" width="8" height="20" fill="#333355"/>
+    <rect x="220" y="274" width="8" height="20" fill="#333355"/>
+    
+    <!-- Document in hand -->
+    <g id="document1">
+      <rect x="240" y="254" width="16" height="20" fill="#ffffff"/>
+      <rect x="242" y="258" width="12" height="2" fill="#888888"/>
+      <rect x="242" y="262" width="12" height="2" fill="#888888"/>
+      <rect x="242" y="266" width="8" height="2" fill="#888888"/>
+    </g>
+    
+    <animate attributeName="opacity"
+             values="0;0;0;0;0;0;0;0;1;1;1;1;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0"
+             dur="24s"
+             repeatCount="indefinite"/>
+  </g>
+  
+  <!-- Officer 4: At Right Shelf Position -->
+  <g id="officerAtRightShelf">
+    <!-- Head -->
+    <rect x="628" y="230" width="24" height="24" fill="#ffcc99"/>
+    <!-- Hair -->
+    <rect x="628" y="230" width="24" height="8" fill="#8b4513"/>
+    <!-- Eyes -->
+    <rect x="633" y="238" width="4" height="4" fill="#000000"/>
+    <rect x="643" y="238" width="4" height="4" fill="#000000"/>
+    <!-- Mouth -->
+    <rect x="638" y="248" width="4" height="2" fill="#000000"/>
+    <!-- Body - shirt -->
+    <rect x="628" y="254" width="24" height="20" fill="#5577cc"/>
+    <!-- Arms -->
+    <rect x="620" y="254" width="8" height="16" fill="#5577cc"/>
+    <rect x="652" y="254" width="8" height="16" fill="#5577cc"/>
+    <!-- Legs -->
+    <rect x="632" y="274" width="8" height="20" fill="#333355"/>
+    <rect x="640" y="274" width="8" height="20" fill="#333355"/>
+    
+    <animate attributeName="opacity"
+             values="0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;1;1;1;1;1;1;1;1;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0"
+             dur="24s"
+             repeatCount="indefinite"/>
+  </g>
+  
+  <!-- Officer 5: Walking from Right Shelf to Desk with Document -->
+  <g id="officerToDesk2">
+    <!-- Head -->
+    <rect x="528" y="230" width="24" height="24" fill="#ffcc99"/>
+    <!-- Hair -->
+    <rect x="528" y="230" width="24" height="8" fill="#8b4513"/>
+    <!-- Eyes -->
+    <rect x="533" y="238" width="4" height="4" fill="#000000"/>
+    <rect x="543" y="238" width="4" height="4" fill="#000000"/>
+    <!-- Mouth -->
+    <rect x="538" y="248" width="4" height="2" fill="#000000"/>
+    <!-- Body - shirt -->
+    <rect x="528" y="254" width="24" height="20" fill="#5577cc"/>
+    <!-- Arms -->
+    <rect x="520" y="254" width="8" height="16" fill="#5577cc"/>
+    <rect x="552" y="254" width="8" height="16" fill="#5577cc"/>
+    <!-- Legs -->
+    <rect x="532" y="274" width="8" height="20" fill="#333355"/>
+    <rect x="540" y="274" width="8" height="20" fill="#333355"/>
+    
+    <!-- Document in hand -->
+    <g id="document2">
+      <rect x="560" y="254" width="16" height="20" fill="#ffffff"/>
+      <rect x="562" y="258" width="12" height="2" fill="#888888"/>
+      <rect x="562" y="262" width="12" height="2" fill="#888888"/>
+      <rect x="562" y="266" width="8" height="2" fill="#888888"/>
+    </g>
+    
+    <animate attributeName="opacity"
+             values="0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;1;1;1;1;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0"
+             dur="24s"
+             repeatCount="indefinite"/>
+  </g>
+  
+  <!-- Officer 6: At Left Shelf Position 2 -->
+  <g id="officerAtLeftShelf2">
+    <!-- Head -->
+    <rect x="148" y="230" width="24" height="24" fill="#ffcc99"/>
+    <!-- Hair -->
+    <rect x="148" y="230" width="24" height="8" fill="#8b4513"/>
+    <!-- Eyes -->
+    <rect x="153" y="238" width="4" height="4" fill="#000000"/>
+    <rect x="163" y="238" width="4" height="4" fill="#000000"/>
+    <!-- Mouth -->
+    <rect x="158" y="248" width="4" height="2" fill="#000000"/>
+    <!-- Body - shirt -->
+    <rect x="148" y="254" width="24" height="20" fill="#5577cc"/>
+    <!-- Arms -->
+    <rect x="140" y="254" width="8" height="16" fill="#5577cc"/>
+    <rect x="172" y="254" width="8" height="16" fill="#5577cc"/>
+    <!-- Legs -->
+    <rect x="152" y="274" width="8" height="20" fill="#333355"/>
+    <rect x="160" y="274" width="8" height="20" fill="#333355"/>
+    
+    <animate attributeName="opacity"
+             values="0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;1;1;1;1;1;1;1;1;0;0;0;0;0;0;0;0;0;0;0;0"
+             dur="24s"
+             repeatCount="indefinite"/>
+  </g>
+  
+  <!-- Officer 7: Walking from Left Shelf to Desk with Document -->
+  <g id="officerToDesk3">
+    <!-- Head -->
+    <rect x="268" y="230" width="24" height="24" fill="#ffcc99"/>
+    <!-- Hair -->
+    <rect x="268" y="230" width="24" height="8" fill="#8b4513"/>
+    <!-- Eyes -->
+    <rect x="273" y="238" width="4" height="4" fill="#000000"/>
+    <rect x="283" y="238" width="4" height="4" fill="#000000"/>
+    <!-- Mouth -->
+    <rect x="278" y="248" width="4" height="2" fill="#000000"/>
+    <!-- Body - shirt -->
+    <rect x="268" y="254" width="24" height="20" fill="#5577cc"/>
+    <!-- Arms -->
+    <rect x="260" y="254" width="8" height="16" fill="#5577cc"/>
+    <rect x="292" y="254" width="8" height="16" fill="#5577cc"/>
+    <!-- Legs -->
+    <rect x="272" y="274" width="8" height="20" fill="#333355"/>
+    <rect x="280" y="274" width="8" height="20" fill="#333355"/>
+    
+    <!-- Document in hand -->
+    <g id="document3">
+      <rect x="300" y="254" width="16" height="20" fill="#ffffff"/>
+      <rect x="302" y="258" width="12" height="2" fill="#888888"/>
+      <rect x="302" y="262" width="12" height="2" fill="#888888"/>
+      <rect x="302" y="266" width="8" height="2" fill="#888888"/>
+    </g>
+    
+    <animate attributeName="opacity"
+             values="0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;1;1;1;1;0;0;0;0;0;0;0;0"
+             dur="24s"
+             repeatCount="indefinite"/>
+  </g>
+  
+  <!-- Officer 8: At Right Bottom Shelf -->
+  <g id="officerAtRightBottomShelf">
+    <!-- Head -->
+    <rect x="608" y="230" width="24" height="24" fill="#ffcc99"/>
+    <!-- Hair -->
+    <rect x="608" y="230" width="24" height="8" fill="#8b4513"/>
+    <!-- Eyes -->
+    <rect x="613" y="238" width="4" height="4" fill="#000000"/>
+    <rect x="623" y="238" width="4" height="4" fill="#000000"/>
+    <!-- Mouth -->
+    <rect x="618" y="248" width="4" height="2" fill="#000000"/>
+    <!-- Body - shirt -->
+    <rect x="608" y="254" width="24" height="20" fill="#5577cc"/>
+    <!-- Arms -->
+    <rect x="600" y="254" width="8" height="16" fill="#5577cc"/>
+    <rect x="632" y="254" width="8" height="16" fill="#5577cc"/>
+    <!-- Legs -->
+    <rect x="612" y="274" width="8" height="20" fill="#333355"/>
+    <rect x="620" y="274" width="8" height="20" fill="#333355"/>
+    
+    <animate attributeName="opacity"
+             values="0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;1;1;1;1;1;1;1;1"
+             dur="24s"
+             repeatCount="indefinite"/>
+  </g>
+  
+  <!-- Officer 9: Walking from Right Bottom Shelf to Desk with Document -->
+  <g id="officerToDesk4">
+    <!-- Head -->
+    <rect x="508" y="230" width="24" height="24" fill="#ffcc99"/>
+    <!-- Hair -->
+    <rect x="508" y="230" width="24" height="8" fill="#8b4513"/>
+    <!-- Eyes -->
+    <rect x="513" y="238" width="4" height="4" fill="#000000"/>
+    <rect x="523" y="238" width="4" height="4" fill="#000000"/>
+    <!-- Mouth -->
+    <rect x="518" y="248" width="4" height="2" fill="#000000"/>
+    <!-- Body - shirt -->
+    <rect x="508" y="254" width="24" height="20" fill="#5577cc"/>
+    <!-- Arms -->
+    <rect x="500" y="254" width="8" height="16" fill="#5577cc"/>
+    <rect x="532" y="254" width="8" height="16" fill="#5577cc"/>
+    <!-- Legs -->
+    <rect x="512" y="274" width="8" height="20" fill="#333355"/>
+    <rect x="520" y="274" width="8" height="20" fill="#333355"/>
+    
+    <!-- Document in hand -->
+    <g id="document4">
+      <rect x="540" y="254" width="16" height="20" fill="#ffffff"/>
+      <rect x="542" y="258" width="12" height="2" fill="#888888"/>
+      <rect x="542" y="262" width="12" height="2" fill="#888888"/>
+      <rect x="542" y="266" width="8" height="2" fill="#888888"/>
+    </g>
+    
+    <animate attributeName="opacity"
+             values="0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;1;1"
+             dur="24s"
+             repeatCount="indefinite"/>
+  </g>
+  
+  <!-- Loading text - 8-bit style -->
+  <text x="400" y="370" text-anchor="middle" font-family="monospace" font-size="24" fill="#0066cc" font-weight="bold">ANALYSING BYLAWS </text>
+  <g id="loadingDots">
+    <text x="515" y="370" text-anchor="start" font-family="monospace" font-size="24" fill="#0066cc" font-weight="bold">.</text>
+    <text x="530" y="370" text-anchor="start" font-family="monospace" font-size="24" fill="#0066cc" font-weight="bold">.</text>
+    <text x="545" y="370" text-anchor="start" font-family="monospace" font-size="24" fill="#0066cc" font-weight="bold">.</text>
+    <animate attributeName="opacity" 
+             values="1;0;1" 
+             dur="1.5s" 
+             repeatCount="indefinite"/>
+  </g>
+</svg>
