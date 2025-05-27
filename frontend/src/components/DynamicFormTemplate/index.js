@@ -1,12 +1,13 @@
 'use client'
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAtomValue } from 'jotai';
+import { formAtom } from "@/atoms/formAtoms";
+
 import Image from "next/image";
 import CustomInput from "../CustomInput";
 import CustomTextArea from "../CustomTextArea";
 import MyPlaceHolders from "../PlaceHolderQueries";
-import santizeInput from "../santizeInput";
-import { FallbackMode } from "next/dist/lib/fallback";
 
 const DynamicFormTemplate = () => {
     
@@ -15,36 +16,33 @@ const DynamicFormTemplate = () => {
     // user clicks on <p>Advanced Search<p/> or <p>Simple Search<p/>
     const [useAdvancedForm, setUseAdvancedForm] = useState(false);
     const [useFormLabel, setUseFormLabel] = useState("Switch to Advanced search");
+    const [isOfficerFlag, useOfficerFlag] = useState(false);
+
+    const router = useRouter();       
+    const formInfo = useAtomValue(formAtom);
 
     const handleSwitch = () => {
         setUseAdvancedForm(prev => ! prev);
-        
-        useFormLabel === "Switch to Advanced search" ? 
-        setUseFormLabel("Switch to Simple search") : 
-        setUseFormLabel("Switch to Advanced search");
+        useFormLabel === "Switch to Advanced search" ? setUseFormLabel("Switch to Simple search") : setUseFormLabel("Switch to Advanced search");
     }
 
     // Officer type output flag *TODO feature*
-    const [isOfficerFlag, useOfficerFlag] = useState(false);
     const HandleClick = (e) => {
         // unchecked -> check
         // checked -> unchecked
-
         useOfficerFlag(isOfficerFlag == false ? true : false);  
     };
 
     // TODO: Get the information the user has passed and pipe it to the backend for processing.
     // TODO: Sanitize input as well.
-    // TODO: Disable submitting after user has submitted query, then re-enable after backend has reponded.
-    
-    const router = useRouter();        
-    const [userQueryText, setUserQueryText] = useState('');
-    const handleSubmit = (e, userTextEntered) => {
+    // TODO: Disable submitting after user has submitted query, then re-enable after backend has reponded.      
+    const handleSubmit = (e) => {
         e.preventDefault();
         
         // Capture user query
-        console.log(userTextEntered);
-        console.log("DynamicFormTemp: \"Handle Submit\"");
+        console.log(formInfo.category);
+        console.log(formInfo.keywords);
+        console.log(formInfo.query);
         
         // sanitize input 
         // santizeInput(userQueryText);
@@ -55,14 +53,13 @@ const DynamicFormTemplate = () => {
         // recieve backend response and send it to the chatpage to be rendered
         
         // route user to chat-page
-        router.push("/chat-page")
-
+        // router.push("/chat-page")
     }
 
     
     return (
         <div>
-            <form onSubmit={(e, userText) => handleSubmit(e, userText)}>
+            <form onSubmit={(e) => handleSubmit(e)}>
                 
                 {!useAdvancedForm ? (<SimpleForm placeholder={MyPlaceHolders()}/>) : (<AdvancedForm placeholder={MyPlaceHolders()}/>)}
                 
@@ -89,7 +86,7 @@ export default DynamicFormTemplate;
 const SimpleForm = ({placeholder}) => {    
 
     return (
-        <CustomTextArea placeholder={placeholder}/>
+        <CustomTextArea field="query" placeholder={placeholder}/>
     );
 };
 
@@ -98,9 +95,9 @@ const AdvancedForm = ({placeholder}) => {
     
     return (
         <div className="form">
-            <CustomInput displayValue={"Category"}/>
-            <CustomInput displayValue={"Keywords (separated by \',\')"}/>
-            <CustomTextArea placeholder={placeholder}/>
+            <CustomInput field="category" displayValue={"Category"}/>
+            <CustomInput field="keywords" displayValue={"Keywords (separated by \',\')"}/>
+            <CustomTextArea field="query" placeholder={placeholder}/>
         </div>
     );
 };

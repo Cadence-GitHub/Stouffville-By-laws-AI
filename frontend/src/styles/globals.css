@@ -160,6 +160,16 @@ body {
     /* border-radius: 1.0vh; */
   }
 
+  .clickable-text:active {
+    text-decoration: underline;
+    color: #0060A1;
+  }
+
+  .buttonState:active, .buttonRoute:active, .buttonSubmit:active{
+    background-color: #004A8F;
+    color: white;
+  }
+
 }
 
 .test {

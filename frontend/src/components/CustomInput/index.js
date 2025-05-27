@@ -1,40 +1,36 @@
 'use Client'
 import styles from "./CustomInput.module.css";
-import { useState, useRef } from "react";
-import MyPlaceHolders from "../PlaceHolderQueries";
+import { useAtom } from 'jotai';
+import { formAtom } from '@/atoms/formAtoms';
 
 
-const CustomInput = ({displayValue}) => {
+const CustomInput = ({displayValue, field, ...props}) => {
+    
+    const [form, setForm] = useAtom(formAtom);
 
-    let inputRef = useRef(null);
-    let userQuery = null;
-
-    // This also grabs the text user enetered when they press enter    
     const handleEnter = (e) => {                
-        
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();    
             
-            userQuery = inputRef.current?.value;
-            if(userQuery === null || userQuery === "") {
-                userQuery = displayValue
-                console.log(userQuery);
-            }
-            else {
-                console.log(userQuery);
-            }
-        }                  
+            const userQuery = e.target?.value || displayValue;
+            setForm({ ...form, [field]: userQuery });
+            console.log(userQuery);        
+        }                         
     }
 
+    const handleChange = (e) => {
+        setForm({ ...form, [field]: e.target?.value });
+    };
 
     return (
         <input 
             className={styles.input}
-            name="userQuery" 
-            ref={inputRef}
-            type="text" 
-            placeholder={displayValue}
+            value={form[field] || ''}
+            onChange={handleChange}
             onKeyDown={handleEnter}
+            placeholder={displayValue}
+            type="text" 
+            {...props}
         />
     );
 }

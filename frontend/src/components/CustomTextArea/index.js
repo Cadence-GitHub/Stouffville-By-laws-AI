@@ -1,9 +1,13 @@
 'use client'
-import { useRef, useState } from "react";
+import { useRef } from "react";
+import { useAtom } from 'jotai';
+import { formAtom } from '@/atoms/formAtoms';
 import styles from "./CustomTextArea.module.css"
 
-const CustomTextArea = ({placeholder}) => {
+const CustomTextArea = ({placeholder, field, ...props}) => {
     const textAreaRef = useRef(null);
+
+    const [form, setForm] = useAtom(formAtom);
 
     const resizeOnInput = () => {
         
@@ -25,33 +29,32 @@ const CustomTextArea = ({placeholder}) => {
         }      
     }   
 
-    // This also grabs the text user enetered when they press enter    
-    const handleEnter = (e) => {                        
-        let userQuery = textAreaRef.current?.value;
-        
+    const handleEnter = (e) => {                
         if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();                   
+            e.preventDefault();    
             
-            if(userQuery === null || userQuery === "") {
-                userQuery = placeholder;
-                console.log(userQuery);
-            }
-            else {
-                console.log(userQuery);
-            }
-        }                  
+            const userQuery = e.target?.value || placeholder;
+            setForm({ ...form, [field]: userQuery });         
+        }                         
+    }
+
+    const handleChange = (e) => {
+        setForm({ ...form, [field]: e.target?.value });
     }
 
     return (
         <div className={styles.inputWrapper}>
             <textarea 
-                id="useQuery"
-                ref={textAreaRef}
                 className={styles.textareaInput}
-                placeholder={placeholder}   
-                rows={1}
+                ref={textAreaRef}
+                value={form[field] || ''}
                 onInput={resizeOnInput}
                 onKeyDown={handleEnter}
+                onChange={handleChange}
+                placeholder={placeholder}   
+                type="text" 
+                {...props}
+                rows={1}                
                 >
             </textarea>
         </div>
