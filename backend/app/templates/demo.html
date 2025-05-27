@@ -3,6 +3,7 @@
 <head>
     <title>Stouffville By-laws AI Demo</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='demo.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='tts.css') }}">
     <link rel="icon" href="{{ url_for('static', filename='images/favicon2.png') }}" type="image/png">
 </head>
 <body>
@@ -125,12 +126,14 @@
             <p class="explanation" style="font-style: italic; color: #666;">This answer presents the information in simple, everyday language that's easy for anyone to understand.</p>
             <div>{{ laymans_answer | safe }}</div>
             <a class="bug-report-btn" data-answer-type="simplified">Problem? Log a bug!</a>
+            <button type="button" class="tts-button">Speak aloud</button>
         </div>
         {% else %}
         <div class="answer-container">
             <h3>Answer (in layman's terms)</h3>
             <div>{{ answer | safe }}</div>
             <a class="bug-report-btn" data-answer-type="simplified">Problem? Log a bug!</a>
+            <button type="button" class="tts-button">Speak aloud</button>
         </div>
         {% endif %}
     </div>
@@ -154,5 +157,6 @@
     </div>
 
     <script src="{{ url_for('static', filename='demo.js') }}"></script>
+    <script src="{{ url_for('static', filename='tts.js') }}"></script>
 </body>
 </html> 

@@ -89,7 +89,7 @@ In production, this application is deployed behind an NGINX reverse proxy which 
 ### Development Workflow
 
 - **Backend Files**: The backend code is in the `backend/` directory
-  - `app.py`: Main Flask application
+  - `main.py`: Main Flask application
   - `app/`: Application package containing templates, prompts, and ChromaDB integration
   - `requirements.txt`: Python dependencies
   - `Dockerfile`: Container configuration
@@ -142,6 +142,11 @@ In production, this application is deployed behind an NGINX reverse proxy which 
 - `POST /api/voice_query`: Processes a base64-encoded audio recording for bylaw questions.
   - Request JSON: `{ "audio_data": "<base64-encoded audio>", "mime_type": "<audio MIME type>" }`
   - Response: `{ "transcript": "<transcribed question or NO_BYLAW_QUESTION_DETECTED>" }` or `{ "error": "<error message>" }`
+- `GET/POST /tts-stream`: Streams text-to-speech audio using Gemini Live API
+  - GET: Uses `?text=` query parameter for the text to convert to speech
+  - POST: Uses JSON body with `text` field for the text to convert to speech
+  - Streams raw PCM audio data (24kHz, 16-bit, mono) with JSON header containing format information
+  - Uses Google's Gemini Live API with "Iapetus" voice for natural-sounding speech
 - `GET /public-demo`: Serves a simplified public-facing demo interface
 
 ### AI Integration
@@ -171,6 +176,7 @@ Dependencies for AI integration:
 - langchain
 - langchain-google-genai
 - google-generativeai
+- google-genai (for TTS streaming via Gemini Live API)
 - python-dotenv
 - chromadb
 - langchain-chroma
@@ -205,6 +211,7 @@ Dependencies for AI integration:
   - Automatic population of the transcribed question in the search field
   - Built-in timeout (30 seconds) to prevent excessively long recordings
   - Requires HTTPS connection for browser security requirements
+- **Text-to-Speech (TTS) Streaming**: Converts AI responses to natural-sounding speech audio using Google's Gemini Live API. See `backend/app/TTS_README.md` for complete technical documentation and implementation details.
 
 ### Bylaw Viewer Feature
 
@@ -278,7 +285,7 @@ graph TB
 
     %% Components in Backend
     subgraph BackendComponents["Backend"]
-        FlaskApp["Backend App (app.py)"]
+        FlaskApp["Backend App (main.py)"]
         ChromaRetriever["ChromaDB Retriever (chroma_retriever.py)"]
         GeminiHandler["Gemini Handler (gemini_handler.py)"]
         PromptsModule["Prompts Module (prompts.py)"]
@@ -287,6 +294,7 @@ graph TB
         PublicDemo["Public Demo (static/public_demo.html)"]
         BylawViewer["Bylaw Viewer (static/bylawViewer.html)"]
         Autocomplete["Autocomplete (static/demo.js)"]
+        TTSHandler["TTS Handler (gemini_tts_handler.py)"]
 
         %% Subgraph for API Calls
         subgraph APICalls["API Endpoints"]
@@ -296,6 +304,7 @@ graph TB
             API4["/api/bylaw/ (GET)"]
             API5["/api/autocomplete (POST)"]
             API6["/public-demo (GET)"]
+            API7["/tts-stream (GET/POST)"]
         end
     end
 

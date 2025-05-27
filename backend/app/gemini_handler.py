@@ -74,12 +74,15 @@ def convert_bylaw_tags_to_links(text):
     def replace_with_link(match):
         bylaw_text = match.group(1)
         # Extract just the bylaw number for the URL parameter
-        # We need to handle various formats like "By-law 2024-103" or just "2024-103"
-        bylaw_number = bylaw_text
-        if "By-law" in bylaw_text:
-            bylaw_parts = bylaw_text.split("By-law")
-            if len(bylaw_parts) > 1:
-                bylaw_number = bylaw_parts[1].strip()
+        # Split on space and take the last part - this handles various formats like:
+        # "By-law 2024-103", "bylaw 2024-103", "by law 2024-103", "Bylaw 2024-103", etc.
+        parts = bylaw_text.split()
+        if len(parts) > 1:
+            # Take the last part as the bylaw number
+            bylaw_number = parts[-1]
+        else:
+            # If no spaces, use the entire text as the bylaw number
+            bylaw_number = bylaw_text
 
         return f'<a href="/static/bylawViewer.html?bylaw={bylaw_number}" target="_blank" rel="noopener noreferrer">{bylaw_text}</a>'
     
