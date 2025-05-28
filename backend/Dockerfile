@@ -9,5 +9,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the backend files
 COPY . .
 
-CMD ["python", "app.py"]
+CMD ["python", "main.py"]
 
