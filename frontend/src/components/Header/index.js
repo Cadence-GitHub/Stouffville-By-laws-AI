@@ -10,7 +10,8 @@ const Header = () => {
     return (
         <div className={styles.header}>
             <div className={styles.headerTrim}/>
-            <h3 className="clickable-text" onClick={() => router.push('/')}>Stouffville By-Laws AI Project</h3>                            
+            <h2 className="clickable-text" onClick={() => router.push('/')}>Stouffville By-Laws AI Project</h2>                            
+            <p className={styles.subtitle}>Your bylaw questions answered in plain simple language</p>
         </div>
     );
 }

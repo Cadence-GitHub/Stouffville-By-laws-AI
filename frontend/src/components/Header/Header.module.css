@@ -1,9 +1,17 @@
+.subtitle {
+    font-size: small;
+    font-weight: 500;
+    color: #555b6e;
+    position: relative;
+    bottom: 10px;
+}
+
 .header {
     background-color: #FFFFFF;
     text-align: center;
     align-items: center;
     width: 100vw;
-    height: 75px;
+    height: 110px;
 }
 
 .headerTrim {

@@ -54,7 +54,7 @@ body {
   cursor: pointer;
   width: 130px;
   height: 40px;
-  margin: 22.5px;
+  margin: 20px;
 }
 
 .buttonRoute:hover {
@@ -76,7 +76,7 @@ body {
   cursor: pointer;
   width: 130px;
   height: 40px;
-  margin: 22.5px;
+  margin: 20px;
 }
 
 .buttonSubmit:hover {
@@ -103,16 +103,6 @@ body {
   height: 40px;
 }
 
-.custom-checkbox {
-  position: relative;
-  left: 5px;
-  width: 25px;
-  height: 25px;
-  border-color: #0060A1;
-  accent-color: #0060A1;
-}
-
-
 .buttonState:hover {
   background-color: #004A8F;
   color: white;
@@ -128,6 +118,7 @@ body {
 
 .clickable-image {
   cursor: pointer;
+  transition: transform 0.3s ease;
 }
 
 .clickable-text {
@@ -169,10 +160,5 @@ body {
     background-color: #004A8F;
     color: white;
   }
-
-}
-
-.test {
-  border: 1px solid black;
 
 }

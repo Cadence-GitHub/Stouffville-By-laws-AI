@@ -5,9 +5,10 @@ import { useAtomValue } from 'jotai';
 import { formAtom } from "@/atoms/formAtoms";
 
 import Image from "next/image";
-import CustomInput from "../CustomInput";
 import CustomTextArea from "../CustomTextArea";
+import CustomInput from "../CustomInput";
 import MyPlaceHolders from "../PlaceHolderQueries";
+import CustomDropdown from "../CustomDropdown";
 
 const DynamicFormTemplate = () => {
     
@@ -16,22 +17,14 @@ const DynamicFormTemplate = () => {
     // user clicks on <p>Advanced Search<p/> or <p>Simple Search<p/>
     const [useAdvancedForm, setUseAdvancedForm] = useState(false);
     const [useFormLabel, setUseFormLabel] = useState("Switch to Advanced search");
-    const [isOfficerFlag, useOfficerFlag] = useState(false);
 
     const router = useRouter();       
     const formInfo = useAtomValue(formAtom);
-
+    
     const handleSwitch = () => {
         setUseAdvancedForm(prev => ! prev);
         useFormLabel === "Switch to Advanced search" ? setUseFormLabel("Switch to Simple search") : setUseFormLabel("Switch to Advanced search");
     }
-
-    // Officer type output flag *TODO feature*
-    const HandleClick = (e) => {
-        // unchecked -> check
-        // checked -> unchecked
-        useOfficerFlag(isOfficerFlag == false ? true : false);  
-    };
 
     // TODO: Get the information the user has passed and pipe it to the backend for processing.
     // TODO: Sanitize input as well.
@@ -53,7 +46,7 @@ const DynamicFormTemplate = () => {
         // recieve backend response and send it to the chatpage to be rendered
         
         // route user to chat-page
-        // router.push("/chat-page")
+        router.push("/chat-page")
     }
 
     
@@ -62,21 +55,19 @@ const DynamicFormTemplate = () => {
             <form onSubmit={(e) => handleSubmit(e)}>
                 
                 {!useAdvancedForm ? (<SimpleForm placeholder={MyPlaceHolders()}/>) : (<AdvancedForm placeholder={MyPlaceHolders()}/>)}
-                
-                <div>
-                    <p className="clickable-text" onClick={handleSwitch} style={{fontSize: "15px", fontWeight: "550"}}>                        
-                        {useFormLabel}
-                    </p>
-                
-                    {/* This element is a flag that changes the output that tailored to law enforcement officer language*/}
-                    <button type="button" className="buttonState" onClick={HandleClick}>
-                        Im an Officer                        
-                        <input name="officerFlag" type="checkbox" className="custom-checkbox" checked={isOfficerFlag} readOnly />
-                    </button>
-                
-                    <button type="submit" className="buttonSubmit">Search</button>
-                </div>
+                                
             </form>
+            <div style={{display: "flex", flexDirection: "column", alignItems: "center"}}>                    
+                <p className="clickable-text" onClick={handleSwitch} style={{fontSize: "15px", fontWeight: "550"}}>                        
+                    {useFormLabel}
+                </p>                                
+
+                <button onClick={(e) => handleSubmit(e)} type="submit" className="buttonSubmit">Search</button>
+                
+                {/* TODO: Button routes to a FAQ page */}
+                <button className="buttonRoute" onClick={() => router.push('/faq-page')}>FAQ</button>   
+            
+            </div>
         </div>
     );
 };
@@ -91,12 +82,12 @@ const SimpleForm = ({placeholder}) => {
 };
 
 
-const AdvancedForm = ({placeholder}) => {
+const AdvancedForm = ({placeholder, handleSelect}) => {
     
     return (
         <div className="form">
-            <CustomInput field="category" displayValue={"Category"}/>
-            <CustomInput field="keywords" displayValue={"Keywords (separated by \',\')"}/>
+            <CustomDropdown selection={["Active By-laws", "Inactive By-laws", "All By-laws"]} placeholder={"Active / In-active Bylaws"}/>
+            <CustomDropdown selection={["Simple Language", "Legalese Language"]} placeholder={"Simple / Legalese Language"}/>
             <CustomTextArea field="query" placeholder={placeholder}/>
         </div>
     );
