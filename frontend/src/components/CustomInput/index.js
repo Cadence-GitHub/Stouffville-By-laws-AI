@@ -1,3 +1,5 @@
+// UNUSED AT THE MOMENT - REPLACED BY CUSTOM DROPDOWM
+
 'use Client'
 import styles from "./CustomInput.module.css";
 import { useAtom } from 'jotai';
@@ -29,7 +31,7 @@ const CustomInput = ({displayValue, field, ...props}) => {
             onChange={handleChange}
             onKeyDown={handleEnter}
             placeholder={displayValue}
-            type="text" 
+            type="text"             
             {...props}
         />
     );

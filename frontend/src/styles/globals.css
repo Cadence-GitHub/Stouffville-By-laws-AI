@@ -128,6 +128,7 @@ body {
 
 .clickable-image {
   cursor: pointer;
+  transition: transform 0.5s ease;
 }
 
 .clickable-text {
