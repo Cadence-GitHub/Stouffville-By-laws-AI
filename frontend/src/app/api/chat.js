@@ -1,5 +1,5 @@
 import { useAtomValue } from "jotai";
-import { advancedForm, simpleForm } from "@/atoms/formAtoms";
+import { advancedForm, simpleForm } from "@/atoms/formAtom";
 
 const Generic = ({type}) => {
     const advancedformPayload = useAtomValue(advancedForm);

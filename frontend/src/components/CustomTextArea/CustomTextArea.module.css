@@ -25,6 +25,14 @@
     margin-bottom: 50px;
 }
 
+.errorText {
+    position: relative;
+    color: red;
+    font-size: 0.875rem;
+    bottom: 25px;
+}
+
+
 @media (max-width: 600px) {
     .textareaInput {
         border-radius: 0.8vw;

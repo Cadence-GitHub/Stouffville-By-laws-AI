@@ -7,7 +7,7 @@
 'use Client'
 import styles from "./CustomInput.module.css";
 import { useAtom } from 'jotai';
-import { formAtom } from '@/atoms/formAtoms';
+import { formAtom } from '@/atoms/formAtom';
 
 
 const CustomInput = ({displayValue, field, ...props}) => {
@@ -19,8 +19,7 @@ const CustomInput = ({displayValue, field, ...props}) => {
             e.preventDefault();    
             
             const userQuery = e.target?.value || displayValue;
-            setForm({ ...form, [field]: userQuery });
-            console.log(userQuery);        
+            setForm({ ...form, [field]: userQuery });    
         }                         
     }
 

@@ -1,55 +1,76 @@
 'use client'
-import { useRef } from "react";
+import { useRef, useEffect, useState } from "react";
 import { useAtom } from 'jotai';
-import { simpleForm } from '@/atoms/formAtoms.js';
+import { form } from '@/atoms/formAtom.js';
 import styles from "./CustomTextArea.module.css"
 
 const CustomTextArea = ({placeholder, field, ...props}) => {
     const textAreaRef = useRef(null);
 
-    const [form, setForm] = useAtom(simpleForm);
+    const [formPackage, setForm] = useAtom(form);
+    const [showEmptyError, setShowEmptyError] = useState(false); // 1. Track error state
+    // const [userQueryInput, setUserInput] = useState('');
 
     const resizeOnInput = () => {
         
         let elementRef = textAreaRef.current;
         if (elementRef) {
-
+                    
             elementRef.style.height = '35px';
             let contentHeight = elementRef.scrollHeight;
             const maxHeight = 70;
-    
-            if(contentHeight <= maxHeight) {
-                elementRef.style.height = contentHeight + 'px'; // Set to scroll height
-                elementRef.style.overflow = 'hidden';
-            }
-            else {
-                elementRef.style.height = maxHeight + 'px'; // Set to scroll height
-                elementRef.style.overflow = 'auto'; // Reset
+            elementRef.style.overflow = 'hidden';
+
+            if(elementRef.value !== "") {
+                        
+                if(contentHeight <= maxHeight) {
+                    elementRef.style.height = contentHeight + 'px'; // Set to scroll height
+                    elementRef.style.overflow = 'hidden';
+                }
+                else {
+                    elementRef.style.height = maxHeight + 'px'; // Set to scroll height
+                    elementRef.style.overflow = 'auto'; // Reset
+                }
             }
         }      
     }   
 
     const handleEnter = (e) => {                
         if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();    
             
-            const userQuery = e.target?.value || placeholder;
-            setForm({ ...form, [field]: userQuery });       
+            if(e.target.value === "") {
+
+                e.preventDefault(); 
+                setShowEmptyError(true);
+                textAreaRef.current?.focus();                
+
+            } else { 
+
+                e.preventDefault();                            
+                setForm({ ...formPackage, [field]: formPackage[field] || ""});                
+                            
+                e.target.form?.requestSubmit();      
+            }
             
-            console.log("enter")
+            
         }                         
     }
 
-    const handleChange = (e) => {
-        setForm({ ...form, [field]: e.target?.value });
+
+    const handleChange = (e) => {    
+        
+        setForm({ ...formPackage, [field]: e.target?.value || "" });
+        if (e.target.value.trim() !== "") {
+            setShowEmptyError(false);
+        }
     }
 
     return (
-        <div className={styles.inputWrapper}>
+        <div className={styles.inputWrapper}>   
             <textarea 
                 className={styles.textareaInput}
                 ref={textAreaRef}
-                value={form[field] || placeholder}
+                value={formPackage[field] || ""}
                 onInput={resizeOnInput}
                 onKeyDown={handleEnter}
                 onChange={handleChange}
@@ -59,6 +80,9 @@ const CustomTextArea = ({placeholder, field, ...props}) => {
                 rows={1}                
                 >
             </textarea>
+            {showEmptyError && (
+                <p className={styles.errorText}>Please fill out this field</p> 
+            )}
         </div>
     );
 }

@@ -1,8 +1,8 @@
 'use client'
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAtomValue } from 'jotai';
-import { advancedForm, simpleForm } from "@/atoms/formAtoms.js";
+import { form } from "@/atoms/formAtom.js";
 
 import CustomTextArea from "../CustomTextArea";
 import MyPlaceHolders from "../PlaceHolderQueries";
@@ -17,8 +17,7 @@ const DynamicFormTemplate = () => {
     const [useFormLabel, setUseFormLabel] = useState("Switch to Advanced search");
 
     const router = useRouter();       
-    const advancedFormPackage = useAtomValue(advancedForm);
-    const simpleFormPackage = useAtomValue(simpleForm);
+    const formPackage = useAtomValue(form);
     
     const handleSwitch = () => {
         setUseAdvancedForm(prev => ! prev);
@@ -32,9 +31,9 @@ const DynamicFormTemplate = () => {
         e.preventDefault();
 
         // Capture user query
-        console.log(advancedFormPackage.bylaw_status);
-        console.log(advancedFormPackage.laymans_answer);
-        console.log(advancedFormPackage.query);
+        console.log(formPackage.bylaw_status);
+        console.log(formPackage.laymans_answer);
+        console.log(formPackage.query);
         
         // sanitize input 
         // santizeInput(userQueryText);
@@ -80,7 +79,7 @@ const AdvancedForm = ({placeholder}) => {
     
     return (
         <div className="form">
-            <CustomDropdown selection={[{ value: 0, label: "Active By-laws" }, { value: 1, label: "Inactive By-laws" }, { value: 2, label: "All By-laws" }]} field="bylaw_status" placeholder={"Active / In-active Bylaws"}/>
+            <CustomDropdown selection={[{ value: "active", label: "Active By-laws" }, { value: "inactive", label: "Inactive By-laws" }, { value: 2, label: "All By-laws" }]} field="bylaw_status" placeholder={"Active / In-active Bylaws"}/>
             <CustomDropdown selection={[{ value: true, label: "Simple Language" }, { value: false, label: "Legalese Language" }]} field="laymans_answer" placeholder={"Simple / Legalese Language"}/>
             <CustomTextArea field="query" placeholder={placeholder}/>
         </div>

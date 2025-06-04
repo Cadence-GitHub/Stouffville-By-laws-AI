@@ -1,7 +1,7 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
-import { useAtom, useAtomValue } from 'jotai'
-import { advancedForm } from "@/atoms/formAtoms.js";
+import { useAtom } from 'jotai'
+import { form } from "@/atoms/formAtom.js";
 
 import Image from 'next/image';
 import styles from './CustomDropdown.module.css'; // Import CSS file
@@ -10,7 +10,7 @@ const CustomDropdown = ({ selection, placeholder, field}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState(placeholder);
   const [rotation, setRotation] = useState(0);
-  const [form, setForm] = useAtom(advancedForm);
+  const [formPackage, setForm] = useAtom(form);
   
   // Holds the list of options the custom dropdown shows
   const options = selection;
@@ -36,12 +36,12 @@ const CustomDropdown = ({ selection, placeholder, field}) => {
 
   // Handles the rotatiom of the dropdown image
   useEffect(() => {
-      setRotation(isOpen ? 180 : 0);
+    setRotation(isOpen ? 180 : 0);
   }, [isOpen]);
   
   const handleSelect = (option) => {
     setSelected(option.label);
-    setForm({...form, [field]: option.value});    
+    setForm({...formPackage, [field]: option.value});    
     setIsOpen(false);
   };
 
