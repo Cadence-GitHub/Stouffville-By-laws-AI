@@ -1,10 +1,12 @@
 // src/atoms/formAtoms.js
 import { atom } from 'jotai';
 
-export const formAtom = atom({
-    category: "",
-    keywords: [""],
-    officerFlag: false,
-    bylawStatus: "active",
+export const advancedForm = atom({
+    bylaw_status: "",
+    laymans_answer: "",
     query: ""
 });
+
+export const simpleForm = atom( {
+    query: ""
+})

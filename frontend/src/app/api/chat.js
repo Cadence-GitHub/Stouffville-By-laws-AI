@@ -1,10 +1,11 @@
 import { useAtomValue } from "jotai";
-import { atomForms } from "@/atoms/formAtoms";
+import { advancedForm, simpleForm } from "@/atoms/formAtoms";
 
-const GrabValue = () => {
-    const formPayload = useAtomValue(atomForms);
+const Generic = ({type}) => {
+    const advancedformPayload = useAtomValue(advancedForm);
+    const simpleformPayload = useAtomValue(simpleForm);
 
-    return formPayload;
+    
 }
 
 export async function POST(req) {

@@ -1,4 +1,8 @@
-// UNUSED AT THE MOMENT - REPLACED BY CUSTOM DROPDOWM
+// **************************************************
+// **************************************************
+// UNUSED AT THE MOMENT - REPLACED BY CUSTOM DROPDOWN
+// **************************************************
+// **************************************************
 
 'use Client'
 import styles from "./CustomInput.module.css";

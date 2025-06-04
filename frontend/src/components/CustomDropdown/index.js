@@ -1,12 +1,16 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
+import { useAtom, useAtomValue } from 'jotai'
+import { advancedForm } from "@/atoms/formAtoms.js";
+
 import Image from 'next/image';
 import styles from './CustomDropdown.module.css'; // Import CSS file
 
-const CustomDropdown = ({ selection , placeholder}) => {
+const CustomDropdown = ({ selection, placeholder, field}) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState(placeholder);
   const [rotation, setRotation] = useState(0);
+  const [form, setForm] = useAtom(advancedForm);
   
   // Holds the list of options the custom dropdown shows
   const options = selection;
@@ -36,7 +40,8 @@ const CustomDropdown = ({ selection , placeholder}) => {
   }, [isOpen]);
   
   const handleSelect = (option) => {
-    setSelected(option);
+    setSelected(option.label);
+    setForm({...form, [field]: option.value});    
     setIsOpen(false);
   };
 
@@ -46,7 +51,7 @@ const CustomDropdown = ({ selection , placeholder}) => {
 
   return (    
     <div ref={dropDownRef} className={styles.customDropDownWrapper}>      
-      <div className={styles.selectedOption}> {selected} </div>
+      <div className={styles.selectedOption} > {selected} </div>
 
       <div className={styles.dropdown_overlayImage}>
           <Image 
@@ -63,8 +68,8 @@ const CustomDropdown = ({ selection , placeholder}) => {
       {isOpen && (
         <div className={styles.dropdown_list}>
           {options.map((option) => (
-              <div key={option} onClick={() => handleSelect(option)} className={styles.dropdown_item}>                  
-                  {option}
+              <div key={option.label} onClick={() => handleSelect(option)} className={styles.dropdown_item}>                  
+                  {option.label}
               </div>
           ))}
         </div>

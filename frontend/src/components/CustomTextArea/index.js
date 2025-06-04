@@ -1,13 +1,13 @@
 'use client'
 import { useRef } from "react";
 import { useAtom } from 'jotai';
-import { formAtom } from '@/atoms/formAtoms';
+import { simpleForm } from '@/atoms/formAtoms.js';
 import styles from "./CustomTextArea.module.css"
 
 const CustomTextArea = ({placeholder, field, ...props}) => {
     const textAreaRef = useRef(null);
 
-    const [form, setForm] = useAtom(formAtom);
+    const [form, setForm] = useAtom(simpleForm);
 
     const resizeOnInput = () => {
         
@@ -34,7 +34,9 @@ const CustomTextArea = ({placeholder, field, ...props}) => {
             e.preventDefault();    
             
             const userQuery = e.target?.value || placeholder;
-            setForm({ ...form, [field]: userQuery });         
+            setForm({ ...form, [field]: userQuery });       
+            
+            console.log("enter")
         }                         
     }
 
@@ -47,7 +49,7 @@ const CustomTextArea = ({placeholder, field, ...props}) => {
             <textarea 
                 className={styles.textareaInput}
                 ref={textAreaRef}
-                value={form[field] || ''}
+                value={form[field] || placeholder}
                 onInput={resizeOnInput}
                 onKeyDown={handleEnter}
                 onChange={handleChange}
