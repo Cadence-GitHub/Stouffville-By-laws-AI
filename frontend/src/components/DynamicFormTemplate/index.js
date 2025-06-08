@@ -5,6 +5,7 @@ import { useAtomValue } from 'jotai';
 import { form } from "@/atoms/formAtom.js";
 
 import CustomTextArea from "../CustomTextArea";
+import CustomInput from "../CustomInput";
 import MyPlaceHolders from "../PlaceHolderQueries";
 import CustomDropdown from "../CustomDropdown";
 
@@ -55,7 +56,7 @@ const SimpleForm = ({placeholder}) => {
 };
 
 
-const AdvancedForm = ({placeholder}) => {
+const AdvancedForm = ({placeholder, handleSelect}) => {
     
     return (
         <div className="form">
