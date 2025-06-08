@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "html-react-parser": "^5.2.5",
     "jotai": "^2.12.4",
     "next": "15.2.4",
     "react": "^19.0.0",

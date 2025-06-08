@@ -1,8 +1,9 @@
 'use client'
+import parse from 'html-react-parser';
 import Image from "next/image";
 import { isElementEmpty } from "@/utils/isElementEmpty";
 import styles from "./page.module.css";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useAtom } from 'jotai';
 import { form } from '@/atoms/formAtom';
 
@@ -15,6 +16,8 @@ const ChatPage = () => {
   const [formPackage, setForm] = useAtom(form);
   const [currentQuery, setCurrentQuery] = useState("");
   const [showEmptyError, setShowEmptyError] = useState(false);
+  const [aiResponse, setAIResponse] = useState(null);
+  const [submitted, setSubmittedFlag] = useState(false);
   
   
   const handleClick = (e) => {
@@ -24,7 +27,7 @@ const ChatPage = () => {
     } else { 
       setForm({...formPackage, query: chatTextAreaRef.current.value || ""});    
       setShowEmptyError(false);
-      e.target.form?.requestSubmit();  
+      handleSubmit();
       setCurrentQuery("");
     }
   }
@@ -36,48 +39,84 @@ const ChatPage = () => {
         setShowEmptyError(true);
       }
       else {                                   
+        setSubmittedFlag(true);
         setForm({...formPackage, query: chatTextAreaRef.current.value || ""});                                          
         setShowEmptyError(false);        
         setCurrentQuery("");
-        e.target.form?.requestSubmit();              
+        handleSubmit();           
       }      
     }                                                         
 
     console.log(formPackage.query);
   }
 
-  const handleChange = (e) => {         
+  const handleChange = () => {         
     const userQuery = chatTextAreaRef.current.value;
     setCurrentQuery(userQuery);
     setForm({...formPackage, query: chatTextAreaRef.current.value || ""});    
     setShowEmptyError(false);
   }
 
+
+  const handleSubmit = async () => {
+    try {
+      const response = await fetch('api/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json'},
+        body: JSON.stringify({query: formPackage.query, bylaw_status: formPackage.bylaw_status})
+      });
+
+      if (!response.ok) throw new Error('Failed to submit');
+
+      const data = await response.json();
+      setAIResponse(data.result);
+      console.log("Response from API:", data);
+    
+    } catch (error) {
+      console.error("Submission error:", error);
+    }
+  }
+  
+  const displayQuery = () => {      
+    return (
+      <div className={styles.messagesWrapper}>                          
+          <div className={styles.userMessage}>
+            {formPackage.query}                  
+          </div>
+      </div>
+    );
+  }
+
+  const displayResponse = () => {      
+    
+    if(!aiResponse) return null;
+    
+    const simpleResponse = aiResponse.laymans_answer;
+    // const advancedResponse = aiResponse.answer;
+    // const filtered = aiResponse.filtered_answer;    
+    return (
+      <div className={styles.messagesWrapper}>
+        <div className={styles.systemMessage}>                      
+          <div>{parse(simpleResponse)}</div>                       
+        </div>
+      </div>  
+    );
+  }
+
+  useEffect(() => {
+    if (submitted) {
+      setSubmittedFlag(true);
+    }
+  }, [submitted]);
+
+
   return (    
     <>
-
       <>
         <div className={styles.chatMessagesContainer}>            
           
-          <div className={styles.messagesWrapper}>                          
-              <div className={styles.userMessage}>
-                Can my dog poop on someone elses lawn?                          
-              </div>
-          </div>
-            
-          <div className={styles.messagesWrapper}>
-            <div className={styles.systemMessage}>            
-              <div>
-                <b>Dog Excrement on Private Property</b>
-              </div>
-              <div>              
-                You must immediately remove and properly dispose of any excrement 
-                left by your dog on public or private property that is not your 
-                own. You must also remove and properly dispose of excrement on 
-                your own property in a timely manner.                        
-              </div>
-            </div>
-          </div>      
+          {submitted && displayQuery()}
+          {displayResponse()}
 
         </div>        
       </>    
