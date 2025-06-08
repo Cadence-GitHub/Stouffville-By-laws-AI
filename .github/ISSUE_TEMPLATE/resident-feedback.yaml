@@ -1,0 +1,337 @@
+name: 🏛️ Resident Feedback - Stouffville By-laws AI
+description: Share your experience using the AI-powered bylaw assistant
+title: "[FEEDBACK] "
+labels: ["feedback", "user-experience"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        # Thank you for testing our AI-powered bylaw assistant! 
+        Your feedback will help us improve this tool for all Stouffville residents.
+        
+        **This form prioritizes response quality - the most important aspect of the tool.**
+
+  - type: textarea
+    id: user_question
+    attributes:
+      label: "📝 Your Question"
+      description: "What question did you ask the AI?"
+      placeholder: "e.g., Can I park overnight on the street in winter?"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: response_accuracy
+    attributes:
+      label: "🎯 Response Accuracy"
+      description: "How accurate was the information provided?"
+      options:
+        - "Excellent (5) - Completely accurate"
+        - "Good (4) - Mostly accurate"
+        - "Fair (3) - Somewhat accurate"
+        - "Poor (2) - Mostly inaccurate"
+        - "Very Poor (1) - Completely inaccurate"
+        - "Unable to verify"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: response_completeness
+    attributes:
+      label: "📋 Response Completeness"
+      description: "Did the response cover all relevant aspects of your question?"
+      options:
+        - "Excellent (5) - Covered everything"
+        - "Good (4) - Covered most aspects"
+        - "Fair (3) - Covered some aspects"
+        - "Poor (2) - Missing important parts"
+        - "Very Poor (1) - Incomplete response"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: response_clarity
+    attributes:
+      label: "💡 Response Clarity"
+      description: "How easy was it to understand the response?"
+      options:
+        - "Excellent (5) - Very clear and easy to understand"
+        - "Good (4) - Mostly clear"
+        - "Fair (3) - Somewhat clear"
+        - "Poor (2) - Confusing in places"
+        - "Very Poor (1) - Very confusing"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: response_helpfulness
+    attributes:
+      label: "🚀 Response Helpfulness"
+      description: "Did the response actually help solve your need?"
+      options:
+        - "Excellent (5) - Completely solved my need"
+        - "Good (4) - Mostly solved my need"
+        - "Fair (3) - Partially helpful"
+        - "Poor (2) - Minimally helpful"
+        - "Very Poor (1) - Not helpful at all"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: response_format_preference
+    attributes:
+      label: "📄 Response Format Preference"
+      description: "If you saw both response types, which did you prefer?"
+      options:
+        - "Technical response (with bylaw references)"
+        - "Layman's terms (simplified language)"
+        - "Both were equally useful"
+        - "I only saw one type"
+
+  - type: textarea
+    id: format_preference_reason
+    attributes:
+      label: "Why did you prefer that format?"
+      placeholder: "Please explain your preference..."
+
+  - type: dropdown
+    id: confidence_general
+    attributes:
+      label: "🔒 Trust Level - General Information"
+      description: "How confident would you be using this AI response to get general bylaw information?"
+      options:
+        - "Very Confident (5)"
+        - "Confident (4)"
+        - "Somewhat Confident (3)"
+        - "Not Very Confident (2)"
+        - "Not At All Confident (1)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: confidence_decisions
+    attributes:
+      label: "🏠 Trust Level - Property Decisions"
+      description: "How confident would you be using this AI response to make decisions about your property?"
+      options:
+        - "Very Confident (5)"
+        - "Confident (4)"
+        - "Somewhat Confident (3)"
+        - "Not Very Confident (2)"
+        - "Not At All Confident (1)"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: response_improvements
+    attributes:
+      label: "🛠️ What would have made the response better?"
+      description: "Check all that apply"
+      options:
+        - label: "More specific examples"
+        - label: "Clearer explanations"
+        - label: "More complete information"
+        - label: "Better organization/formatting"
+        - label: "More practical guidance"
+        - label: "Contact information for follow-up"
+        - label: "Visual aids (maps, diagrams)"
+        - label: "Step-by-step instructions"
+        - label: "Nothing - it was great as is"
+
+  - type: dropdown
+    id: vs_traditional_methods
+    attributes:
+      label: "📊 Compared to Traditional Methods"
+      description: "Compared to looking up bylaws the traditional way (town website, calling, etc.), this AI tool was:"
+      options:
+        - "Much better"
+        - "Somewhat better"
+        - "About the same"
+        - "Somewhat worse"
+        - "Much worse"
+    validations:
+      required: true
+
+  - type: textarea
+    id: vs_traditional_explanation
+    attributes:
+      label: "Why was it better/worse than traditional methods?"
+      placeholder: "Please explain what made it better or worse..."
+
+  - type: dropdown
+    id: ease_of_use
+    attributes:
+      label: "⚡ Overall Ease of Use"
+      description: "How easy was it to get the information you needed?"
+      options:
+        - "Very Easy (5)"
+        - "Easy (4)"
+        - "Neutral (3)"
+        - "Difficult (2)"
+        - "Very Difficult (1)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: response_time
+    attributes:
+      label: "⏱️ Response Time"
+      description: "How was the response time?"
+      options:
+        - "Too fast to notice"
+        - "Just right"
+        - "A bit slow but acceptable"
+        - "Too slow"
+        - "Unacceptably slow"
+
+  - type: checkboxes
+    id: features_used
+    attributes:
+      label: "🎛️ Features You Tried"
+      description: "Which features did you use?"
+      options:
+        - label: "Basic text search"
+        - label: "Autocomplete suggestions"
+        - label: "Voice recording"
+        - label: "Bylaw viewer (clicking on specific bylaws)"
+        - label: "Dark mode toggle"
+        - label: "Comparing different response types"
+        - label: "None of the extra features"
+
+  - type: textarea
+    id: most_valuable_features
+    attributes:
+      label: "🌟 Most Valuable Features"
+      description: "Which 2-3 features helped you most?"
+      placeholder: "List the features that were most valuable to you..."
+
+  - type: dropdown
+    id: usage_context
+    attributes:
+      label: "🎯 Why did you look up bylaw information?"
+      description: "What brought you here?"
+      options:
+        - "Planning a home renovation/addition"
+        - "Property maintenance question"
+        - "Parking regulations"
+        - "Noise concerns"
+        - "Business/commercial question"
+        - "Pet-related rules"
+        - "General curiosity"
+        - "Helping someone else"
+        - "Other (explain in comments)"
+
+  - type: dropdown
+    id: problem_resolution
+    attributes:
+      label: "✅ Did this tool help resolve your actual need?"
+      description: "How well did it solve your problem?"
+      options:
+        - "Completely - I got everything I needed"
+        - "Mostly - I got most of what I needed"
+        - "Partially - Some helpful info but gaps remain"
+        - "Not really - Still have the same questions"
+        - "Not at all - Didn't help my situation"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: future_usage
+    attributes:
+      label: "🔄 Future Usage Likelihood"
+      description: "How likely are you to use this tool again?"
+      options:
+        - "Definitely will use it"
+        - "Probably will use it"
+        - "Might use it"
+        - "Probably won't use it"
+        - "Definitely won't use it"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: recommendation
+    attributes:
+      label: "👥 Would you recommend this tool to other residents?"
+      description: "Recommendation likelihood"
+      options:
+        - "Definitely"
+        - "Probably"
+        - "Maybe"
+        - "Probably not"
+        - "Definitely not"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: age_group
+    attributes:
+      label: "👤 Age Group (Optional)"
+      description: "This helps us understand our user base"
+      options:
+        - "Prefer not to say"
+        - "18-29"
+        - "30-44"
+        - "45-59"
+        - "60-74"
+        - "75+"
+
+  - type: dropdown
+    id: bylaw_frequency
+    attributes:
+      label: "📅 How often do you typically need bylaw information?"
+      description: "Frequency of use"
+      options:
+        - "Weekly"
+        - "Monthly"
+        - "A few times per year"
+        - "Rarely"
+        - "This was my first time"
+
+  - type: dropdown
+    id: ai_comfort
+    attributes:
+      label: "🤖 AI Tool Comfort Level"
+      description: "How comfortable are you with AI/chatbot tools?"
+      options:
+        - "Very comfortable - I use them regularly"
+        - "Somewhat comfortable - I've used them before"
+        - "Not very comfortable - Limited experience"
+        - "This was my first time using AI"
+
+  - type: textarea
+    id: what_worked_well
+    attributes:
+      label: "✨ What Worked Well"
+      description: "What did you like most about this AI bylaw assistant?"
+      placeholder: "Tell us what you loved about the experience..."
+
+  - type: textarea
+    id: needs_improvement
+    attributes:
+      label: "🔧 What Needs Improvement"
+      description: "What frustrated you or could be improved?"
+      placeholder: "Help us identify pain points and areas for improvement..."
+
+  - type: textarea
+    id: missing_features
+    attributes:
+      label: "💡 Missing Features"
+      description: "What features would make this tool more useful for you?"
+      placeholder: "Suggest new features or capabilities..."
+
+  - type: textarea
+    id: final_thoughts
+    attributes:
+      label: "💬 Final Thoughts"
+      description: "Any other comments, suggestions, or concerns?"
+      placeholder: "Share any additional feedback..."
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        **Thank you for your detailed feedback!** 
+        
+        Your input will directly improve this tool for all Stouffville residents. If you'd like to discuss your feedback further, please feel free to add additional comments to this issue.
