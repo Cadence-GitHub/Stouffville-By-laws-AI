@@ -79,3 +79,10 @@
     right: 10px;
     z-index: 1;    
 }
+
+.errorText {
+    position: relative;
+    color: red;
+    font-size: 0.875rem;
+    bottom: 25px;
+}

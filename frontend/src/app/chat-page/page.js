@@ -1,26 +1,61 @@
 'use client'
 import Image from "next/image";
+import { isElementEmpty } from "@/utils/isElementEmpty";
 import styles from "./page.module.css";
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import { useAtom } from 'jotai';
+import { form } from '@/atoms/formAtom';
 
 
 
 const ChatPage = () => {  
 
   let chatTextAreaRef = useRef(null);
-  
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    // capture user query
-    // Santize user query
-    // send query to backend
 
+  const [formPackage, setForm] = useAtom(form);
+  const [currentQuery, setCurrentQuery] = useState("");
+  const [showEmptyError, setShowEmptyError] = useState(false);
+  
+  
+  const handleClick = (e) => {
+    if(isElementEmpty(chatTextAreaRef.current)) {        
+      e.preventDefault(); 
+      setShowEmptyError(true);
+    } else { 
+      setForm({...formPackage, query: chatTextAreaRef.current.value || ""});    
+      setShowEmptyError(false);
+      e.target.form?.requestSubmit();  
+      setCurrentQuery("");
+    }
+  }
+  
+  const handleEnter = (e) => {                      
+    if (e.key === "Enter" && !e.shiftKey) {                   
+      e.preventDefault(); 
+      if(isElementEmpty(chatTextAreaRef.current)) {        
+        setShowEmptyError(true);
+      }
+      else {                                   
+        setForm({...formPackage, query: chatTextAreaRef.current.value || ""});                                          
+        setShowEmptyError(false);        
+        setCurrentQuery("");
+        e.target.form?.requestSubmit();              
+      }      
+    }                                                         
+
+    console.log(formPackage.query);
+  }
+
+  const handleChange = (e) => {         
+    const userQuery = chatTextAreaRef.current.value;
+    setCurrentQuery(userQuery);
+    setForm({...formPackage, query: chatTextAreaRef.current.value || ""});    
+    setShowEmptyError(false);
   }
 
   return (    
     <>
-      
+
       <>
         <div className={styles.chatMessagesContainer}>            
           
@@ -50,17 +85,23 @@ const ChatPage = () => {
       <div className={styles.textareaChatContainer}>        
         <div>
             <div className={styles.textareaChatWrapper}>
-                <textarea ref={chatTextAreaRef} className={styles.textareaChat} placeholder="Ask Anything"
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      handleSubmit();
-                    }
-                  }}
+                <textarea 
+                  ref={chatTextAreaRef} 
+                  className={styles.textareaChat} 
+                  value={currentQuery || ""}
+                  placeholder="Ask Anything"
+                  onKeyDown={handleEnter}
+                  onChange={handleChange}
+                  type={"text"}
+                  rows={1}                                    
                 />
             </div>
             <div className={styles.overlayImage}>
-              <Image onClick={(e) => handleSubmit(e)} className="clickable-image" src="/assets/images/Send-button.svg" height={30} width={30} alt="send button image"/>            
+              <Image onClick={handleClick} className="clickable-image" src="/assets/images/Send-button.svg" height={30} width={30} alt="send button image"/>            
             </div>
+            {showEmptyError && (
+                <p className={styles.errorText}>Please fill out this field</p> 
+            )}
         </div>
       </div>                      
     </>

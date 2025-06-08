@@ -8,8 +8,7 @@ const CustomTextArea = ({placeholder, field, ...props}) => {
     const textAreaRef = useRef(null);
 
     const [formPackage, setForm] = useAtom(form);
-    const [showEmptyError, setShowEmptyError] = useState(false); // 1. Track error state
-    // const [userQueryInput, setUserInput] = useState('');
+    const [showEmptyError, setShowEmptyError] = useState(false);
 
     const resizeOnInput = () => {
         
@@ -50,15 +49,12 @@ const CustomTextArea = ({placeholder, field, ...props}) => {
                 setForm({ ...formPackage, [field]: formPackage[field] || ""});                
                             
                 e.target.form?.requestSubmit();      
-            }
-            
-            
+            }                        
         }                         
     }
 
 
-    const handleChange = (e) => {    
-        
+    const handleChange = (e) => {            
         setForm({ ...formPackage, [field]: e.target?.value || "" });
         if (e.target.value.trim() !== "") {
             setShowEmptyError(false);
