@@ -394,6 +394,16 @@ input:checked + .slider:before {
         justify-content: center;
         margin-top: 1rem;
     }
+    
+    #voiceQueryBtn {
+        width: 2.25rem;
+        height: 2.25rem;
+    }
+    
+    #voiceQueryBtn img {
+        width: 1.75rem;
+        height: 1.75rem;
+    }
 }
 
 /* Answer toggle styles */
@@ -525,17 +535,14 @@ input:checked + .slider:before {
     position: relative;
 }
 
-/* Wrapper for question input and voice button */
+/* Wrapper for question input */
 .input-wrapper {
     position: relative;
-    display: flex;
-    align-items: center;
-    margin-bottom: 1rem;
+    margin-bottom: 0.1rem;
 }
 
 /* Style the input inside input-wrapper */
 .input-wrapper textarea {
-    flex: 1;
     margin-bottom: 0;
 }
 
@@ -544,7 +551,7 @@ input:checked + .slider:before {
     gap: 1rem;
     align-items: center;
     margin-bottom: 1rem;
-    justify-content: flex-end;
+    justify-content: space-between;
 }
 
 #voiceQueryBtn {
