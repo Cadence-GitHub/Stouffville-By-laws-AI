@@ -32,16 +32,19 @@
             <form id="questionForm">
                 <label for="question">What's on your mind?</label>
                 <div class="input-wrapper">
-                    <input type="text" id="question" name="question" required
+                    <textarea id="question" name="question" required
                            placeholder="Example: Can I park on the street overnight?"
-                           autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+                           autocomplete="off"
+                           rows="2"></textarea>
+                </div>
+                <div class="button-group">
                     <button type="button" id="voiceQueryBtn" title="Record Voice Question">
                         <img src="/static/images/microphone.png" alt="Record Voice">
                     </button>
+                    <button type="submit" id="submitButton">
+                        <span>Get Answer</span>
+                    </button>
                 </div>
-                <button type="submit" id="submitButton">
-                    <span>Get Answer</span>
-                </button>
             </form>
         </div>
         
@@ -64,6 +67,15 @@
         
         <footer>
             <p>This AI tool provides general information about Stouffville by-laws and should not be considered legal advice.</p>
+            <div class="footer-links">
+                <a href="https://github.com/Cadence-GitHub/Stouffville-By-laws-AI" target="_blank" rel="noopener noreferrer">
+                    <i class="fab fa-github"></i> GitHub
+                </a>
+                <span class="separator">|</span>
+                <a href="https://aicircle.ca/" target="_blank" rel="noopener noreferrer">
+                    <i class="fas fa-globe"></i> AI Circle
+                </a>
+            </div>
         </footer>
     </main>
     <div id="bylaw-panel" class="bylaw-panel">
