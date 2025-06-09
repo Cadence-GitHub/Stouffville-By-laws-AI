@@ -101,6 +101,10 @@ h1 {
     transition: var(--transition);
     background-color: var(--card-bg);
     color: var(--text);
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+    line-height: 1.5;
 }
 
 #question:focus {
@@ -254,6 +258,31 @@ footer {
 footer p {
     color: rgba(255, 255, 255, 0.9);
     font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.footer-links {
+    margin-top: 1rem;
+}
+
+.footer-links a {
+    color: white;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: opacity 0.2s ease;
+}
+
+.footer-links a:hover {
+    opacity: 0.8;
+}
+
+.footer-links .separator {
+    margin: 0 0.5rem;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.footer-links i {
+    margin-right: 0.3rem;
 }
 
 /* Dark mode toggle switch */
@@ -476,8 +505,7 @@ input:checked + .slider:before {
     box-shadow: var(--shadow);
     z-index: 1000;
     width: 100%;
-    top: 100%;
-    border-top: none;
+    margin-top: -2px; /* Compensate for the border */
 }
 
 .autocomplete-suggestion {
@@ -506,38 +534,50 @@ input:checked + .slider:before {
 }
 
 /* Style the input inside input-wrapper */
-.input-wrapper input {
+.input-wrapper textarea {
     flex: 1;
-    padding-right: 4rem;
     margin-bottom: 0;
 }
 
-/* Style the voice button inside input-wrapper */
-.input-wrapper #voiceQueryBtn {
-    position: absolute;
-    right: 0.75rem;
-    top: 50%;
-    transform: translateY(-50%);
+.button-group {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1rem;
+    justify-content: flex-end;
+}
+
+#voiceQueryBtn {
     background: transparent;
     border: none;
-    width: 2rem;
-    height: 2rem;
+    width: 2.5rem;
+    height: 2.5rem;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 0;
-    z-index: 10;
+    transition: transform 0.2s ease;
+    flex: 0 0 auto;
 }
 
-.input-wrapper #voiceQueryBtn img {
+#voiceQueryBtn:hover {
+    transform: scale(1.1);
+}
+
+#voiceQueryBtn img {
     width: 2rem;
     height: 2rem;
     opacity: 0.7;
     transition: opacity 0.2s ease;
 }
 
-.input-wrapper #voiceQueryBtn:hover img {
+#voiceQueryBtn:hover img {
     opacity: 1;
+}
+
+#submitButton {
+    flex: 0 0 auto;
+    min-width: 120px;
 }
 
 /* Bylaw Panel Styles */

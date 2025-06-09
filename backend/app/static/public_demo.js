@@ -656,14 +656,19 @@ function setupAutocomplete() {
         // Clear any existing timer
         clearTimeout(typingTimer);
         
-        // Hide suggestions if input is empty or too short
-        if (!this.value.trim() || this.value.trim().length < 3) {
+        // Get the current line of text where the cursor is
+        const cursorPosition = this.selectionStart;
+        const textBeforeCursor = this.value.substring(0, cursorPosition);
+        const currentLine = textBeforeCursor.split('\n').pop();
+        
+        // Hide suggestions if current line is empty or too short
+        if (!currentLine.trim() || currentLine.trim().length < 3) {
             hideAutocomplete();
             return;
         }
         
         // Set a timer to fetch suggestions
-        typingTimer = setTimeout(() => fetchSuggestions(this.value), doneTypingInterval);
+        typingTimer = setTimeout(() => fetchSuggestions(currentLine), doneTypingInterval);
     });
     
     // Handle keydown events for navigation
@@ -684,10 +689,12 @@ function setupAutocomplete() {
             selectedIndex = Math.max(selectedIndex - 1, -1);
             updateSelectedSuggestion();
         }
-        // Enter
-        else if (e.key === 'Enter' && selectedIndex >= 0) {
+        // Enter (only if Ctrl+Enter or if a suggestion is selected)
+        else if (e.key === 'Enter' && (e.ctrlKey || selectedIndex >= 0)) {
             e.preventDefault();
-            selectSuggestion(selectedIndex);
+            if (selectedIndex >= 0) {
+                selectSuggestion(selectedIndex);
+            }
         }
         // Escape
         else if (e.key === 'Escape') {
@@ -697,7 +704,8 @@ function setupAutocomplete() {
     
     // Hide autocomplete when clicking outside
     document.addEventListener('click', function(e) {
-        if (!queryInput.contains(e.target) && !autocompleteContainer.contains(e.target)) {
+        const isClickInside = queryInput.contains(e.target) || autocompleteContainer.contains(e.target);
+        if (!isClickInside) {
             hideAutocomplete();
         }
     });
@@ -759,12 +767,16 @@ function setupAutocomplete() {
             autocompleteContainer.appendChild(suggestionElement);
         });
         
-        // Position is now handled by CSS with top: 100%
-        // Just set the width to match the input
-        autocompleteContainer.style.width = '100%';
+        // Position the autocomplete container below the textarea
+        const textareaRect = queryInput.getBoundingClientRect();
+        const wrapperRect = inputWrapper.getBoundingClientRect();
         
-        // Show the container
+        // Position relative to the wrapper
+        autocompleteContainer.style.position = 'absolute';
+        autocompleteContainer.style.top = `${textareaRect.height + 2}px`; // 2px gap
+        autocompleteContainer.style.width = '100%';
         autocompleteContainer.style.display = 'block';
+        autocompleteContainer.style.zIndex = '1000';
     }
     
     // Update the selected suggestion in the UI
@@ -781,7 +793,15 @@ function setupAutocomplete() {
     // Select a suggestion and fill the input
     function selectSuggestion(index) {
         if (index >= 0 && index < currentSuggestions.length) {
-            queryInput.value = currentSuggestions[index];
+            const cursorPosition = queryInput.selectionStart;
+            const textBeforeCursor = queryInput.value.substring(0, cursorPosition);
+            const textAfterCursor = queryInput.value.substring(cursorPosition);
+            const lines = textBeforeCursor.split('\n');
+            const currentLine = lines.pop();
+            const newText = textBeforeCursor.substring(0, textBeforeCursor.length - currentLine.length) + 
+                          currentSuggestions[index] + textAfterCursor;
+            
+            queryInput.value = newText;
             hideAutocomplete();
             queryInput.focus();
         }
