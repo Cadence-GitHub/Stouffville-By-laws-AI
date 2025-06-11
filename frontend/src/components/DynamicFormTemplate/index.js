@@ -1,13 +1,13 @@
 'use client'
-import { useState, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAtomValue } from 'jotai';
-import { form } from "@/atoms/formAtom.js";
 
 import CustomTextArea from "../CustomTextArea";
-import CustomInput from "../CustomInput";
 import MyPlaceHolders from "../PlaceHolderQueries";
 import CustomDropdown from "../CustomDropdown";
+
+import { useAtom, useSetAtom } from 'jotai';
+import { form, submitSignalAtom, useIsSimpleFormFilled, useIsAdvancedFormFilled, defaultValues } from '@/atoms/formAtom';
 
 const DynamicFormTemplate = () => {
     
@@ -16,22 +16,52 @@ const DynamicFormTemplate = () => {
     // user clicks on <p>Advanced Search<p/> or <p>Simple Search<p/>
     const [useAdvancedForm, setUseAdvancedForm] = useState(false);
     const [useFormLabel, setUseFormLabel] = useState("Switch to Advanced search");
+    const [submitSignal, setSubmitSignal] = useAtom(submitSignalAtom);
+    
+    const simpleFormComplete = useIsSimpleFormFilled();
+    const advancedFormComplete = useIsAdvancedFormFilled();
+
+    const setForm = useSetAtom(form);
+
+    useEffect(() => {
+        setForm(defaultValues);
+        setSubmitSignal(false);
+
+    }, [setForm]);
+
 
     const router = useRouter();       
+    const formRef = useRef(null);    
     
     const handleSwitch = () => {
         setUseAdvancedForm(prev => ! prev);
         useFormLabel === "Switch to Advanced search" ? setUseFormLabel("Switch to Simple search") : setUseFormLabel("Switch to Advanced search");
-    }
-
+    }    
+    
     const handleSubmit = (e) => {
         e.preventDefault();
-        router.push("/chat-page")
+
+        setSubmitSignal(true); // triggers children to validate their inputs
+        
+        if(useAdvancedForm === false) {
+            if(simpleFormComplete === true) {
+                setSubmitSignal(false);
+                router.push("/chat-page");
+            } 
+
+        } else if (useAdvancedForm === true) {            
+            if(advancedFormComplete === true) {
+                setSubmitSignal(false);
+                router.push("/chat-page");
+            }
+        }        
+
+        setSubmitSignal(true);
     }
     
     return (
         <div>
-            <form onSubmit={(e) => handleSubmit(e)}>                
+            <form ref={formRef} onSubmit={(e) => handleSubmit(e)}>                
                 {!useAdvancedForm ? (<SimpleForm placeholder={MyPlaceHolders()}/>) : (<AdvancedForm placeholder={MyPlaceHolders()}/>)}                                
             </form>
 
@@ -56,11 +86,11 @@ const SimpleForm = ({placeholder}) => {
 };
 
 
-const AdvancedForm = ({placeholder, handleSelect}) => {
+const AdvancedForm = ({placeholder}) => {
     
     return (
         <div className="form">
-            <CustomDropdown selection={[{ value: "active", label: "Active By-laws" }, { value: "inactive", label: "Inactive By-laws" }, { value: 2, label: "All By-laws" }]} field="bylaw_status" placeholder={"Active / In-active Bylaws"}/>
+            <CustomDropdown selection={[{ value: "active", label: "Active By-laws" }, { value: "inactive", label: "Inactive By-laws" }, { value: "all", label: "All By-laws" }]} field="bylaw_status" placeholder={"Active / In-active Bylaws"}/>
             <CustomDropdown selection={[{ value: true, label: "Simple Language" }, { value: false, label: "Legalese Language" }]} field="laymans_answer" placeholder={"Simple / Legalese Language"}/>
             <CustomTextArea field="query" placeholder={placeholder}/>
         </div>

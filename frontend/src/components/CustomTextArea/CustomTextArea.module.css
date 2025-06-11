@@ -26,12 +26,11 @@
 }
 
 .errorText {
-    position: relative;
-    color: red;
-    font-size: 0.875rem;
-    bottom: 25px;
+  position: relative;
+  color: red;
+  font-size: 0.875rem;
+  bottom: 20px;
 }
-
 
 @media (max-width: 600px) {
     .textareaInput {

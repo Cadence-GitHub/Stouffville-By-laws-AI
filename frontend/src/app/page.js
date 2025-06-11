@@ -2,7 +2,6 @@
 import DynamicFormTemplate from "@/components/DynamicFormTemplate";
 
 export default function Home() {
-  
   return (
     <div className="contentContainer">
       <div>        

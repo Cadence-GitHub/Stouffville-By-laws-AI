@@ -131,6 +131,14 @@ body {
   color: #004c82;
 }
 
+.errorText {
+  position: absolute;
+  color: red;
+  font-size: 0.875rem;
+  top: 30px;
+  left: 95px;
+}
+
 
 @media (max-width: 600px) {
   .buttonRoute {

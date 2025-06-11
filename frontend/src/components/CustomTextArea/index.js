@@ -1,7 +1,7 @@
 'use client'
 import { useRef, useEffect, useState } from "react";
-import { useAtom } from 'jotai';
-import { form } from '@/atoms/formAtom.js';
+import { useAtom, useAtomValue } from 'jotai';
+import { form, submitSignalAtom } from "@/atoms/formAtom.js";
 import styles from "./CustomTextArea.module.css"
 
 const CustomTextArea = ({placeholder, field, ...props}) => {
@@ -9,6 +9,7 @@ const CustomTextArea = ({placeholder, field, ...props}) => {
 
     const [formPackage, setForm] = useAtom(form);
     const [showEmptyError, setShowEmptyError] = useState(false);
+    const [submitSignal, setSubmitSignal] = useAtom(submitSignalAtom);
 
     const resizeOnInput = () => {
         
@@ -37,17 +38,19 @@ const CustomTextArea = ({placeholder, field, ...props}) => {
     const handleEnter = (e) => {                
         if (e.key === "Enter" && !e.shiftKey) {
             
+            console.log("in customTextArea handlEnter");
             if(e.target.value === "") {
 
                 e.preventDefault(); 
                 setShowEmptyError(true);
-                textAreaRef.current?.focus();                
+                textAreaRef.current?.focus();    
+                console.log("textarea is \"\"");
 
             } else { 
 
                 e.preventDefault();                            
                 setForm({ ...formPackage, [field]: formPackage[field] || ""});                
-                            
+                console.log("textarea is not \"\"");                            
                 e.target.form?.requestSubmit();      
             }                        
         }                         
@@ -60,6 +63,21 @@ const CustomTextArea = ({placeholder, field, ...props}) => {
             setShowEmptyError(false);
         }
     }
+
+    // Handles the behaviour of checking whether or not it has a non-empty value
+    useEffect(() => {
+        if(!submitSignal) {
+            return; // Doesnt do any checking if user has not submmited
+        }
+
+        if(textAreaRef.current.value !== "") {
+            console.log("textarea has value");
+            setShowEmptyError(false);
+        } else { 
+            console.log("textarea is missing value");
+            setShowEmptyError(true);
+        }
+    }, [submitSignal]);
 
     return (
         <div className={styles.inputWrapper}>   
