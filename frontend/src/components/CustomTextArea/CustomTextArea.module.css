@@ -25,6 +25,39 @@
     margin-bottom: 50px;
 }
 
+.suggestionDropDown {
+    position: relative;
+    left: 120px;
+    bottom: 20px;
+
+    position: relative;
+    width: 330px;
+    min-height: 75px;
+    border-radius: 5px;
+    padding: 5px;
+    box-sizing: border-box;
+
+    background-color: white;
+    border: solid thin;
+    bottom: 20px;
+
+    font-size: small;
+    font-weight: 600;
+    color: #444444;
+    z-index: 1;
+}
+
+.dropdown_item {
+    padding: 10px 0px 5px 0px;
+    cursor: pointer;
+    color: black;
+}
+
+.dropdown-item:hover {
+    text-decoration: underline;
+    background-color: #f1f1f1;
+}
+
 .errorText {
   position: relative;
   color: red;

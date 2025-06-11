@@ -10,7 +10,8 @@ const CustomTextArea = ({placeholder, field, ...props}) => {
     const [formPackage, setForm] = useAtom(form);
     const [showEmptyError, setShowEmptyError] = useState(false);
     const [submitSignal, setSubmitSignal] = useAtom(submitSignalAtom);
-
+    const [aiSuggestions, setAiSuggestions] = useState([]);
+    
     const resizeOnInput = () => {
         
         let elementRef = textAreaRef.current;
@@ -57,12 +58,57 @@ const CustomTextArea = ({placeholder, field, ...props}) => {
     }
 
 
-    const handleChange = (e) => {            
-        setForm({ ...formPackage, [field]: e.target?.value || "" });
-        if (e.target.value.trim() !== "") {
+    // const handleChange = async (e) => {                    
+    //     try {            
+    //         setForm({ ...formPackage, [field]: e.target?.value || "" });
+    //         if (e.target.value.trim() !== "") {
+    //             setShowEmptyError(false);
+
+    //         }
+
+    //         const response = await fetch('api/autocomplete', {
+    //             method: 'POST',
+    //             headers: { 'Content-Type': 'application/json'},
+    //             body: JSON.stringify({query: formPackage.query})
+    //         });
+
+    //         if (!response.ok) throw new Error('Failed to submit');
+
+    //         const data = await response.json();
+    //         setAiSuggestions(data.result);
+    //         console.log("Response from autocomplete API:", data);        
+    //     } catch (error) {
+    //         console.error("Submission error:", error);
+    //     }
+
+    // }
+
+    const handleChange = async (e) => {
+        try {
+            const updatedForm = { ...formPackage, [field]: e.target?.value || "" };
+            setForm(updatedForm);
+
+            if (e.target.value.trim() !== "") {
             setShowEmptyError(false);
+            }
+
+            const response = await fetch('/api/autocomplete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ query: updatedForm.query })
+            });
+
+            if (!response.ok) throw new Error('Failed to fetch suggestions');
+
+            const data = await response.json();
+            setAiSuggestions(data.result.suggestions); // Use `result` instead of `suggestions`
+            console.log("Response from autocomplete API:", data);
+
+        } catch (error) {
+            console.error("Autocomplete error:", error);
         }
-    }
+    };
+
 
     // Handles the behaviour of checking whether or not it has a non-empty value
     useEffect(() => {
@@ -79,6 +125,12 @@ const CustomTextArea = ({placeholder, field, ...props}) => {
         }
     }, [submitSignal]);
 
+
+    // Handles getting the suggestions
+    useEffect(() => {
+
+    }, []);
+
     return (
         <div className={styles.inputWrapper}>   
             <textarea 
@@ -94,6 +146,30 @@ const CustomTextArea = ({placeholder, field, ...props}) => {
                 rows={1}                
                 >
             </textarea>
+
+            
+            
+            <div className={styles.suggestionDropDown}>
+                {aiSuggestions.map((suggestion, index) => (
+                    <div key={index} onClick={() => handleSelect(suggestion)} className={styles.dropdown_item}>
+                        {suggestion}
+                    </div>
+                ))}
+            </div>
+            {/* {aiSuggestions.length > 0 && (
+            )} */}
+            
+            
+            {/* {aiSuggestions && (
+                <div className={styles.suggestionDropDown}>
+                    {aiSuggestions.map((suggestion) => (
+                        <div key={suggestion} onClick={() => handleSelect(suggestion)} className={styles.dropdown_item}>                  
+                            {suggestion}
+                        </div>
+                    ))}
+                </div>
+            )} */}
+
             {showEmptyError && (
                 <p className={styles.errorText}>Please fill out this field</p> 
             )}

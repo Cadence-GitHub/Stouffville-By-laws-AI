@@ -19,6 +19,12 @@ const ChatPage = () => {
   const [aiResponse, setAIResponse] = useState(null);
   const [submitted, setSubmittedFlag] = useState(false);
   
+  // TODO: Refactor to get rid of problem message
+  useEffect(() => {
+    handleSubmit();
+    displayQuery();
+    setSubmittedFlag(true);
+  }, []);
   
   const handleClick = (e) => {
     if(isElementEmpty(chatTextAreaRef.current)) {        
@@ -102,13 +108,6 @@ const ChatPage = () => {
       </div>  
     );
   }
-
-  useEffect(() => {
-      handleSubmit();
-      displayQuery();
-      setSubmittedFlag(true);
-  }, []);
-
 
   return (    
     <>
