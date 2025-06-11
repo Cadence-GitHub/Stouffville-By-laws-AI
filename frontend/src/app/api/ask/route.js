@@ -5,7 +5,7 @@ export async function POST(request) {
 
     console.log("Received formPackage:", body);
 
-    const externalResponse = await fetch('https://bylaws.freemyip.com/api/ask', {
+    const externalResponse = await fetch('https://bylaws.aicircle.ca/api/ask', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -12,6 +12,7 @@
   font-style: italic;
 
   display: flex;
+  flex-direction: column;
 
   max-width: 85vw;
   padding: 1em 1.5em;     
@@ -25,5 +26,34 @@
   font-size: clamp(0.9rem, 1.2vw, 1.1rem);
   line-height: 1.4;
   word-break: break-word;
-  }
-  
+}
+
+.footerLinks {
+  display: flex;
+  justify-content: center;
+  margin-top: 15px;
+  gap: 15px;
+  font-style: normal;
+  flex-wrap: wrap;
+}
+
+.iconLink {
+  display: inline-block;
+  align-items: center;
+  color: white;
+  font-size: clamp(0.9rem, 1.2vw, 1.1rem);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.iconLink span {
+  display: inline-block;
+}
+
+.iconLink svg {
+  width: 1.5em;  /* or any fixed px/em/rem size */
+  height: 1.5em;
+  vertical-align: text-bottom; /* optional for better alignment */
+}
+
+

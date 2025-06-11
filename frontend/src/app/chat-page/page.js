@@ -104,10 +104,10 @@ const ChatPage = () => {
   }
 
   useEffect(() => {
-    if (submitted) {
+      handleSubmit();
+      displayQuery();
       setSubmittedFlag(true);
-    }
-  }, [submitted]);
+  }, []);
 
 
   return (    
