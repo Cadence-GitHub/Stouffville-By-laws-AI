@@ -19,7 +19,8 @@ const ChatPage = () => {
   const [aiResponse, setAIResponse] = useState(null);
   const [submitted, setSubmittedFlag] = useState(false);
   const [useDetailedAnswer, setDetailedAnswer] = useState(false);
-  const [useAnswerType, setAnswerType] = useState("Show Detailed Answer");
+  const [useButtonAnswerType, setButtonAnswerType] = useState("Show Detailed Answer");
+  const [shownAnswer, setShownAnswer ] = useState("");
   
   // TODO: Refactor to get rid of problem message
   useEffect(() => {
@@ -27,6 +28,41 @@ const ChatPage = () => {
     displayQuery();
     setSubmittedFlag(true);
   }, []);
+
+  useEffect(() => {
+    
+    if(aiResponse) {
+      const simpleResponse = aiResponse.laymans_answer; // No by-law references
+      const advancedResponse = aiResponse.answer; // With by-law references
+      const filtered = aiResponse.filtered_answer; // Active bylaws only
+      
+      // Six combinations
+      // active and simple
+      // active and advanced
+      // inactive and simple
+      // inactive and advanced
+      // all and simple
+      // all and advanced
+          
+      useDetailedAnswer ? setShownAnswer(advancedResponse) : setShownAnswer(simpleResponse);
+    }
+    
+    
+    
+
+  },[aiResponse, useDetailedAnswer])
+
+  const displayResponse = () => {          
+    return (
+      <div className={styles.messagesWrapper}>
+        <div className={styles.systemMessage}>                      
+          <div>{parse(shownAnswer)}</div>                       
+          <button onClick={() => handleAnswerSwitch()} className={styles.buttonSwitch}>{useButtonAnswerType}</button>
+        </div>
+      </div>  
+    );
+  }
+
   
   const handleClick = (e) => {
     if(isElementEmpty(chatTextAreaRef.current)) {        
@@ -52,6 +88,7 @@ const ChatPage = () => {
         setShowEmptyError(false);        
         setCurrentQuery(chatTextAreaRef.current.value);
         handleSubmit();           
+        chatTextAreaRef.current.value = ""
       }      
     }                                                         
 
@@ -59,13 +96,12 @@ const ChatPage = () => {
   }
 
   const handleChange = () => {         
-    const userQuery = chatTextAreaRef.current.value;;
     setForm({...formPackage, query: chatTextAreaRef.current.value || ""});    
     setShowEmptyError(false);
   }
 
 
-  // Only queries the API when the user actually has something typed in
+  // Queries the API when user submits the field
   const handleSubmit = async () => {
     if(formPackage.query !== "") {
       try {
@@ -79,6 +115,7 @@ const ChatPage = () => {
 
         const data = await response.json();
         setAIResponse(data.result);
+        setShownAnswer(data.result.laymans_answer)
         console.log("Response from API:", data);
       
       } catch (error) {
@@ -97,28 +134,10 @@ const ChatPage = () => {
     );    
   }
 
-  const displayResponse = () => {      
-    
-    if(!aiResponse) return null;
-    
-    const simpleResponse = aiResponse.laymans_answer; // No by-law references
-    const advancedResponse = aiResponse.answer; // With by-law references
-    const filtered = aiResponse.filtered_answer; // Active bylaws only
-    
-    return (
-      <div className={styles.messagesWrapper}>
-        <div className={styles.systemMessage}>                      
-          <div>{parse(simpleResponse)}</div>                       
-          <button onClick={() => handleAnswerSwitch()} className={styles.buttonSwitch}>{useAnswerType}</button>
-        </div>
-      </div>  
-    );
-  }
-
   const handleAnswerSwitch = () => {
     setDetailedAnswer(prev => {
       const newState = !prev;
-      setAnswerType(newState ? "Show Simple Answer" : "Show Detailed Answer");
+      setButtonAnswerType(newState ? "Show Simple Answer" : "Show Detailed Answer");
       return newState;
     });
 };
