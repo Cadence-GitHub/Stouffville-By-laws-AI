@@ -4,7 +4,7 @@ import Image from "next/image";
 import { isElementEmpty } from "@/utils/isElementEmpty";
 import styles from "./page.module.css";
 import { useRef, useState, useEffect } from "react";
-import { useAtom } from 'jotai';
+import { useAtom, useAtomValue } from 'jotai';
 import { form } from '@/atoms/formAtom';
 
 
@@ -18,6 +18,8 @@ const ChatPage = () => {
   const [showEmptyError, setShowEmptyError] = useState(false);
   const [aiResponse, setAIResponse] = useState(null);
   const [submitted, setSubmittedFlag] = useState(false);
+  const [useDetailedAnswer, setDetailedAnswer] = useState(false);
+  const [useAnswerType, setAnswerType] = useState("Show Detailed Answer");
   
   // TODO: Refactor to get rid of problem message
   useEffect(() => {
@@ -48,7 +50,7 @@ const ChatPage = () => {
         setSubmittedFlag(true);
         setForm({...formPackage, query: chatTextAreaRef.current.value || ""});                                          
         setShowEmptyError(false);        
-        setCurrentQuery("");
+        setCurrentQuery(chatTextAreaRef.current.value);
         handleSubmit();           
       }      
     }                                                         
@@ -57,57 +59,70 @@ const ChatPage = () => {
   }
 
   const handleChange = () => {         
-    const userQuery = chatTextAreaRef.current.value;
-    setCurrentQuery(userQuery);
+    const userQuery = chatTextAreaRef.current.value;;
     setForm({...formPackage, query: chatTextAreaRef.current.value || ""});    
     setShowEmptyError(false);
   }
 
 
+  // Only queries the API when the user actually has something typed in
   const handleSubmit = async () => {
-    try {
-      const response = await fetch('api/ask', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json'},
-        body: JSON.stringify({query: formPackage.query, bylaw_status: formPackage.bylaw_status})
-      });
+    if(formPackage.query !== "") {
+      try {
+        const response = await fetch('api/ask', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json'},
+          body: JSON.stringify({query: formPackage.query, bylaw_status: formPackage.bylaw_status})
+        });
 
-      if (!response.ok) throw new Error('Failed to submit');
+        if (!response.ok) throw new Error('Failed to submit');
 
-      const data = await response.json();
-      setAIResponse(data.result);
-      console.log("Response from API:", data);
-    
-    } catch (error) {
-      console.error("Submission error:", error);
+        const data = await response.json();
+        setAIResponse(data.result);
+        console.log("Response from API:", data);
+      
+      } catch (error) {
+        console.error("Submission error:", error);
+      }
     }
   }
   
-  const displayQuery = () => {      
+  const displayQuery = () => {              
     return (
       <div className={styles.messagesWrapper}>                          
           <div className={styles.userMessage}>
-            {formPackage.query}                  
+            {currentQuery}                  
           </div>
       </div>
-    );
+    );    
   }
 
   const displayResponse = () => {      
     
     if(!aiResponse) return null;
     
-    const simpleResponse = aiResponse.laymans_answer;
-    // const advancedResponse = aiResponse.answer;
-    // const filtered = aiResponse.filtered_answer;    
+    const simpleResponse = aiResponse.laymans_answer; // No by-law references
+    const advancedResponse = aiResponse.answer; // With by-law references
+    const filtered = aiResponse.filtered_answer; // Active bylaws only
+    
     return (
       <div className={styles.messagesWrapper}>
         <div className={styles.systemMessage}>                      
           <div>{parse(simpleResponse)}</div>                       
+          <button onClick={() => handleAnswerSwitch()} className={styles.buttonSwitch}>{useAnswerType}</button>
         </div>
       </div>  
     );
   }
+
+  const handleAnswerSwitch = () => {
+    setDetailedAnswer(prev => {
+      const newState = !prev;
+      setAnswerType(newState ? "Show Simple Answer" : "Show Detailed Answer");
+      return newState;
+    });
+};
+
 
   return (    
     <>
@@ -126,7 +141,6 @@ const ChatPage = () => {
                 <textarea 
                   ref={chatTextAreaRef} 
                   className={styles.textareaChat} 
-                  value={currentQuery || ""}
                   placeholder="Ask Anything"
                   onKeyDown={handleEnter}
                   onChange={handleChange}

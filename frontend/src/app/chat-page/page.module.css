@@ -80,6 +80,32 @@
     z-index: 1;    
 }
 
+.buttonSwitch { 
+    font-size: 15px; 
+    width: 180px;
+    height: 30px;
+    color: #0060A1;
+    background-color: white;
+    font-weight: 600;
+    border-radius: 5px;
+    border: 2px solid #0060A1;
+    cursor: pointer;
+    white-space: nowrap;
+}   
+
+.buttonSwitch:hover {
+    background-color: #004A8F;
+    color: white;
+}
+
+.buttonSwitch:active {
+    transform: translateY(2px);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+
+}
+
+
 .errorText {
     position: relative;
     color: red;
