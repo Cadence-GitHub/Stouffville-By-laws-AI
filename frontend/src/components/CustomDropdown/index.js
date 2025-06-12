@@ -1,7 +1,7 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
 import { useAtom, useAtomValue } from 'jotai'
-import { form, submitSignalAtom } from "@/atoms/formAtom.js";
+import { formAtom, submitSignalAtom } from "@/atoms/formAtom.js";
 import Image from 'next/image';
 import styles from './CustomDropdown.module.css'; // Import CSS file
 
@@ -19,9 +19,10 @@ import styles from './CustomDropdown.module.css'; // Import CSS file
 const CustomDropdown = ({ selection, placeholder, field }) => {
 
   const [isOpen, setIsOpen] = useState(false);
-  const [selected, setSelected] = useState(placeholder);
+  const [selected, setSelected] = useState("");
+  const [useDisplaySelected, setDisplaySelected] = useState(placeholder);
   const [rotation, setRotation] = useState(0);
-  const [formPackage, setForm] = useAtom(form);
+  const [formPackage, setForm] = useAtom(formAtom);
   const [showEmptyError, setShowEmptyError] = useState(false);
   
   const submitSignal = useAtomValue(submitSignalAtom);
@@ -59,17 +60,17 @@ const CustomDropdown = ({ selection, placeholder, field }) => {
       return; // Doesnt do any checking if user has not submmited
     }
     
-    if(options.includes(selected)){
-      console.log("Dropdown has value");
+    if (options.some((opt) => opt.value === selected)) {      
       setShowEmptyError(false);
     } else { 
-      console.log("Dropdown is missing value");
       setShowEmptyError(true);
     }
+
   }, [submitSignal]);
   
   const handleSelect = (option) => {
-    setSelected(option.label);
+    setSelected(option.value);
+    setDisplaySelected(option.label);
     setForm({...formPackage, [field]: option.value});    
     setIsOpen(false);
     setShowEmptyError(false);
@@ -79,9 +80,10 @@ const CustomDropdown = ({ selection, placeholder, field }) => {
     setIsOpen((prev) => !prev);
   };
 
+
   return (    
     <div ref={dropDownRef} className={styles.customDropDownWrapper}>      
-      <div className={styles.selectedOption} > {selected} </div>
+      <div className={styles.selectedOption} > {useDisplaySelected} </div>
 
       <div className={styles.dropdown_overlayImage}>
           <Image 
@@ -97,8 +99,8 @@ const CustomDropdown = ({ selection, placeholder, field }) => {
       
       {isOpen && (
         <div className={styles.dropdown_list}>
-          {options.map((option) => (
-              <div key={option.label} onClick={() => handleSelect(option)} className={styles.dropdown_item}>                  
+          {options.map((option, index) => (
+              <div key={index} onClick={() => handleSelect(option)} className={styles.dropdown_item}>                  
                   {option.label}
               </div>
           ))}

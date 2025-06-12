@@ -5,29 +5,48 @@ import { isElementEmpty } from "@/utils/isElementEmpty";
 import styles from "./page.module.css";
 import { useRef, useState, useEffect } from "react";
 import { useAtom, useAtomValue } from 'jotai';
-import { form } from '@/atoms/formAtom';
-
-
+import { formAtom, submitSignalAtom } from "@/atoms/formAtom.js";
 
 const ChatPage = () => {  
-
   let chatTextAreaRef = useRef(null);
 
-  const [formPackage, setForm] = useAtom(form);
+  const [formPackage, setForm] = useAtom(formAtom);
+
   const [currentQuery, setCurrentQuery] = useState("");
   const [showEmptyError, setShowEmptyError] = useState(false);
-  const [aiResponse, setAIResponse] = useState(null);
+  const [aiResponse, setAIResponse] = useState({});
   const [submitted, setSubmittedFlag] = useState(false);
   const [useDetailedAnswer, setDetailedAnswer] = useState(false);
-  const [useAnswerType, setAnswerType] = useState("Show Detailed Answer");
+  const [useButtonAnswerType, setButtonAnswerType] = useState("Show Detailed Answer");
+  const [shownAnswer, setShownAnswer] = useState(null);
   
-  // TODO: Refactor to get rid of problem message
   useEffect(() => {
-    handleSubmit();
-    displayQuery();
     setSubmittedFlag(true);
+    setCurrentQuery(formPackage.query);
+    displayQuery();    
+    handleSubmit();
   }, []);
   
+  useEffect(() => {
+    setButtonAnswerType(useDetailedAnswer ? "Show Simple Answer" : "Show Detailed Answer");
+  }, [useDetailedAnswer]);
+  
+  const handleAnswerSwitch = () => {
+    const isCurrentlyDetailed = useDetailedAnswer; // snapshot of current state
+
+    // First: set the new answer (based on what the current state is)
+    if (isCurrentlyDetailed) {
+      setShownAnswer(aiResponse.laymans_answer);
+    } else {
+      setShownAnswer(aiResponse.answer);
+    }
+
+    // Then toggle the state
+    setDetailedAnswer(prev => !prev);
+    // displayResponse();
+  };
+
+
   const handleClick = (e) => {
     if(isElementEmpty(chatTextAreaRef.current)) {        
       e.preventDefault(); 
@@ -35,7 +54,7 @@ const ChatPage = () => {
     } else { 
       setForm({...formPackage, query: chatTextAreaRef.current.value || ""});    
       setShowEmptyError(false);
-      handleSubmit();
+      setSignalAtom(true);
       setCurrentQuery("");
     }
   }
@@ -51,7 +70,9 @@ const ChatPage = () => {
         setForm({...formPackage, query: chatTextAreaRef.current.value || ""});                                          
         setShowEmptyError(false);        
         setCurrentQuery(chatTextAreaRef.current.value);
-        handleSubmit();           
+        handleSubmit(); 
+        displayResponse();
+        chatTextAreaRef.current.value = ""
       }      
     }                                                         
 
@@ -59,35 +80,34 @@ const ChatPage = () => {
   }
 
   const handleChange = () => {         
-    const userQuery = chatTextAreaRef.current.value;;
     setForm({...formPackage, query: chatTextAreaRef.current.value || ""});    
     setShowEmptyError(false);
   }
 
-
-  // Only queries the API when the user actually has something typed in
-  const handleSubmit = async () => {
-    if(formPackage.query !== "") {
-      try {
-        const response = await fetch('api/ask', {
+  // Queries the API when user submits the field
+  const handleSubmit = async () => {    
+    try {                  
+      const response = await fetch('/api/ask', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json'},
-          body: JSON.stringify({query: formPackage.query, bylaw_status: formPackage.bylaw_status})
-        });
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: formPackage.query, status: formPackage.bylaw_status })
+      });
 
-        if (!response.ok) throw new Error('Failed to submit');
-
-        const data = await response.json();
-        setAIResponse(data.result);
-        console.log("Response from API:", data);
+      if (!response.ok) throw new Error('Failed to query ASK api');
       
-      } catch (error) {
-        console.error("Submission error:", error);
+      const data = await response.json();
+      if(data) {                
+        setAIResponse(data.result);
       }
+
+      console.log("Response from ask API:", data);                         
+            
+    } catch (error) {
+      console.error("Ask API error:", error);
     }
   }
   
-  const displayQuery = () => {              
+  const displayQuery = () => {                  
     return (
       <div className={styles.messagesWrapper}>                          
           <div className={styles.userMessage}>
@@ -97,32 +117,62 @@ const ChatPage = () => {
     );    
   }
 
-  const displayResponse = () => {      
+  // Has behaviour set to open the embedded <a> links from filteredResponse in a new tab
+  // sets target and rel to a set value to prevent tabnabbing  
+  useEffect(() => {            
+    if(formPackage.laymans_answer === true) {
+      setShownAnswer(aiResponse.laymans_answer)
+    } else {
+      setShownAnswer(aiResponse.filtered_answer)
+    }                                                
+  }, [aiResponse, formPackage.laymans_answer]);
+  
+  const displayResponse = () => {                 
     
-    if(!aiResponse) return null;
-    
-    const simpleResponse = aiResponse.laymans_answer; // No by-law references
-    const advancedResponse = aiResponse.answer; // With by-law references
-    const filtered = aiResponse.filtered_answer; // Active bylaws only
+    console.log("shownAnswer:", shownAnswer, typeof shownAnswer);
+    if (typeof shownAnswer !== "string" || shownAnswer.trim() === "") {
+      return null;
+    }
     
     return (
       <div className={styles.messagesWrapper}>
         <div className={styles.systemMessage}>                      
-          <div>{parse(simpleResponse)}</div>                       
-          <button onClick={() => handleAnswerSwitch()} className={styles.buttonSwitch}>{useAnswerType}</button>
+          <div>
+            {parse(shownAnswer, {
+              replace: (domNode) => {
+                // Handle <bylaw_url>
+                if (domNode.name === "bylaw_url" && domNode.children?.[0]?.data) {
+                  const bylawText = domNode.children[0].data;
+                  const bylawCode = bylawText.match(/\d{4}-\d{3}/)?.[0] ?? "unknown";
+                  return (
+                    <a
+                      href={`/static/bylawViewer.html?bylaw=${bylawCode}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {bylawText}
+                    </a>
+                  );
+                }
+
+                // Handle <filtered_response>
+                if (domNode.name === "filtered_response" && domNode.children?.[0]?.data) {
+                  return (
+                    <span className="filtered-response">
+                      {domNode.children[0].data}
+                    </span>
+                  );
+                }
+
+                return undefined; // fallback to default behavior
+              }
+            })}          
+          <button onClick={() => handleAnswerSwitch()} className={styles.buttonSwitch}>{useButtonAnswerType}</button>
+          </div>            
         </div>
       </div>  
     );
   }
-
-  const handleAnswerSwitch = () => {
-    setDetailedAnswer(prev => {
-      const newState = !prev;
-      setAnswerType(newState ? "Show Simple Answer" : "Show Detailed Answer");
-      return newState;
-    });
-};
-
 
   return (    
     <>

@@ -7,7 +7,17 @@ import MyPlaceHolders from "../PlaceHolderQueries";
 import CustomDropdown from "../CustomDropdown";
 
 import { useAtom, useSetAtom } from 'jotai';
-import { form, submitSignalAtom, useIsSimpleFormFilled, useIsAdvancedFormFilled, defaultValues } from '@/atoms/formAtom';
+import { formAtom, submitSignalAtom, defaultValues, useIsSimpleFormFilled, useIsAdvancedFormFilled } from '@/atoms/formAtom';
+
+// Custom hook here will be refactored later - just wanted to get this thing done
+export const useIsAllFieldsFilled = (formType) => {
+  const simple = useIsSimpleFormFilled();
+  const advanced = useIsAdvancedFormFilled();
+
+  if (formType === 1) return simple;
+  if (formType === 2) return advanced;
+  return false;
+};
 
 const DynamicFormTemplate = () => {
     
@@ -17,18 +27,18 @@ const DynamicFormTemplate = () => {
     const [useAdvancedForm, setUseAdvancedForm] = useState(false);
     const [useFormLabel, setUseFormLabel] = useState("Switch to Advanced search");
     const [submitSignal, setSubmitSignal] = useAtom(submitSignalAtom);
-    
-    const simpleFormComplete = useIsSimpleFormFilled();
-    const advancedFormComplete = useIsAdvancedFormFilled();
 
-    const setForm = useSetAtom(form);
+    const setForm = useSetAtom(formAtom);
+    
+    // 1: check simple form
+    // 2: check advanced form
+    const formType = useAdvancedForm ? 2 : 1; 
+    const isAllFieldsFilled = useIsAllFieldsFilled(formType);
 
     useEffect(() => {
         setForm(defaultValues);
-        setSubmitSignal(false);
-
+        setSubmitSignal(false);        
     }, [setForm]);
-
 
     const router = useRouter();       
     const formRef = useRef(null);    
@@ -37,26 +47,25 @@ const DynamicFormTemplate = () => {
         setUseAdvancedForm(prev => ! prev);
         useFormLabel === "Switch to Advanced search" ? setUseFormLabel("Switch to Simple search") : setUseFormLabel("Switch to Advanced search");
     }    
+
     
     const handleSubmit = (e) => {
         e.preventDefault();
 
         setSubmitSignal(true); // triggers children to validate their inputs
-        
-        if(useAdvancedForm === false) {
-            if(simpleFormComplete === true) {
-                setSubmitSignal(false);
-                router.push("/chat-page");
-            } 
 
-        } else if (useAdvancedForm === true) {            
-            if(advancedFormComplete === true) {
-                setSubmitSignal(false);
+        if(useAdvancedForm === false) {
+            if(isAllFieldsFilled === true) {
                 router.push("/chat-page");
             }
-        }        
 
-        setSubmitSignal(true);
+        } else if (useAdvancedForm === true) {            
+            if(isAllFieldsFilled === true) {             
+                router.push("/chat-page");
+            }
+        } else {
+            setSubmitSignal(false);
+        }
     }
     
     return (

@@ -1,7 +1,7 @@
 'use client'
 import { useRef, useEffect, useState } from "react";
 import { useAtom, useAtomValue } from 'jotai';
-import { form, submitSignalAtom } from "@/atoms/formAtom.js";
+import { formAtom, submitSignalAtom } from "@/atoms/formAtom.js";
 import styles from "./CustomTextArea.module.css"
 
 /**
@@ -15,7 +15,7 @@ import styles from "./CustomTextArea.module.css"
 const CustomTextArea = ({ placeholder, field, ...props }) => {
     const textAreaRef = useRef(null);
     const [isOpen, setIsOpen] = useState(false);
-    const [formPackage, setForm] = useAtom(form);
+    const [formPackage, setForm] = useAtom(formAtom);
     const [showEmptyError, setShowEmptyError] = useState(false);
     const [aiSuggestions, setAiSuggestions] = useState([]);
     const submitSignal = useAtomValue(submitSignalAtom);
@@ -45,19 +45,16 @@ const CustomTextArea = ({ placeholder, field, ...props }) => {
     const handleEnter = (e) => {                
         if (e.key === "Enter" && !e.shiftKey) {
             
-            console.log("in customTextArea handlEnter");
-            if(e.target.value === "") {
+            if(e.target.value.trim() === "") {
 
                 e.preventDefault(); 
                 setShowEmptyError(true);
                 textAreaRef.current?.focus();    
-                console.log("textarea is \"\"");
 
             } else { 
 
                 e.preventDefault();                            
-                setForm({ ...formPackage, [field]: formPackage[field] || ""});                
-                console.log("textarea is not \"\"");                            
+                setForm({ ...formPackage, [field]: String(e.target?.value).trim()});                                    
                 e.target.form?.requestSubmit();      
             }                        
         }                         
@@ -65,11 +62,12 @@ const CustomTextArea = ({ placeholder, field, ...props }) => {
 
     // fetches auto complete suggestions and controls when the list of suggestions show
     const handleChange = async (e) => {
-        try {
-            const updatedForm = { ...formPackage, [field]: e.target?.value || "" };
-            setForm(updatedForm);
-            setShowEmptyError(false);
 
+        const updatedForm = { ...formPackage, [field]: String(e.target?.value)};
+        setForm(updatedForm);
+        setShowEmptyError(false);        
+        
+        try {                  
             const response = await fetch('/api/autocomplete', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -81,18 +79,19 @@ const CustomTextArea = ({ placeholder, field, ...props }) => {
             
             const data = await response.json();
             setAiSuggestions(data.result.suggestions); // Use `result` instead of `suggestions`
-            console.log("Response from autocomplete API:", data);
+            console.log("Response from autocomplete API:", data);                     
             
             // only show the suggestion list if the user actually has something typed in the field
             if(e.target?.value === "") {
-                setIsOpen(false);
+                setIsOpen(false);            
             } else { 
-                setIsOpen(true);
-            }                        
-
+                setIsOpen(true);                
+            } 
+            
         } catch (error) {
             console.error("Autocomplete error:", error);
         }
+         
     };
 
 
@@ -103,12 +102,10 @@ const CustomTextArea = ({ placeholder, field, ...props }) => {
             return; // Doesnt do any checking if user has not submmited
         }
 
-        if(textAreaRef.current.value !== "") {
-            console.log("textarea has value");
-            setShowEmptyError(false);
-        } else { 
-            console.log("textarea is missing value");
+        if(textAreaRef.current.value.trim() === "") {
             setShowEmptyError(true);
+        } else { 
+            setShowEmptyError(false);
         }
     }, [submitSignal]);
 

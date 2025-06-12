@@ -58,6 +58,7 @@
     align-items: center;
     height: 90px;
     width: 350px;
+    padding-top: 20px;
 }
 
 .textareaChat {
