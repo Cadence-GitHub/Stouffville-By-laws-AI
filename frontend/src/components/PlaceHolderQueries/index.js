@@ -10,8 +10,14 @@ const getRandomMessage = () => {
     return starterQueries[Math.floor(Math.random() * starterQueries.length)];
 }
 
-// Returns a message based on a randomly generated integer from 0 to whatever the length of the array above:        
-const PlaceHolderQueries = () => {   
+/**
+ * Returns a randomly selected placeholder message from a predefined list within `PlaceHolderQueries/index.js`
+ * Useful for displaying dynamic hints or suggestions in input fields.
+ *
+ * @returns {string} A randomly selected placeholder string.
+ */
+const PlaceHolderQueries = () => {
+
     const [placeHolder, setPlaceHolder] = useState('');
 
     useEffect(() => {

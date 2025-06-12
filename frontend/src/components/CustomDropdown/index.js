@@ -1,13 +1,23 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
 import { useAtom, useAtomValue } from 'jotai'
-import { form, submitSignalAtom, validationResult } from "@/atoms/formAtom.js";
-
-
+import { form, submitSignalAtom } from "@/atoms/formAtom.js";
 import Image from 'next/image';
 import styles from './CustomDropdown.module.css'; // Import CSS file
 
-const CustomDropdown = ({ selection, placeholder, field}) => {
+
+/**
+ * A custom dropdown component that allows users to select from a list of options.
+ * Each option is an object with a `value` and `label`. The selected option updates
+ * a specified atom field.
+ *
+ * @param {Array<{ value: string, label: string }>} selection - The list of options to display in the dropdown.
+ * @param {string} placeholder - Greyed-out text that guides the user on expected input.
+ * @param {string} field - The atom field to update when an option is selected.
+ * @returns {JSX.Element} A <div> containing the selected value and a dropdown menu of suggestions.
+ */
+const CustomDropdown = ({ selection, placeholder, field }) => {
+
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState(placeholder);
   const [rotation, setRotation] = useState(0);

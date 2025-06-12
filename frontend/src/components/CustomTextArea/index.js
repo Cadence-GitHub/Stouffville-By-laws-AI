@@ -4,13 +4,21 @@ import { useAtom, useAtomValue } from 'jotai';
 import { form, submitSignalAtom } from "@/atoms/formAtom.js";
 import styles from "./CustomTextArea.module.css"
 
-const CustomTextArea = ({placeholder, field, ...props}) => {
+/**
+ * A custom textarea component that dynamically resizes based on user input.
+ * It also displays a dropdown list of suggested results retrieved from an API.
+ *
+ * @param {string} placeholder - Greyed-out text that guides the user on expected input.
+ * @param {string} field - The atom field to update when a suggestion is selected.
+ * @returns {JSX.Element} A container `<div>` with a `<textarea>` and a dropdown of suggestions.
+ */
+const CustomTextArea = ({ placeholder, field, ...props }) => {
     const textAreaRef = useRef(null);
     const [isOpen, setIsOpen] = useState(false);
     const [formPackage, setForm] = useAtom(form);
     const [showEmptyError, setShowEmptyError] = useState(false);
-    const [submitSignal, setSubmitSignal] = useAtom(submitSignalAtom);
     const [aiSuggestions, setAiSuggestions] = useState([]);
+    const submitSignal = useAtomValue(submitSignalAtom);
     
     const resizeOnInput = () => {
         const elementRef = textAreaRef.current;
@@ -125,7 +133,7 @@ const CustomTextArea = ({placeholder, field, ...props}) => {
         resizeOnInput();
     }, [formPackage[field]]);
 
-
+    // Executes after user clicks a suggestion on the dropdown list
     const handleSelect = (option) => {
         setForm({...formPackage, [field]: option});    
         setIsOpen(false);
