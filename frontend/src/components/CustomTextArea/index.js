@@ -6,14 +6,12 @@ import styles from "./CustomTextArea.module.css"
 
 const CustomTextArea = ({placeholder, field, ...props}) => {
     const textAreaRef = useRef(null);
-
+    const [isOpen, setIsOpen] = useState(false);
     const [formPackage, setForm] = useAtom(form);
     const [showEmptyError, setShowEmptyError] = useState(false);
     const [submitSignal, setSubmitSignal] = useAtom(submitSignalAtom);
     const [aiSuggestions, setAiSuggestions] = useState([]);
-    const [isOpen, setIsOpen] = useState(false);
     
-    // Dynamically adjusts textarea height based on user input
     const resizeOnInput = () => {
         const elementRef = textAreaRef.current;
 
@@ -62,10 +60,7 @@ const CustomTextArea = ({placeholder, field, ...props}) => {
         try {
             const updatedForm = { ...formPackage, [field]: e.target?.value || "" };
             setForm(updatedForm);
-
-            if (e.target.value.trim() !== "") {
             setShowEmptyError(false);
-            }
 
             const response = await fetch('/api/autocomplete', {
                 method: 'POST',
@@ -85,7 +80,7 @@ const CustomTextArea = ({placeholder, field, ...props}) => {
                 setIsOpen(false);
             } else { 
                 setIsOpen(true);
-            }            
+            }                        
 
         } catch (error) {
             console.error("Autocomplete error:", error);
