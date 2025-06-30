@@ -120,14 +120,12 @@ def get_gemini_response(query, relevant_bylaws, model="gemini-2.0-flash", bylaw_
             # For gemini-mixed option, use specific models for each step
             models = {
                 "bylaws": "gemini-2.5-flash",  # Best model for first query
-                "filtered": "gemini-2.0-flash",              # Balanced model for second query
-                "laymans": "gemini-2.0-flash"                # Balanced model for third query
+                "laymans": "gemini-2.0-flash"                # Balanced model for second query
             }
         else:
             # For all other options, use the selected model for all steps
             models = {
                 "bylaws": model,
-                "filtered": model,
                 "laymans": model
             }
         
