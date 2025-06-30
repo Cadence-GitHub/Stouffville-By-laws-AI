@@ -437,12 +437,11 @@ The API now standardizes on the 'gemini-mixed' approach for all public-facing en
 - `gemini-mixed`: Uses the best model for each query stage (default for all API calls)
 - `gemini-2.0-flash-lite`: Fastest, lowest cost option (available in dev demo only)
 - `gemini-2.0-flash`: Balanced speed and quality (available in dev demo only)
-- `gemini-2.5-flash-preview-04-17`: Fast, high quality option (available in dev demo only)
-- `gemini-2.5-flash-preview-05-20`: Fast, high quality option (available in dev demo only)
+- `gemini-2.5-flash`: Best reasoning option (available in dev demo only)
 
 The gemini-mixed option selects different models for different processing stages:
 - Query transformation: Uses `gemini-2.0-flash` for efficient query enhancement
-- First query (bylaws): Uses `gemini-2.5-flash-preview-05-20` for highest quality initial response
+- First query (bylaws): Uses `gemini-2.5-flash` for highest quality initial response
 - Second query (layman's terms): Uses `gemini-2.0-flash` for balanced quality/speed in final simplification
 
 Each prompt type uses a specific temperature setting for optimal results:
