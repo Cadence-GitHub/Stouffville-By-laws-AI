@@ -42,6 +42,52 @@
         </table>
         <div class="admin-pagination" id="admin-pagination"></div>
     </div>
+
+    <!-- Delete Evaluation Modal -->
+    <div id="delete-eval-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Delete Evaluation</h3>
+                <span class="close" id="close-delete-eval-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this evaluation?</p>
+                <div id="delete-eval-details"></div>
+            </div>
+            <div class="modal-footer">
+                <button id="confirm-delete-eval" class="admin-btn admin-btn-danger">Delete</button>
+                <button id="cancel-delete-eval" class="admin-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete User Modal -->
+    <div id="delete-user-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Delete User</h3>
+                <span class="close" id="close-delete-user-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong id="delete-user-name"></strong>?</p>
+                <div class="delete-options">
+                    <label>
+                        <input type="radio" name="delete-option" value="user-only" checked>
+                        Delete user only (keep evaluations)
+                    </label>
+                    <label>
+                        <input type="radio" name="delete-option" value="user-and-evals">
+                        Delete user and all their evaluations
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="confirm-delete-user" class="admin-btn admin-btn-danger">Delete</button>
+                <button id="cancel-delete-user" class="admin-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script src="admin.js"></script>
 </body>
 </html> 

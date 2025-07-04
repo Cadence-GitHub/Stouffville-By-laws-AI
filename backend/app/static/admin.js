@@ -27,6 +27,7 @@ function renderSMEProgress() {
     list.innerHTML = '';
     progressData.forEach(sme => {
         const percent = Math.round((sme.completed / (sme.total || 1)) * 100);
+        const evaluatorEscaped = sme.evaluator.replace(/'/g, "\\'").replace(/"/g, '\\"');
         list.innerHTML += `
         <div class="sme-progress-item">
             <div class="sme-progress-label">${sme.evaluator}</div>
@@ -34,6 +35,7 @@ function renderSMEProgress() {
                 <div class="sme-progress-bar-inner" style="width:${percent}%;"></div>
             </div>
             <div class="sme-progress-count">${sme.completed} / ${sme.total} complete</div>
+            <button class="sme-delete-btn" onclick="showDeleteUserModal('${evaluatorEscaped}')">Delete</button>
         </div>`;
     });
 }
@@ -127,9 +129,11 @@ function renderTable() {
 function renderExpandedRow(tr, row) {
     const div = tr.querySelector('.admin-expanded-content');
     let html = `<table class="admin-individual-table"><thead><tr>
-        <th>Evaluator</th><th>Accuracy</th><th>Hallucination</th><th>Completeness</th><th>Authoritative</th><th>Usefulness</th><th>Pass/Fail</th><th>Comments</th><th>Timestamp</th>
+        <th>Evaluator</th><th>Accuracy</th><th>Hallucination</th><th>Completeness</th><th>Authoritative</th><th>Usefulness</th><th>Pass/Fail</th><th>Comments</th><th>Timestamp</th><th>Actions</th>
     </tr></thead><tbody>`;
     row.evaluations.forEach(ev => {
+        const questionPreview = row.question.substring(0, 50).replace(/'/g, "\\'").replace(/"/g, '\\"') + '...';
+        const evaluatorEscaped = ev.evaluator.replace(/'/g, "\\'").replace(/"/g, '\\"');
         html += `<tr>
             <td>${ev.evaluator}</td>
             <td>${ev.accuracy ?? ''}</td>
@@ -140,6 +144,7 @@ function renderExpandedRow(tr, row) {
             <td>${ev.pass_fail ?? ''}</td>
             <td>${ev.comments ? ev.comments.replace(/</g, '&lt;') : ''}</td>
             <td>${ev.timestamp ? new Date(ev.timestamp).toLocaleString() : ''}</td>
+            <td><button class="eval-delete-btn" onclick="showDeleteEvalModal(${ev.id}, '${evaluatorEscaped}', '${questionPreview}')">Delete</button></td>
         </tr>`;
     });
     html += '</tbody></table>';
@@ -218,4 +223,123 @@ document.getElementById('export-individual').onclick = function() {
 
 // Initial load
 fetchProgress();
-fetchAllData(); 
+fetchAllData();
+
+// Delete functionality
+let currentDeleteEvalId = null;
+let currentDeleteUserName = null;
+
+function showDeleteEvalModal(evalId, evaluator, question) {
+    currentDeleteEvalId = evalId;
+    document.getElementById('delete-eval-details').innerHTML = `
+        <strong>Evaluator:</strong> ${evaluator}<br>
+        <strong>Question:</strong> ${question}
+    `;
+    document.getElementById('delete-eval-modal').style.display = 'block';
+}
+
+function showDeleteUserModal(userName) {
+    currentDeleteUserName = userName;
+    document.getElementById('delete-user-name').textContent = userName;
+    document.getElementById('delete-user-modal').style.display = 'block';
+}
+
+async function deleteEvaluation(evalId) {
+    try {
+        const response = await fetch(`/api/eval/${evalId}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            alert(result.message);
+            // Refresh data
+            await fetchAllData();
+            await fetchProgress();
+        } else {
+            const error = await response.json();
+            alert('Error: ' + error.error);
+        }
+    } catch (error) {
+        alert('Error deleting evaluation: ' + error.message);
+    }
+}
+
+async function deleteUser(userName, deleteEvals) {
+    try {
+        const response = await fetch(`/api/evaluators/${encodeURIComponent(userName)}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ delete_evals: deleteEvals })
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            alert(result.message);
+            // Refresh data
+            await fetchAllData();
+            await fetchProgress();
+        } else {
+            const error = await response.json();
+            alert('Error: ' + error.error);
+        }
+    } catch (error) {
+        alert('Error deleting user: ' + error.message);
+    }
+}
+
+// Modal event handlers
+document.getElementById('close-delete-eval-modal').onclick = function() {
+    document.getElementById('delete-eval-modal').style.display = 'none';
+    currentDeleteEvalId = null;
+};
+
+document.getElementById('close-delete-user-modal').onclick = function() {
+    document.getElementById('delete-user-modal').style.display = 'none';
+    currentDeleteUserName = null;
+};
+
+document.getElementById('cancel-delete-eval').onclick = function() {
+    document.getElementById('delete-eval-modal').style.display = 'none';
+    currentDeleteEvalId = null;
+};
+
+document.getElementById('cancel-delete-user').onclick = function() {
+    document.getElementById('delete-user-modal').style.display = 'none';
+    currentDeleteUserName = null;
+};
+
+document.getElementById('confirm-delete-eval').onclick = async function() {
+    if (currentDeleteEvalId) {
+        await deleteEvaluation(currentDeleteEvalId);
+        document.getElementById('delete-eval-modal').style.display = 'none';
+        currentDeleteEvalId = null;
+    }
+};
+
+document.getElementById('confirm-delete-user').onclick = async function() {
+    if (currentDeleteUserName) {
+        const deleteOption = document.querySelector('input[name="delete-option"]:checked').value;
+        const deleteEvals = deleteOption === 'user-and-evals';
+        await deleteUser(currentDeleteUserName, deleteEvals);
+        document.getElementById('delete-user-modal').style.display = 'none';
+        currentDeleteUserName = null;
+    }
+};
+
+// Close modals when clicking outside
+window.onclick = function(event) {
+    const evalModal = document.getElementById('delete-eval-modal');
+    const userModal = document.getElementById('delete-user-modal');
+    
+    if (event.target === evalModal) {
+        evalModal.style.display = 'none';
+        currentDeleteEvalId = null;
+    }
+    
+    if (event.target === userModal) {
+        userModal.style.display = 'none';
+        currentDeleteUserName = null;
+    }
+}; 

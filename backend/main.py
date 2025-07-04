@@ -110,6 +110,54 @@ def add_evaluator():
     db.session.commit()
     return jsonify({'status': 'added', 'name': name})
 
+# Delete an evaluator with options
+@app.route('/api/evaluators/<name>', methods=['DELETE'])
+def delete_evaluator(name):
+    data = request.get_json() or {}
+    delete_evals = data.get('delete_evals', False)
+    
+    # Find the evaluator
+    evaluator = Evaluator.query.filter_by(name=name).first()
+    if not evaluator:
+        return jsonify({'error': 'Evaluator not found'}), 404
+    
+    try:
+        if delete_evals:
+            # Delete all evaluations for this evaluator
+            Evaluation.query.filter_by(evaluator=name).delete()
+            # Delete all eval statuses for this evaluator
+            EvalStatus.query.filter_by(evaluator=name).delete()
+        
+        # Delete the evaluator
+        db.session.delete(evaluator)
+        db.session.commit()
+        
+        return jsonify({
+            'status': 'success',
+            'message': f'Evaluator {name} deleted' + (' along with all evaluations and statuses' if delete_evals else '')
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Failed to delete evaluator: {str(e)}'}), 500
+
+# Delete a specific evaluation by ID
+@app.route('/api/eval/<int:eval_id>', methods=['DELETE'])
+def delete_evaluation(eval_id):
+    evaluation = Evaluation.query.get(eval_id)
+    if not evaluation:
+        return jsonify({'error': 'Evaluation not found'}), 404
+    
+    try:
+        db.session.delete(evaluation)
+        db.session.commit()
+        return jsonify({
+            'status': 'success',
+            'message': f'Evaluation {eval_id} deleted'
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Failed to delete evaluation: {str(e)}'}), 500
+
 # Admin: export all evaluations as CSV
 @app.route('/api/eval-admin/export', methods=['GET'])
 def export_evals():
@@ -192,6 +240,7 @@ def eval_admin_all():
             'avg_usefulness': avg('usefulness'),
             'evaluations': [
                 {
+                    'id': ev.id,
                     'evaluator': ev.evaluator,
                     'response_generated': ev.response_generated,
                     'accuracy': ev.accuracy,
