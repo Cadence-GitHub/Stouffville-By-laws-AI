@@ -10,3 +10,4 @@ tiktoken==0.8.0
 cryptography==45.0.2
 google-genai
 gunicorn
+Flask-SQLAlchemy
