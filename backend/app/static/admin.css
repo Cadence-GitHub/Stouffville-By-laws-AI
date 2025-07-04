@@ -209,6 +209,83 @@
   background: #c82333;
 }
 
+.admin-summary-row {
+  background: #e8f4fd !important;
+  border-top: 2px solid #2a7ae2;
+}
+
+.admin-summary-row td {
+  font-weight: 600;
+  color: #1a5bb8;
+}
+
+/* AI Response styling */
+.ai-response-cell {
+  max-width: 300px;
+}
+
+.ai-response-preview {
+  margin-bottom: 8px;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.view-full-btn {
+  background: #17a2b8;
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  padding: 4px 8px;
+  font-size: 0.8em;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.view-full-btn:hover {
+  background: #138496;
+}
+
+/* Large modal for AI response */
+.modal-large {
+  max-width: 800px;
+  width: 90%;
+}
+
+.ai-response-details {
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 5px;
+  margin-bottom: 16px;
+}
+
+.ai-response-details p {
+  margin: 4px 0;
+}
+
+.ai-response-content h4 {
+  margin: 0 0 12px 0;
+  color: #2a3a4a;
+}
+
+.ai-response-text {
+  background: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 5px;
+  padding: 16px;
+  max-height: 400px;
+  overflow-y: auto;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
 .admin-btn-danger {
   background: #dc3545;
 }

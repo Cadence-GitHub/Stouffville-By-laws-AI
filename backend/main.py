@@ -213,35 +213,43 @@ def eval_admin_progress():
         })
     return jsonify(progress)
 
-# Admin: all evaluations grouped by (question, ai_response) with cumulative and individual scores
+# Admin: all evaluations grouped by question with cumulative and individual scores
 @app.route('/api/eval-admin/all', methods=['GET'])
 def eval_admin_all():
     from collections import defaultdict
     evals = Evaluation.query.all()
-    # Group by (question, ai_response)
+    # Group by question only
     grouped = defaultdict(list)
     for ev in evals:
-        key = (ev.question, ev.ai_response)
-        grouped[key].append(ev)
+        grouped[ev.question].append(ev)
     result = []
-    for (question, ai_response), group in grouped.items():
+    for question, group in grouped.items():
         n = len(group)
         def avg(field):
             vals = [getattr(ev, field) for ev in group if getattr(ev, field) is not None]
             return round(sum(vals) / len(vals), 2) if vals else None
+        
+        # Calculate pass/fail statistics
+        pass_count = sum(1 for ev in group if ev.pass_fail == 'Pass')
+        fail_count = sum(1 for ev in group if ev.pass_fail == 'Fail')
+        pass_rate = round((pass_count / n) * 100, 1) if n > 0 else 0
+        
         result.append({
             'question': question,
-            'ai_response': ai_response,
             'count': n,
             'avg_accuracy': avg('accuracy'),
             'avg_hallucination': avg('hallucination'),
             'avg_completeness': avg('completeness'),
             'avg_authoritative': avg('authoritative'),
             'avg_usefulness': avg('usefulness'),
+            'pass_count': pass_count,
+            'fail_count': fail_count,
+            'pass_rate': pass_rate,
             'evaluations': [
                 {
                     'id': ev.id,
                     'evaluator': ev.evaluator,
+                    'ai_response': ev.ai_response,
                     'response_generated': ev.response_generated,
                     'accuracy': ev.accuracy,
                     'hallucination': ev.hallucination,

@@ -10,6 +10,7 @@
         <div class="admin-actions">
             <button id="export-cumulative" class="admin-btn">Export Cumulative CSV</button>
             <button id="export-individual" class="admin-btn">Export Individual CSV</button>
+            <button id="export-full-responses" class="admin-btn">Export Full Responses</button>
         </div>
     </div>
     <div class="admin-progress-section">
@@ -19,20 +20,20 @@
     <div class="admin-table-section">
         <h2>Prompt/Response Evaluations</h2>
         <div class="admin-table-controls">
-            <input type="text" id="admin-search" placeholder="Search question or response...">
+            <input type="text" id="admin-search" placeholder="Search question or AI response...">
             <select id="admin-filter-sme"><option value="">All SMEs</option></select>
         </div>
         <table id="admin-table">
             <thead>
                 <tr>
                     <th>Question</th>
-                    <th>AI Response</th>
                     <th>Count</th>
                     <th>Accuracy</th>
                     <th>Hallucination</th>
                     <th>Completeness</th>
                     <th>Authoritative</th>
                     <th>Usefulness</th>
+                    <th>Pass Rate</th>
                     <th>Expand</th>
                 </tr>
             </thead>
@@ -84,6 +85,30 @@
             <div class="modal-footer">
                 <button id="confirm-delete-user" class="admin-btn admin-btn-danger">Delete</button>
                 <button id="cancel-delete-user" class="admin-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Response Modal -->
+    <div id="ai-response-modal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3>Full AI Response</h3>
+                <span class="close" id="close-ai-response-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="ai-response-details">
+                    <p><strong>Question:</strong> <span id="ai-response-question"></span></p>
+                    <p><strong>Evaluator:</strong> <span id="ai-response-evaluator"></span></p>
+                </div>
+                <div class="ai-response-content">
+                    <h4>AI Response:</h4>
+                    <div id="ai-response-text" class="ai-response-text"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="copy-ai-response-btn" class="admin-btn">Copy to Clipboard</button>
+                <button id="close-ai-response-btn" class="admin-btn">Close</button>
             </div>
         </div>
     </div>

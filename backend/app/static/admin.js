@@ -62,7 +62,8 @@ function filterAndRender() {
     const search = document.getElementById('admin-search').value.toLowerCase();
     filteredData = allData.filter(row => {
         const matchSME = !currentSME || row.evaluations.some(ev => ev.evaluator === currentSME);
-        const matchSearch = row.question.toLowerCase().includes(search) || row.ai_response.toLowerCase().includes(search);
+        const matchSearch = row.question.toLowerCase().includes(search) || 
+                           row.evaluations.some(ev => ev.ai_response && ev.ai_response.toLowerCase().includes(search));
         return matchSME && matchSearch;
     });
     currentPage = 1;
@@ -92,13 +93,13 @@ function renderTable() {
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td>${row.question}</td>
-            <td>${row.ai_response}</td>
             <td>${row.count}</td>
             <td>${row.avg_accuracy ?? ''}</td>
             <td>${row.avg_hallucination ?? ''}</td>
             <td>${row.avg_completeness ?? ''}</td>
             <td>${row.avg_authoritative ?? ''}</td>
             <td>${row.avg_usefulness ?? ''}</td>
+            <td>${row.pass_rate}% (${row.pass_count}/${row.count})</td>
             <td><button class="admin-expand-btn" data-idx="${start + i}">Expand</button></td>
         `;
         tbody.appendChild(tr);
@@ -126,27 +127,61 @@ function renderTable() {
     });
 }
 
+// Utility to strip HTML tags for preview
+function stripHTML(html) {
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    return div.textContent || div.innerText || '';
+}
+
 function renderExpandedRow(tr, row) {
     const div = tr.querySelector('.admin-expanded-content');
     let html = `<table class="admin-individual-table"><thead><tr>
-        <th>Evaluator</th><th>Accuracy</th><th>Hallucination</th><th>Completeness</th><th>Authoritative</th><th>Usefulness</th><th>Pass/Fail</th><th>Comments</th><th>Timestamp</th><th>Actions</th>
+        <th>Evaluator</th><th>AI Response</th><th>Accuracy</th><th>Hallucination</th><th>Completeness</th><th>Authoritative</th><th>Usefulness</th><th>Pass/Fail</th><th>Comments</th><th>Timestamp</th><th>Actions</th>
     </tr></thead><tbody>`;
-    row.evaluations.forEach(ev => {
+    
+    // Add individual evaluations
+    row.evaluations.forEach((ev, index) => {
         const questionPreview = row.question.substring(0, 50).replace(/'/g, "\\'").replace(/"/g, '\\"') + '...';
         const evaluatorEscaped = ev.evaluator.replace(/'/g, "\\'").replace(/"/g, '\\"');
+        // Use plain text preview
+        const aiResponsePreview = ev.ai_response ? stripHTML(ev.ai_response).substring(0, 100) + (stripHTML(ev.ai_response).length > 100 ? '...' : '') : '';
+        const aiResponseRaw = ev.ai_response || '';
         html += `<tr>
             <td>${ev.evaluator}</td>
+            <td>
+                <div class="ai-response-cell">
+                    <div class="ai-response-preview">${aiResponsePreview}</div>
+                    <button class="view-full-btn" data-ai-response="${encodeURIComponent(aiResponseRaw)}" data-evaluator="${encodeURIComponent(ev.evaluator)}" data-question="${encodeURIComponent(row.question)}">View Full</button>
+                </div>
+            </td>
             <td>${ev.accuracy ?? ''}</td>
             <td>${ev.hallucination ?? ''}</td>
             <td>${ev.completeness ?? ''}</td>
             <td>${ev.authoritative ?? ''}</td>
             <td>${ev.usefulness ?? ''}</td>
             <td>${ev.pass_fail ?? ''}</td>
-            <td>${ev.comments ? ev.comments.replace(/</g, '&lt;') : ''}</td>
+            <td>${ev.comments ? ev.comments.replace(/</g, '&lt;').replace(/>/g, '&gt;') : ''}</td>
             <td>${ev.timestamp ? new Date(ev.timestamp).toLocaleString() : ''}</td>
             <td><button class="eval-delete-btn" onclick="showDeleteEvalModal(${ev.id}, '${evaluatorEscaped}', '${questionPreview}')">Delete</button></td>
         </tr>`;
     });
+    
+    // Add average summary row
+    html += `<tr class="admin-summary-row">
+        <td><strong>AVERAGE (${row.count} evaluators)</strong></td>
+        <td><em>N/A</em></td>
+        <td><strong>${row.avg_accuracy ?? 'N/A'}</strong></td>
+        <td><strong>${row.avg_hallucination ?? 'N/A'}</strong></td>
+        <td><strong>${row.avg_completeness ?? 'N/A'}</strong></td>
+        <td><strong>${row.avg_authoritative ?? 'N/A'}</strong></td>
+        <td><strong>${row.avg_usefulness ?? 'N/A'}</strong></td>
+        <td><strong>${row.pass_rate}% (${row.pass_count}/${row.count})</strong></td>
+        <td><em>N/A</em></td>
+        <td><em>N/A</em></td>
+        <td><em>N/A</em></td>
+    </tr>`;
+    
     html += '</tbody></table>';
     div.innerHTML = html;
 }
@@ -170,11 +205,11 @@ function renderPagination() {
 
 // Sorting
 Array.from(document.querySelectorAll('#admin-table th')).forEach((th, idx) => {
-    if (idx < 2 || idx > 7) return; // Only sort on metric columns
-    const cols = ['count','avg_accuracy','avg_hallucination','avg_completeness','avg_authoritative','avg_usefulness'];
+    if (idx < 1 || idx > 6) return; // Only sort on metric columns (skip question and expand)
+    const cols = ['count','avg_accuracy','avg_hallucination','avg_completeness','avg_authoritative','avg_usefulness','pass_rate'];
     th.style.cursor = 'pointer';
     th.onclick = function() {
-        const col = cols[idx-2];
+        const col = cols[idx-1];
         if (currentSort.col === col) currentSort.dir *= -1;
         else currentSort = { col, dir: 1 };
         renderTable();
@@ -183,7 +218,12 @@ Array.from(document.querySelectorAll('#admin-table th')).forEach((th, idx) => {
 
 // Export
 function downloadCSV(rows, filename) {
-    const csv = rows.map(r => r.map(x => '"' + (x ?? '').toString().replace(/"/g, '""') + '"').join(',')).join('\n');
+    const csv = rows.map(r => r.map(x => {
+        if (x === null || x === undefined) return '""';
+        const str = x.toString();
+        // Escape quotes and newlines for CSV
+        return '"' + str.replace(/"/g, '""').replace(/\n/g, ' ').replace(/\r/g, ' ') + '"';
+    }).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -197,11 +237,11 @@ function downloadCSV(rows, filename) {
 
 document.getElementById('export-cumulative').onclick = function() {
     const rows = [[
-        'Question','AI Response','Count','Avg Accuracy','Avg Hallucination','Avg Completeness','Avg Authoritative','Avg Usefulness'
+        'Question','Count','Avg Accuracy','Avg Hallucination','Avg Completeness','Avg Authoritative','Avg Usefulness','Pass Count','Fail Count','Pass Rate (%)'
     ]];
     allData.forEach(row => {
         rows.push([
-            row.question, row.ai_response, row.count, row.avg_accuracy, row.avg_hallucination, row.avg_completeness, row.avg_authoritative, row.avg_usefulness
+            row.question, row.count, row.avg_accuracy, row.avg_hallucination, row.avg_completeness, row.avg_authoritative, row.avg_usefulness, row.pass_count, row.fail_count, row.pass_rate
         ]);
     });
     downloadCSV(rows, 'cumulative_scores.csv');
@@ -214,11 +254,36 @@ document.getElementById('export-individual').onclick = function() {
     allData.forEach(row => {
         row.evaluations.forEach(ev => {
             rows.push([
-                row.question, row.ai_response, ev.evaluator, ev.accuracy, ev.hallucination, ev.completeness, ev.authoritative, ev.usefulness, ev.pass_fail, ev.comments, ev.timestamp
+                row.question, ev.ai_response, ev.evaluator, ev.accuracy, ev.hallucination, ev.completeness, ev.authoritative, ev.usefulness, ev.pass_fail, ev.comments, ev.timestamp
             ]);
         });
     });
     downloadCSV(rows, 'individual_scores.csv');
+};
+
+document.getElementById('export-full-responses').onclick = function() {
+    const rows = [[
+        'Question','Evaluator','AI Response (Full)','Response Generated','Accuracy','Hallucination','Completeness','Authoritative','Usefulness','Pass/Fail','Comments','Timestamp'
+    ]];
+    allData.forEach(row => {
+        row.evaluations.forEach(ev => {
+            rows.push([
+                row.question, 
+                ev.evaluator, 
+                ev.ai_response || '', 
+                ev.response_generated ? 'Yes' : 'No',
+                ev.accuracy || '', 
+                ev.hallucination || '', 
+                ev.completeness || '', 
+                ev.authoritative || '', 
+                ev.usefulness || '', 
+                ev.pass_fail || '', 
+                ev.comments || '', 
+                ev.timestamp || ''
+            ]);
+        });
+    });
+    downloadCSV(rows, 'full_ai_responses.csv');
 };
 
 // Initial load
@@ -328,10 +393,57 @@ document.getElementById('confirm-delete-user').onclick = async function() {
     }
 };
 
+// AI Response Modal event handlers
+document.getElementById('close-ai-response-modal').onclick = function() {
+    document.getElementById('ai-response-modal').style.display = 'none';
+};
+
+document.getElementById('close-ai-response-btn').onclick = function() {
+    document.getElementById('ai-response-modal').style.display = 'none';
+};
+
+document.getElementById('copy-ai-response-btn').onclick = function() {
+    const aiResponseText = document.getElementById('ai-response-text').textContent;
+    navigator.clipboard.writeText(aiResponseText).then(function() {
+        // Temporarily change button text to show success
+        const btn = document.getElementById('copy-ai-response-btn');
+        const originalText = btn.textContent;
+        btn.textContent = 'Copied!';
+        btn.style.background = '#28a745';
+        setTimeout(() => {
+            btn.textContent = originalText;
+            btn.style.background = '';
+        }, 2000);
+    }).catch(function(err) {
+        console.error('Could not copy text: ', err);
+        alert('Failed to copy to clipboard');
+    });
+};
+
+// AI Response Modal functionality
+function showAIResponseModal(aiResponse, evaluator, question) {
+    document.getElementById('ai-response-question').textContent = question;
+    document.getElementById('ai-response-evaluator').textContent = evaluator;
+    // Render as HTML (not textContent)
+    document.getElementById('ai-response-text').innerHTML = aiResponse;
+    document.getElementById('ai-response-modal').style.display = 'block';
+}
+
+// Delegated event handler for View Full buttons
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('view-full-btn')) {
+        const aiResponse = decodeURIComponent(e.target.getAttribute('data-ai-response'));
+        const evaluator = decodeURIComponent(e.target.getAttribute('data-evaluator'));
+        const question = decodeURIComponent(e.target.getAttribute('data-question'));
+        showAIResponseModal(aiResponse, evaluator, question);
+    }
+});
+
 // Close modals when clicking outside
 window.onclick = function(event) {
     const evalModal = document.getElementById('delete-eval-modal');
     const userModal = document.getElementById('delete-user-modal');
+    const aiResponseModal = document.getElementById('ai-response-modal');
     
     if (event.target === evalModal) {
         evalModal.style.display = 'none';
@@ -341,5 +453,9 @@ window.onclick = function(event) {
     if (event.target === userModal) {
         userModal.style.display = 'none';
         currentDeleteUserName = null;
+    }
+    
+    if (event.target === aiResponseModal) {
+        aiResponseModal.style.display = 'none';
     }
 }; 
