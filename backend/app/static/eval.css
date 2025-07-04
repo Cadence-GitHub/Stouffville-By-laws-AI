@@ -396,6 +396,35 @@ body.panel-open .eval-container {
 .question-nav.collapsed .nav-status {
   margin-left: 0;
 }
+
+/* Status-specific styling for navigation items */
+.question-nav-item.completed .nav-status {
+  color: #2e7d32;
+  font-weight: bold;
+}
+
+.question-nav-item.bookmarked .nav-status {
+  color: #f57c00;
+  font-weight: bold;
+  text-shadow: 0 0 2px rgba(245, 124, 0, 0.3);
+}
+
+.question-nav-item.skipped .nav-status {
+  color: #757575;
+  opacity: 0.7;
+}
+
+.question-nav-item.active .nav-status {
+  transform: scale(1.1);
+  transition: transform 0.2s ease;
+}
+
+/* Hover effects for status icons */
+.question-nav-item:hover .nav-status {
+  transform: scale(1.05);
+  transition: transform 0.2s ease;
+}
+
 .eval-content {
   flex: 1;
   min-width: 0;
