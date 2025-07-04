@@ -58,7 +58,23 @@
                     <div id="ai-response-block" style="display:none;"></div>
                     <form id="eval-form">
                         <div class="form-row">
-                            <label>Response Generated?</label>
+                            <label>
+                                Response Generated?
+                                <div class="tooltip">
+                                    <span class="info-icon">i</span>
+                                    <div class="tooltip-content">
+                                        <h4>Response Generated</h4>
+                                        <p><strong>Type:</strong> Yes/No</p>
+                                        <p><strong>Question:</strong> Did the system produce any response to the prompt?</p>
+                                        <div class="rating-guidelines">
+                                            <strong>Guidelines:</strong><br>
+                                            • <strong>Yes:</strong> System provided a response (even if poor quality)<br>
+                                            • <strong>No:</strong> System failed, timed out, or returned an error
+                                        </div>
+                                        <p><em>Note: This is a basic technical functionality check. A "No" here means the other criteria cannot be evaluated.</em></p>
+                                    </div>
+                                </div>
+                            </label>
                             <select id="response_generated" required>
                                 <option value="">Select</option>
                                 <option value="true">Yes</option>
@@ -66,27 +82,217 @@
                             </select>
                         </div>
                         <div class="form-row">
-                            <label>Accuracy (1-5)</label>
+                            <label>
+                                Accuracy (1-5)
+                                <div class="tooltip">
+                                    <span class="info-icon">i</span>
+                                    <div class="tooltip-content">
+                                        <h4>Accuracy</h4>
+                                        <p><strong>Scale:</strong> 1-5</p>
+                                        <p><strong>Question:</strong> How factually correct is the response regarding bylaw content?</p>
+                                        <div class="rating-guidelines">
+                                            <strong>Rating Guidelines:</strong><br>
+                                            • <strong>5 - Excellent:</strong> All facts, bylaw numbers, dates, and requirements are completely accurate<br>
+                                            • <strong>4 - Good:</strong> Mostly accurate with minor errors that don't affect the core meaning<br>
+                                            • <strong>3 - Fair:</strong> Generally accurate but contains some notable errors or imprecise information<br>
+                                            • <strong>2 - Poor:</strong> Several significant factual errors that could mislead users<br>
+                                            • <strong>1 - Unacceptable:</strong> Mostly inaccurate information that could cause serious problems
+                                        </div>
+                                        <div class="what-to-check">
+                                            <strong>What to Check:</strong><br>
+                                            • Bylaw numbers and years match actual documents<br>
+                                            • Quoted requirements match the source bylaws<br>
+                                            • Dates, fees, and specific measurements are correct<br>
+                                            • Cross-references to other bylaws are accurate
+                                        </div>
+                                        <div class="example-issues">
+                                            <strong>Example Issues:</strong><br>
+                                            • Wrong bylaw number cited<br>
+                                            • Incorrect fee amounts<br>
+                                            • Outdated information presented as current<br>
+                                            • Misstatement of legal requirements
+                                        </div>
+                                    </div>
+                                </div>
+                            </label>
                             <input type="number" id="accuracy" min="1" max="5">
                         </div>
                         <div class="form-row">
-                            <label>Hallucination (1-5, lower is better)</label>
+                            <label>
+                                Hallucination (1-5, lower is better)
+                                <div class="tooltip">
+                                    <span class="info-icon">i</span>
+                                    <div class="tooltip-content">
+                                        <h4>Hallucination</h4>
+                                        <p><strong>Scale:</strong> 1-5 (Reverse Scale - Lower is Better)</p>
+                                        <p><strong>Question:</strong> How much made-up or non-existent information does the response contain?</p>
+                                        <div class="rating-guidelines">
+                                            <strong>Rating Guidelines:</strong><br>
+                                            • <strong>1 - Excellent:</strong> No hallucinated content; all information can be verified in source documents<br>
+                                            • <strong>2 - Good:</strong> Minor embellishments that don't affect accuracy<br>
+                                            • <strong>3 - Fair:</strong> Some unverifiable details but core information is sound<br>
+                                            • <strong>4 - Poor:</strong> Notable fabricated information mixed with real content<br>
+                                            • <strong>5 - Unacceptable:</strong> Significant made-up content, fake bylaw citations, or invented procedures
+                                        </div>
+                                        <div class="what-to-check">
+                                            <strong>What to Check:</strong><br>
+                                            • Are all cited bylaws real and findable?<br>
+                                            • Do quoted procedures actually exist in the bylaws?<br>
+                                            • Are referenced departments, forms, or processes legitimate?<br>
+                                            • Does the AI claim knowledge it shouldn't have?
+                                        </div>
+                                        <div class="example-issues">
+                                            <strong>Example Issues:</strong><br>
+                                            • Citations to non-existent bylaws (e.g., "Bylaw 2024-999")<br>
+                                            • Made-up department names or contact information<br>
+                                            • Invented procedures not found in actual bylaws<br>
+                                            • Fabricated exceptions or special cases
+                                        </div>
+                                    </div>
+                                </div>
+                            </label>
                             <input type="number" id="hallucination" min="1" max="5">
                         </div>
                         <div class="form-row">
-                            <label>Completeness (1-5)</label>
+                            <label>
+                                Completeness (1-5)
+                                <div class="tooltip">
+                                    <span class="info-icon">i</span>
+                                    <div class="tooltip-content">
+                                        <h4>Completeness</h4>
+                                        <p><strong>Scale:</strong> 1-5</p>
+                                        <p><strong>Question:</strong> How thoroughly does the response address all aspects of the user's question?</p>
+                                        <div class="rating-guidelines">
+                                            <strong>Rating Guidelines:</strong><br>
+                                            • <strong>5 - Excellent:</strong> Fully addresses all parts of the question with comprehensive coverage<br>
+                                            • <strong>4 - Good:</strong> Addresses main question well, minor gaps in coverage<br>
+                                            • <strong>3 - Fair:</strong> Covers most important aspects but misses some relevant information<br>
+                                            • <strong>2 - Poor:</strong> Partial answer that leaves significant questions unanswered<br>
+                                            • <strong>1 - Unacceptable:</strong> Barely addresses the question or focuses on wrong aspects
+                                        </div>
+                                        <div class="what-to-check">
+                                            <strong>What to Check:</strong><br>
+                                            • Are all parts of multi-part questions answered?<br>
+                                            • Does it cover relevant exceptions or special cases?<br>
+                                            • Are important caveats or limitations mentioned?<br>
+                                            • Does it address practical implementation aspects?
+                                        </div>
+                                        <div class="example-issues">
+                                            <strong>Example Issues:</strong><br>
+                                            • Answering only part of a complex question<br>
+                                            • Missing important exceptions to rules<br>
+                                            • Failing to mention required permits or approvals<br>
+                                            • Not addressing timeline or process questions
+                                        </div>
+                                    </div>
+                                </div>
+                            </label>
                             <input type="number" id="completeness" min="1" max="5">
                         </div>
                         <div class="form-row">
-                            <label>Authoritative (1-5)</label>
+                            <label>
+                                Authoritative (1-5)
+                                <div class="tooltip">
+                                    <span class="info-icon">i</span>
+                                    <div class="tooltip-content">
+                                        <h4>Authoritative</h4>
+                                        <p><strong>Scale:</strong> 1-5</p>
+                                        <p><strong>Question:</strong> How well does the response demonstrate proper legal authority and appropriate tone?</p>
+                                        <div class="rating-guidelines">
+                                            <strong>Rating Guidelines:</strong><br>
+                                            • <strong>5 - Excellent:</strong> Clear bylaw citations, appropriate legal language, confident but measured tone<br>
+                                            • <strong>4 - Good:</strong> Good use of citations with mostly appropriate authority claims<br>
+                                            • <strong>3 - Fair:</strong> Some authority shown but could be stronger or more precise<br>
+                                            • <strong>2 - Poor:</strong> Weak authority, vague references, or inappropriate confidence levels<br>
+                                            • <strong>1 - Unacceptable:</strong> No clear authority, makes claims without basis, or misleading confidence
+                                        </div>
+                                        <div class="what-to-check">
+                                            <strong>What to Check:</strong><br>
+                                            • Are specific bylaw numbers and sections cited?<br>
+                                            • Is the tone appropriately authoritative without overstepping?<br>
+                                            • Does it distinguish between current and historical bylaws?<br>
+                                            • Are limitations of the AI's authority acknowledged when appropriate?
+                                        </div>
+                                        <div class="example-issues">
+                                            <strong>Example Issues:</strong><br>
+                                            • Vague references like "municipal bylaws require..." without specifics<br>
+                                            • Making definitive statements about complex legal interpretations<br>
+                                            • Not distinguishing between active and repealed bylaws<br>
+                                            • Claiming authority the AI system doesn't have
+                                        </div>
+                                    </div>
+                                </div>
+                            </label>
                             <input type="number" id="authoritative" min="1" max="5">
                         </div>
                         <div class="form-row">
-                            <label>Overall Usefulness (1-5)</label>
+                            <label>
+                                Overall Usefulness (1-5)
+                                <div class="tooltip">
+                                    <span class="info-icon">i</span>
+                                    <div class="tooltip-content">
+                                        <h4>Overall Usefulness</h4>
+                                        <p><strong>Scale:</strong> 1-5</p>
+                                        <p><strong>Question:</strong> How helpful would this response be to a resident or town officer?</p>
+                                        <div class="rating-guidelines">
+                                            <strong>Rating Guidelines:</strong><br>
+                                            • <strong>5 - Excellent:</strong> Highly useful, actionable information that fully serves the user's needs<br>
+                                            • <strong>4 - Good:</strong> Very useful with clear guidance, minor improvements possible<br>
+                                            • <strong>3 - Fair:</strong> Moderately useful but could be clearer or more practical<br>
+                                            • <strong>2 - Poor:</strong> Limited usefulness, may confuse more than help<br>
+                                            • <strong>1 - Unacceptable:</strong> Not useful, potentially harmful or misleading
+                                        </div>
+                                        <div class="what-to-check">
+                                            <strong>What to Consider:</strong><br>
+                                            • Would this help a resident understand what they need to do?<br>
+                                            • Is the language accessible to non-lawyers?<br>
+                                            • Does it provide next steps or contact information when appropriate?<br>
+                                            • Would this reduce follow-up questions to town staff?
+                                        </div>
+                                        <div class="example-issues">
+                                            <strong>Example of High Usefulness:</strong><br>
+                                            • Clear explanation of permit requirements<br>
+                                            • Step-by-step process guidance<br>
+                                            • Relevant contact information included<br>
+                                            • Appropriate level of detail for the audience
+                                        </div>
+                                    </div>
+                                </div>
+                            </label>
                             <input type="number" id="usefulness" min="1" max="5">
                         </div>
                         <div class="form-row">
-                            <label>Pass/Fail</label>
+                            <label>
+                                Pass/Fail
+                                <div class="tooltip">
+                                    <span class="info-icon">i</span>
+                                    <div class="tooltip-content">
+                                        <h4>Pass/Fail</h4>
+                                        <p><strong>Type:</strong> Pass/Fail</p>
+                                        <p><strong>Question:</strong> Overall, does this response meet the minimum quality standards for public use?</p>
+                                        <div class="rating-guidelines">
+                                            <strong>Guidelines:</strong><br>
+                                            • <strong>Pass:</strong> Response meets minimum quality standards and could be safely provided to the public<br>
+                                            • <strong>Fail:</strong> Response has significant issues that would make it inappropriate for public use
+                                        </div>
+                                        <div class="what-to-check">
+                                            <strong>Consider for Pass:</strong><br>
+                                            • Response is factually accurate (Accuracy 3+)<br>
+                                            • Minimal hallucination (Hallucination 2 or better)<br>
+                                            • Addresses the main question (Completeness 3+)<br>
+                                            • Provides useful guidance (Usefulness 3+)
+                                        </div>
+                                        <div class="example-issues">
+                                            <strong>Automatic Fail Indicators:</strong><br>
+                                            • Significant factual errors (Accuracy 1-2)<br>
+                                            • High hallucination levels (Hallucination 4-5)<br>
+                                            • Completely misses the question (Completeness 1-2)<br>
+                                            • Could mislead or harm users (Usefulness 1-2)
+                                        </div>
+                                        <p><em>Note: This is your overall judgment call. A response can have some issues but still pass if it provides value to users.</em></p>
+                                    </div>
+                                </div>
+                            </label>
                             <select id="pass_fail">
                                 <option value="">Select</option>
                                 <option value="Pass">Pass</option>
