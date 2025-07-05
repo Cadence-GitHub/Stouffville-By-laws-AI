@@ -4,8 +4,8 @@ import Image from "next/image";
 import { isElementEmpty } from "@/utils/isElementEmpty";
 import styles from "./page.module.css";
 import { useRef, useState, useEffect } from "react";
-import { useAtom, useAtomValue } from 'jotai';
-import { formAtom, submitSignalAtom } from "@/atoms/formAtom.js";
+import { useAtom } from 'jotai';
+import { formAtom } from "@/atoms/formAtom.js";
 
 const ChatPage = () => {  
   let chatTextAreaRef = useRef(null);
@@ -26,6 +26,7 @@ const ChatPage = () => {
     displayQuery();    
     handleSubmit();
   }, []);
+
   
   useEffect(() => {
     setButtonAnswerType(useDetailedAnswer ? "Show Simple Answer" : "Show Detailed Answer");
