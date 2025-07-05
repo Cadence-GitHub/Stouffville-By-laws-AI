@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bylaw AI - Query Analysis Dashboard</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- DataTables CSS for Bootstrap 5 -->
+    <link href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="container-fluid bg-dark text-white p-3 mb-4">
+        <h1 class="display-6">Bylaw AI - Query Analysis Dashboard</h1>
+    </header>
+
+    <main class="container-fluid">
+        <!-- Upload Container -->
+        <div id="upload-container" class="text-center">
+            <div class="card mx-auto" style="max-width: 500px;">
+                <div class="card-body">
+                    <h5 class="card-title">Load Analysis Data</h5>
+                    <p class="card-text">Please select your <code>queries_log.analysis.json</code> file to begin.</p>
+                    <input type="file" id="file-input" class="form-control" accept=".json">
+                    <div id="message-area" class="alert alert-light mt-3">Ready for file...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Content (hidden by default) -->
+        <div id="dashboard-content" style="display: none;">
+            <!-- KPIs Row -->
+            <div class="row mb-4">
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                    <div class="card text-center h-100">
+                        <div class="card-body">
+                            <h3 class="card-title kpi-value" id="kpi-total-queries">-</h3>
+                            <p class="card-text">Total Queries</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                    <div class="card text-center h-100">
+                        <div class="card-body">
+                            <h3 class="card-title kpi-value" id="kpi-avg-correctness">-</h3>
+                            <p class="card-text">Avg Correctness</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                    <div class="card text-center h-100 text-danger">
+                        <div class="card-body">
+                            <h3 class="card-title kpi-value" id="kpi-hallucinations">-</h3>
+                            <p class="card-text">Hallucinations</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                    <div class="card text-center h-100">
+                        <div class="card-body">
+                            <h3 class="card-title kpi-value" id="kpi-avg-time">-s</h3>
+                            <p class="card-text">Avg. Time</p>
+                        </div>
+                    </div>
+                </div>
+                 <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                    <div class="card text-center h-100 text-warning">
+                        <div class="card-body">
+                            <h3 class="card-title kpi-value" id="kpi-lang-mismatch">-</h3>
+                            <p class="card-text">Lang Mismatches</p>
+                        </div>
+                    </div>
+                </div>
+                 <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
+                    <div class="card text-center h-100 text-info">
+                        <div class="card-body">
+                            <h3 class="card-title kpi-value" id="kpi-unique-categories">-</h3>
+                            <p class="card-text">Unique Categories</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row -->
+            <div class="row mb-4">
+                <div class="col-lg-12 mb-4">
+                    <div class="card">
+                        <div class="card-header">Query Categories</div>
+                        <div class="card-body" style="height: 500px;"><canvas id="category-chart"></canvas></div>
+                    </div>
+                </div>
+                <div class="col-lg-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header">Answer Correctness Score Distribution (1-5)</div>
+                        <div class="card-body"><canvas id="correctness-chart"></canvas></div>
+                    </div>
+                </div>
+                <div class="col-lg-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header">Performance Bottlenecks</div>
+                        <div class="card-body"><canvas id="bottleneck-chart"></canvas></div>
+                    </div>
+                </div>
+                <div class="col-lg-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header">Query Transform Impact on Cited Bylaws</div>
+                        <div class="card-body"><canvas id="transform-impact-chart"></canvas></div>
+                    </div>
+                </div>
+                <div class="col-lg-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header">Perfect Answer Rate</div>
+                        <div class="card-body"><canvas id="perfect-answer-chart"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Query Explorer -->
+            <div class="row">
+                <div class="col">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2>Query Explorer</h2>
+                        </div>
+                        <div id="query-filter-status" class="card-body pb-0" style="display: none;">
+                            <div class="alert alert-info d-flex justify-content-between align-items-center" role="alert">
+                                <span id="filter-text"></span>
+                                <button id="reset-filter-btn" type="button" class="btn btn-sm btn-outline-secondary">Clear Filter</button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <table id="query-table" class="table table-striped table-hover" style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th>Timestamp</th>
+                                        <th>Query</th>
+                                        <th>Category</th>
+                                        <th>Correctness</th>
+                                        <th>Total Time</th>
+                                        <th>Transform</th>
+                                        <th>Language</th>
+                                        <th>Flags</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Detail Modal -->
+    <div class="modal fade" id="detail-modal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="detailModalLabel">Query Details</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <!-- Query Comparison -->
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <h5>Original Query</h5>
+                <pre><code id="modal-original-query"></code></pre>
+              </div>
+              <div class="col-md-6">
+                <h5>Transformed Query</h5>
+                <pre><code id="modal-transformed-query"></code></pre>
+              </div>
+            </div>
+            <hr/>
+            <!-- Answer Display -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h5>Filtered Answer (Rendered)</h5>
+                    <div class="answer-box" id="modal-filtered-answer"></div>
+                </div>
+                <div class="col-md-6">
+                    <h5>Layman's Answer (Rendered)</h5>
+                    <div class="answer-box" id="modal-laymans-answer"></div>
+                </div>
+            </div>
+            <hr/>
+            <!-- Retrieval Analysis -->
+            <div class="row mb-4">
+                <h5>Retrieval Analysis <small class="text-muted">(<span class="bylaw-legend-cited">Green</span> = Cited in Final Answer)</small></h5>
+                <div class="col-md-4">
+                    <h6>Original Bylaws Retrieved</h6>
+                    <ul class="bylaw-list" id="modal-original-bylaws"></ul>
+                </div>
+                <div class="col-md-4">
+                    <h6>Additional Bylaws (from Transform)</h6>
+                    <ul class="bylaw-list" id="modal-additional-bylaws"></ul>
+                </div>
+                <div class="col-md-4">
+                    <h6>Bylaws Cited in Answer</h6>
+                    <ul class="bylaw-list" id="modal-cited-bylaws"></ul>
+                </div>
+            </div>
+            <hr/>
+            <!-- Analysis Vitals -->
+            <h5>Analysis Vitals</h5>
+            <div id="modal-vitals" class="row"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- DataTables JS & Bootstrap 5 integration -->
+    <script src="https://cdn.datatables.net/2.0.8/js/dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap5.min.js"></script>
+    <!-- Custom App JS -->
+    <script src="js/app.js"></script>
+</body>
+</html>
