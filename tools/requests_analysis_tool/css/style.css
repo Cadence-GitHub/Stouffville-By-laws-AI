@@ -1,0 +1,88 @@
+body {
+    background-color: #f8f9fa;
+}
+
+#upload-container {
+    padding-top: 5rem;
+}
+
+.kpi-value {
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
+#query-table {
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+/* Modal specific styles */
+.answer-box {
+    border: 1px solid #dee2e6;
+    padding: 15px;
+    border-radius: 5px;
+    height: 250px;
+    overflow-y: auto;
+    background-color: #fff;
+}
+.answer-box h3 { font-size: 1.2rem; }
+.answer-box p { font-size: 0.9rem; }
+
+pre {
+    background-color: #e9ecef;
+    padding: 10px;
+    border-radius: 5px;
+    white-space: pre-wrap;
+    word-break: break-all;
+    height: 200px;
+    overflow-y: auto;
+}
+
+.bylaw-list {
+    list-style-type: none;
+    padding-left: 0;
+    height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+.bylaw-list li {
+    padding: 5px;
+    border-radius: 3px;
+    margin-bottom: 5px;
+    background-color: #f8f9fa;
+}
+
+.bylaw-list li.cited {
+    background-color: #d1e7dd; /* Bootstrap success background */
+    font-weight: bold;
+}
+
+.bylaw-legend-cited {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    background-color: #d1e7dd;
+    border: 1px solid #a3cfbb;
+    border-radius: 2px;
+    margin-right: 4px;
+    vertical-align: middle;
+}
+
+#modal-vitals .vitals-key {
+    font-weight: bold;
+}
+.flag-icon {
+    font-size: 1.2rem;
+}
+.flag-icon.hallucination {
+    color: #dc3545; /* Bootstrap danger */
+}
+.flag-icon.slow-query {
+    color: #fd7e14; /* Bootstrap orange */
+}
+.flag-icon.lang-mismatch {
+    color: #ffc107; /* Bootstrap warning */
+}
