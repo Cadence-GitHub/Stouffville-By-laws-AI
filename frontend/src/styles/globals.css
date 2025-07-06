@@ -60,7 +60,7 @@ body {
   align-items: center;
   justify-content: center;
   white-space: nowrap;
-  padding: 2vh 10vw;
+  padding: 2vh 12vw;
   font-size: clamp(15px, 5vw, 18px); /* Responsive font size */
   font-weight: bold;
   color: #0060A1;
@@ -83,7 +83,7 @@ body {
   align-items: center;
   justify-content: center;
   white-space: nowrap;
-  padding: 2vh 10vw;
+  padding: 2vh 12vw;
   font-size: clamp(15px, 5vw, 18px); /* Responsive font size */
   font-weight: bold;
   color: #FFFFFF;
@@ -159,21 +159,18 @@ body {
 
 @media (max-width: 600px) {
   .buttonRoute {
-    padding: 2vh 20vw; /* Adjust padding for smaller screens */
-    font-size: clamp(15px, 5vw, 18px);
-    /* border-radius: 1.0vh; */
+    padding: 2vh 30vw; /* Adjust padding for smaller screens */
+    font-size: clamp(15px, 5vw, 18px);    
   }
 
   .buttonSubmit {
-    padding: 2vh 20vw; /* Adjust padding for smaller screens */
+    padding: 2vh 30vw; /* Adjust padding for smaller screens */
     font-size: clamp(15px, 5vw, 18px);
-    /* border-radius: 1.0vh; */
   }
 
   .buttonState {
     padding: 2vh 20vw; /* Adjust padding for smaller screens */
     font-size: clamp(10px, 5vw, 15px);
-    /* border-radius: 1.0vh; */
   }
 
   .clickable-text:active {

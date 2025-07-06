@@ -11,12 +11,11 @@
 }
 
 .messagesWrapper {
-    width: 400px;
+    width: 80%;
     display: flex;
     flex-direction: column;
     justify-content: right;
     justify-items: right;
-
 }
 
 .systemMessage {    
@@ -42,7 +41,7 @@
 
     border: 1px solid #444444;
     border-radius: 5px;
-    width: 250px;
+    width: 30%;
 
     align-self: flex-end;
 }
@@ -106,10 +105,26 @@
 
 }
 
-
 .errorText {
     position: relative;
     color: red;
     font-size: 0.875rem;
     bottom: 25px;
+}
+
+@media (max-width: 768px) {
+  .userMessage {
+    width: 80%;        /* wider on small screens */
+    font-size: 14px;   /* slightly smaller text */
+    padding: 8px;
+  }
+
+  .messagesWrapper {
+    width: 95%;
+  }
+
+  .chatMessagesContainer {
+    width: 100vw;
+    padding: 0 10px; /* small horizontal padding */
+  }
 }
