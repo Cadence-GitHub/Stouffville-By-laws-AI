@@ -5,7 +5,7 @@ h3 {
 }
 
 p {
-  font-size: clamp(15px, 20px, 25px);
+  font-size: clamp(15px, 18px, 20px);
   font-weight: 500;
   color: #0060A1;
   margin-bottom: 22.5;
@@ -30,6 +30,21 @@ body {
   width: 100%;
 }
 
+.qaPair {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; 
+  align-self: left;
+  text-align: left; 
+  margin-bottom: 35px;
+  gap: 8px;
+}
+
+.qaPair h3,
+.qaPair p {
+  margin: 0px
+}
+
 .submitButtonQuery {
   top: 3px;
   right: 30px;
@@ -44,7 +59,8 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 2vh 10vw; /* Scales with screen height and width */
+  white-space: nowrap;
+  padding: 2vh 10vw;
   font-size: clamp(15px, 5vw, 18px); /* Responsive font size */
   font-weight: bold;
   color: #0060A1;
@@ -66,7 +82,8 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 2vh 10vw; /* Scales with screen height and width */
+  white-space: nowrap;
+  padding: 2vh 10vw;
   font-size: clamp(15px, 5vw, 18px); /* Responsive font size */
   font-weight: bold;
   color: #FFFFFF;

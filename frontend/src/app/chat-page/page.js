@@ -1,6 +1,7 @@
 'use client'
 import parse from 'html-react-parser';
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { isElementEmpty } from "@/utils/isElementEmpty";
 import styles from "./page.module.css";
 import { useRef, useState, useEffect } from "react";
@@ -8,6 +9,7 @@ import { useAtom } from 'jotai';
 import { formAtom } from "@/atoms/formAtom.js";
 
 const ChatPage = () => {  
+const router = useRouter();
   let chatTextAreaRef = useRef(null);
 
   const [formPackage, setForm] = useAtom(formAtom);
@@ -186,7 +188,12 @@ const ChatPage = () => {
         </div>        
       </>    
         
-      <div className={styles.textareaChatContainer}>        
+      <div style={{textAlign: "center"}}>
+          <button className="buttonSubmit" onClick={() => router.push('/')}>Ask another question</button>            
+      </div>
+          
+      {/* UNSED UNTIL FURTHER NOTICE */}
+      {/* <div style={{display: "none"}} className={styles.textareaChatContainer}>        
         <div>
             <div className={styles.textareaChatWrapper}>
                 <textarea 
@@ -206,7 +213,7 @@ const ChatPage = () => {
                 <p className={styles.errorText}>Please fill out this field</p> 
             )}
         </div>
-      </div>                      
+      </div>                         */}
     </>
   );
 }
