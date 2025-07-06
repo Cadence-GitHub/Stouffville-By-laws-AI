@@ -71,23 +71,47 @@ def get_eval_items():
 @app.route('/api/eval', methods=['POST'])
 def submit_eval():
     data = request.get_json()
-    eval_obj = Evaluation(
-        question=data['question'],
-        ai_response=data['ai_response'],
-        reference_answer=data.get('reference_answer', ''),
+    
+    # Check if evaluation already exists for this evaluator and question
+    existing_eval = Evaluation.query.filter_by(
         evaluator=data['evaluator'],
-        response_generated=data['response_generated'],
-        accuracy=data.get('accuracy'),
-        hallucination=data.get('hallucination'),
-        completeness=data.get('completeness'),
-        authoritative=data.get('authoritative'),
-        usefulness=data.get('usefulness'),
-        comments=data.get('comments', ''),
-        pass_fail=data.get('pass_fail')
-    )
-    db.session.add(eval_obj)
-    db.session.commit()
-    return jsonify({'status': 'success'})
+        question=data['question']
+    ).first()
+    
+    if existing_eval:
+        # Update existing evaluation
+        existing_eval.ai_response = data['ai_response']
+        existing_eval.reference_answer = data.get('reference_answer', '')
+        existing_eval.response_generated = data['response_generated']
+        existing_eval.accuracy = data.get('accuracy')
+        existing_eval.hallucination = data.get('hallucination')
+        existing_eval.completeness = data.get('completeness')
+        existing_eval.authoritative = data.get('authoritative')
+        existing_eval.usefulness = data.get('usefulness')
+        existing_eval.comments = data.get('comments', '')
+        existing_eval.pass_fail = data.get('pass_fail')
+        existing_eval.timestamp = datetime.datetime.utcnow()  # Update timestamp
+        db.session.commit()
+        return jsonify({'status': 'updated', 'id': existing_eval.id})
+    else:
+        # Create new evaluation
+        eval_obj = Evaluation(
+            question=data['question'],
+            ai_response=data['ai_response'],
+            reference_answer=data.get('reference_answer', ''),
+            evaluator=data['evaluator'],
+            response_generated=data['response_generated'],
+            accuracy=data.get('accuracy'),
+            hallucination=data.get('hallucination'),
+            completeness=data.get('completeness'),
+            authoritative=data.get('authoritative'),
+            usefulness=data.get('usefulness'),
+            comments=data.get('comments', ''),
+            pass_fail=data.get('pass_fail')
+        )
+        db.session.add(eval_obj)
+        db.session.commit()
+        return jsonify({'status': 'created', 'id': eval_obj.id})
 
 # Serve evaluator list
 @app.route('/api/evaluators', methods=['GET'])

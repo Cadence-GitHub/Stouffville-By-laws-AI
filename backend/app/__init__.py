@@ -25,6 +25,7 @@ class Evaluation(db.Model):
     comments = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     pass_fail = db.Column(db.String(10))
+    __table_args__ = (db.UniqueConstraint('evaluator', 'question', name='uq_evaluation_evaluator_question'),)
 
 class Evaluator(db.Model):
     id = db.Column(db.Integer, primary_key=True)

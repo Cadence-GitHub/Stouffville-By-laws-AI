@@ -1,12 +1,43 @@
 let evaluators = [];
 let questions = [];
-let aiResponses = [];
+let aiResponses = []; // Will store objects with laymans_answer and filtered_answer
 let currentIdx = 0;
 let total = 0;
 let evaluator = '';
 let progress = {};
 let isRendering = false;
 let isFetchingAI = [];
+
+// Status indicator state
+let lastSaveStatus = null;
+let statusTimeout = null;
+
+function updateStatusIndicator(status) {
+    const indicator = document.getElementById('eval-status-indicator');
+    indicator.className = '';
+    indicator.style.display = 'block';
+    if (status === 'saved') {
+        indicator.textContent = 'Evaluation saved!';
+        indicator.classList.add('saved');
+    } else if (status === 'updated') {
+        indicator.textContent = 'Evaluation updated!';
+        indicator.classList.add('updated');
+    } else if (status === 'unsaved') {
+        indicator.textContent = 'You have unsaved changes.';
+        indicator.classList.add('unsaved');
+    } else {
+        indicator.textContent = '';
+        indicator.style.display = 'none';
+    }
+    lastSaveStatus = status;
+    // Auto-hide for saved/updated after 2.5s
+    if (status === 'saved' || status === 'updated') {
+        if (statusTimeout) clearTimeout(statusTimeout);
+        statusTimeout = setTimeout(() => {
+            indicator.style.display = 'none';
+        }, 2500);
+    }
+}
 
 // Populate the welcome user dropdown
 async function populateWelcomeUserDropdown() {
@@ -19,19 +50,33 @@ async function populateWelcomeUserDropdown() {
         evaluators.map(e => `<option value="${e}">${e}</option>`).join('');
 }
 
-// Show welcome screen
 function showWelcome() {
     document.getElementById('welcome-screen').style.display = '';
     document.getElementById('eval-ui').style.display = 'none';
     document.getElementById('welcome-name').value = '';
     document.getElementById('welcome-error').innerText = '';
     populateWelcomeUserDropdown();
+    // Hide controls and sidebar
+    var controls = document.getElementById('eval-controls');
+    if (controls && controls.style.display !== 'none') {
+        controls.style.display = 'none';
+    }
+    var nav = document.getElementById('question-nav');
+    if (nav && nav.style.display !== 'none') {
+        nav.style.display = 'none';
+    }
+    console.log('showWelcome: controls and nav hidden');
 }
 
-// Show eval UI
 function showEvalUI() {
     document.getElementById('welcome-screen').style.display = 'none';
     document.getElementById('eval-ui').style.display = '';
+    // Show controls and sidebar
+    var controls = document.getElementById('eval-controls');
+    if (controls) controls.style.display = '';
+    var nav = document.getElementById('question-nav');
+    if (nav) nav.style.display = '';
+    console.log('showEvalUI: controls and nav shown');
 }
 
 // Load evaluators and questions
@@ -77,7 +122,15 @@ async function fetchAIResponse(idx) {
     const q = questions[idx];
     // Try to get from progress cache first
     if (progress && progress[idx] && progress[idx].ai_response) {
-        aiResponses[idx] = progress[idx].ai_response;
+        // Handle legacy format (single string) and new format (object)
+        if (typeof progress[idx].ai_response === 'string') {
+            aiResponses[idx] = { 
+                laymans_answer: progress[idx].ai_response,
+                filtered_answer: progress[idx].ai_response 
+            };
+        } else {
+            aiResponses[idx] = progress[idx].ai_response;
+        }
         return;
     }
     // POST to /api/ask
@@ -87,7 +140,11 @@ async function fetchAIResponse(idx) {
         body: JSON.stringify({ query: q, bylaw_status: 'active' })
     });
     const data = await res.json();
-    aiResponses[idx] = data.filtered_answer || data.laymans_answer || data.answer || data.error || 'No response';
+    // Store both components
+    aiResponses[idx] = {
+        laymans_answer: data.laymans_answer || data.answer || data.error || 'No response',
+        filtered_answer: data.filtered_answer || data.answer || data.error || 'No response'
+    };
     render(); // Only call render once after fetch
 }
 
@@ -413,10 +470,27 @@ function render() {
     document.getElementById('progress').innerText = `Progress: ${completed} / ${total}`;
     // Question
     document.getElementById('question-text').innerText = questions[currentIdx] || '';
-    // AI Response
+    // AI Response - now displays both components in columns
     const answerContainer = document.getElementById('answerContainer');
-    const aiResp = aiResponses[currentIdx] || '<em>Loading...</em>';
-    answerContainer.innerHTML = `<div class="answer">${aiResp}</div>`;
+    const aiResp = aiResponses[currentIdx];
+    if (aiResp) {
+        const laymans = aiResp.laymans_answer || aiResp || '<em>Loading...</em>';
+        const filtered = aiResp.filtered_answer || aiResp || '<em>Loading...</em>';
+        answerContainer.innerHTML = `
+            <div class="answer-columns">
+                <div class="answer-column">
+                    <h3>Simple Answer</h3>
+                    <div class="answer">${laymans}</div>
+                </div>
+                <div class="answer-column">
+                    <h3>Detailed Answer</h3>
+                    <div class="answer">${filtered}</div>
+                </div>
+            </div>
+        `;
+    } else {
+        answerContainer.innerHTML = `<div class="answer"><em>Loading...</em></div>`;
+    }
     handleBylawLinks();
     // Form
     const form = document.getElementById('eval-form');
@@ -466,7 +540,32 @@ render = function() {
             bookmarkBtn.onclick = unbookmarkCurrent;
         } else {
             bookmarkBtn.innerText = 'Bookmark';
-            bookmarkBtn.onclick = bookmarkCurrent;
+            bookmarkBtn.onclick = function() {
+                // Bookmark warning modal logic
+                if (localStorage.getItem('hide_bookmark_warning') === 'true') {
+                    bookmarkCurrent();
+                } else {
+                    const modal = document.getElementById('bookmark-warning-modal');
+                    modal.style.display = 'block';
+                    // Modal close logic
+                    document.getElementById('bookmark-modal-close').onclick = function() {
+                        modal.style.display = 'none';
+                    };
+                    document.getElementById('bookmark-modal-ok').onclick = function() {
+                        if (document.getElementById('dont-remind-bookmark').checked) {
+                            localStorage.setItem('hide_bookmark_warning', 'true');
+                        }
+                        modal.style.display = 'none';
+                        bookmarkCurrent();
+                    };
+                    // Also close modal if clicking outside content
+                    window.onclick = function(event) {
+                        if (event.target === modal) {
+                            modal.style.display = 'none';
+                        }
+                    };
+                }
+            };
         }
     }
     // Update skip button
@@ -474,54 +573,51 @@ render = function() {
     if (skipBtn) {
         skipBtn.onclick = skipCurrent;
     }
-};
-
-// Extend showEvalUI to load bookmarks/skipped from backend
-const origShowEvalUI = showEvalUI;
-showEvalUI = async function() {
-    await fetchEvalStatus();
-    origShowEvalUI.apply(this, arguments);
-};
-
-// Extend loadData to load bookmarks/skipped from backend
-const origLoadData = loadData;
-loadData = async function() {
-    await origLoadData.apply(this, arguments);
-    await fetchEvalStatus();
-};
-
-// Patch fetchAIResponse to not call render (let render handle UI update)
-async function fetchAIResponse(idx) {
-    if (aiResponses[idx]) return;
-    const q = questions[idx];
-    // Try to get from progress cache first
-    if (progress && progress[idx] && progress[idx].ai_response) {
-        aiResponses[idx] = progress[idx].ai_response;
-        return;
+    // Update submit and next button
+    const submitNextBtn = document.getElementById('submit-next-btn');
+    if (submitNextBtn) {
+        submitNextBtn.onclick = async function() {
+            await submitEvaluation(false, true);
+        };
     }
-    // POST to /api/ask
-    const res = await fetch('/api/ask', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: q, bylaw_status: 'active' })
-    });
-    const data = await res.json();
-    aiResponses[idx] = data.filtered_answer || data.laymans_answer || data.answer || data.error || 'No response';
-    render(); // Only call render once after fetch
-}
+    // Show indicator if already saved
+    if (progress[currentIdx]) {
+        updateStatusIndicator('saved');
+    } else {
+        updateStatusIndicator(null);
+    }
+    // Listen for form changes to show unsaved status
+    const form = document.getElementById('eval-form');
+    if (form) {
+        Array.from(form.elements).forEach(el => {
+            if (!el._unsavedListener) {
+                el.addEventListener('input', () => {
+                    updateStatusIndicator('unsaved');
+                });
+                el._unsavedListener = true;
+            }
+        });
+    }
+};
 
-// Patch form submission for validation and pass_fail
-const origOnSubmit = document.getElementById('eval-form').onsubmit;
-document.getElementById('eval-form').onsubmit = async function(e) {
-    e.preventDefault();
+// Helper to submit evaluation (optionally go to next)
+async function submitEvaluation(isFormEvent, goNext) {
+    if (isFormEvent && event) event.preventDefault();
     if (!evaluator) {
         alert('Please select an evaluator.');
         return;
     }
     const idx = currentIdx;
     const q = questions[idx];
-    const ai = aiResponses[idx];
-    const response_generated = document.getElementById('response_generated').value === 'true';
+    const aiResp = aiResponses[idx];
+    // Combine both answers for database storage
+    const ai = aiResp ? JSON.stringify(aiResp) : '';
+    const response_generated_val = document.getElementById('response_generated').value;
+    if (!response_generated_val) {
+        alert('Please select whether a response was generated.');
+        return;
+    }
+    const response_generated = response_generated_val === 'true';
     const accuracy = parseInt(document.getElementById('accuracy').value) || null;
     const hallucination = parseInt(document.getElementById('hallucination').value) || null;
     const completeness = parseInt(document.getElementById('completeness').value) || null;
@@ -557,16 +653,39 @@ document.getElementById('eval-form').onsubmit = async function(e) {
         body: JSON.stringify(payload)
     });
     if (res.ok) {
-        document.getElementById('eval-status').innerText = 'Saved!';
+        const result = await res.json();
+        if (result.status === 'updated') {
+            updateStatusIndicator('updated');
+        } else {
+            updateStatusIndicator('saved');
+        }
         progress[idx] = payload;
         // Remove from skipped/bookmarks if completed
         skipped = skipped.filter(i => i !== idx);
         bookmarks = bookmarks.filter(i => i !== idx);
         saveProgress();
         render();
+        if (goNext) {
+            // Go to next unanswered/skipped/bookmarked question, or next in order
+            let next = (currentIdx + 1) % total;
+            let tries = 0;
+            while (progress[next] && tries < total) {
+                next = (next + 1) % total;
+                tries++;
+            }
+            currentIdx = next;
+            render();
+        }
     } else {
+        updateStatusIndicator(null);
         document.getElementById('eval-status').innerText = 'Error saving!';
     }
+}
+
+// Patch form submission for validation and pass_fail
+const origOnSubmit = document.getElementById('eval-form').onsubmit;
+document.getElementById('eval-form').onsubmit = function(e) {
+    submitEvaluation(true, false);
 };
 
 document.getElementById('prev-btn').onclick = function() {
@@ -621,6 +740,106 @@ document.getElementById('welcome-proceed').onclick = async function() {
     render();
 };
 
+// --- Modern Layout Enhancements ---
+
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize the welcome screen and evaluator selection
     showWelcome();
+    
+    // Collapsible Navigation Sidebar
+    const nav = document.getElementById('question-nav');
+    const navToggle = document.getElementById('nav-toggle');
+    if (nav && navToggle) {
+        navToggle.onclick = function() {
+            nav.classList.toggle('collapsed');
+            // Optionally change icon
+            navToggle.innerHTML = nav.classList.contains('collapsed') ? '⮜' : '&#9776;';
+        };
+    }
+
+    // Bylaw Viewer Panel and Backdrop
+    const bylawPanel = document.getElementById('bylaw-panel');
+    const bylawBackdrop = document.getElementById('bylaw-backdrop');
+    const closePanelBtn = document.getElementById('close-panel');
+
+    // Patch openBylawPanel to handle backdrop
+    const origOpenBylawPanel = window.openBylawPanel || openBylawPanel;
+    window.openBylawPanel = function(bylawId) {
+        origOpenBylawPanel(bylawId);
+        // Show backdrop on mobile
+        if (window.innerWidth <= 900 && bylawBackdrop) {
+            bylawBackdrop.style.display = 'block';
+            bylawBackdrop.setAttribute('aria-hidden', 'false');
+        }
+    };
+
+    // Close bylaw panel and backdrop
+    function closeBylawPanelWithBackdrop() {
+        if (bylawPanel) bylawPanel.classList.remove('active');
+        document.body.classList.remove('panel-open');
+        if (bylawBackdrop) {
+            bylawBackdrop.style.display = 'none';
+            bylawBackdrop.setAttribute('aria-hidden', 'true');
+        }
+    }
+    if (closePanelBtn) {
+        closePanelBtn.onclick = closeBylawPanelWithBackdrop;
+    }
+    if (bylawBackdrop) {
+        bylawBackdrop.onclick = closeBylawPanelWithBackdrop;
+    }
+    // Optional: close panel on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && bylawPanel && bylawPanel.classList.contains('active')) {
+            closeBylawPanelWithBackdrop();
+        }
+    });
+    
+    // Panel resizer functionality
+    const panelResizer = document.getElementById('panel-resizer');
+    if (panelResizer && bylawPanel) {
+        let isResizing = false;
+        let startX, startWidth;
+        
+        panelResizer.addEventListener('mousedown', function(e) {
+            isResizing = true;
+            startX = e.clientX;
+            startWidth = parseInt(getComputedStyle(bylawPanel).width, 10);
+            document.body.style.cursor = 'col-resize';
+            e.preventDefault();
+        });
+        
+        document.addEventListener('mousemove', function(e) {
+            if (!isResizing) return;
+            
+            const deltaX = startX - e.clientX;
+            const newWidth = Math.max(350, Math.min(800, startWidth + deltaX));
+            
+            bylawPanel.style.width = newWidth + 'px';
+            document.body.style.setProperty('--panel-width', newWidth + 'px');
+            
+            // Update main content margin
+            if (document.body.classList.contains('panel-open')) {
+                document.body.style.setProperty('--panel-margin', newWidth + 'px');
+            }
+        });
+        
+        document.addEventListener('mouseup', function() {
+            if (isResizing) {
+                isResizing = false;
+                document.body.style.cursor = '';
+                
+                // Save the width to localStorage
+                const width = parseInt(getComputedStyle(bylawPanel).width, 10);
+                localStorage.setItem('bylaw-panel-width', width);
+            }
+        });
+        
+        // Load saved width on page load
+        const savedWidth = localStorage.getItem('bylaw-panel-width');
+        if (savedWidth) {
+            bylawPanel.style.width = savedWidth + 'px';
+            document.body.style.setProperty('--panel-width', savedWidth + 'px');
+        }
+    }
 }); 

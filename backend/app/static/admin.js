@@ -144,9 +144,26 @@ function renderExpandedRow(tr, row) {
     row.evaluations.forEach((ev, index) => {
         const questionPreview = row.question.substring(0, 50).replace(/'/g, "\\'").replace(/"/g, '\\"') + '...';
         const evaluatorEscaped = ev.evaluator.replace(/'/g, "\\'").replace(/"/g, '\\"');
-        // Use plain text preview
-        const aiResponsePreview = ev.ai_response ? stripHTML(ev.ai_response).substring(0, 100) + (stripHTML(ev.ai_response).length > 100 ? '...' : '') : '';
-        const aiResponseRaw = ev.ai_response || '';
+        
+        // Parse AI response for preview - handle both formats
+        let aiResponsePreview = '';
+        let aiResponseRaw = ev.ai_response || '';
+        
+        try {
+            const parsed = JSON.parse(aiResponseRaw);
+            if (parsed.laymans_answer) {
+                aiResponsePreview = stripHTML(parsed.laymans_answer).substring(0, 100) + 
+                    (stripHTML(parsed.laymans_answer).length > 100 ? '...' : '');
+            } else {
+                aiResponsePreview = stripHTML(aiResponseRaw).substring(0, 100) + 
+                    (stripHTML(aiResponseRaw).length > 100 ? '...' : '');
+            }
+        } catch (e) {
+            // Legacy format
+            aiResponsePreview = stripHTML(aiResponseRaw).substring(0, 100) + 
+                (stripHTML(aiResponseRaw).length > 100 ? '...' : '');
+        }
+        
         html += `<tr>
             <td>${ev.evaluator}</td>
             <td>
@@ -424,8 +441,42 @@ document.getElementById('copy-ai-response-btn').onclick = function() {
 function showAIResponseModal(aiResponse, evaluator, question) {
     document.getElementById('ai-response-question').textContent = question;
     document.getElementById('ai-response-evaluator').textContent = evaluator;
-    // Render as HTML (not textContent)
-    document.getElementById('ai-response-text').innerHTML = aiResponse;
+    
+    // Parse the AI response - handle both legacy string format and new JSON format
+    let laymansAnswer = '';
+    let filteredAnswer = '';
+    
+    try {
+        // Try to parse as JSON first (new format)
+        const parsed = JSON.parse(aiResponse);
+        if (parsed.laymans_answer && parsed.filtered_answer) {
+            laymansAnswer = parsed.laymans_answer;
+            filteredAnswer = parsed.filtered_answer;
+        } else {
+            // Fallback to legacy format
+            laymansAnswer = aiResponse;
+            filteredAnswer = aiResponse;
+        }
+    } catch (e) {
+        // If parsing fails, treat as legacy string format
+        laymansAnswer = aiResponse;
+        filteredAnswer = aiResponse;
+    }
+    
+    // Render both answers in two columns
+    document.getElementById('ai-response-text').innerHTML = `
+        <div class="answer-columns">
+            <div class="answer-column">
+                <h3>Simple Answer</h3>
+                <div class="answer">${laymansAnswer}</div>
+            </div>
+            <div class="answer-column">
+                <h3>Detailed Answer</h3>
+                <div class="answer">${filteredAnswer}</div>
+            </div>
+        </div>
+    `;
+    
     document.getElementById('ai-response-modal').style.display = 'block';
 }
 
