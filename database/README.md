@@ -109,10 +109,11 @@ Key features:
 Workflow:
 1. First use `prepare_json_bylaws_for_db.py` to create a consolidated JSON file of bylaws
 2. Then run `bylaw_revocation_analysis.py` on this file to analyze and identify revocation relationships
-3. The tool produces three output files:
+3. The tool produces four output files:
    - `[input_filename].PROCESSED_FOR_REVOCATION.json` containing bylaws that have been successfully analyzed
-   - `[input_filename].REVOKED.json` containing bylaws that have been revoked with reasons
-   - `[input_filename].ERRORED.json` containing bylaws that encountered errors during processing (such as when revoked bylaws were not found in the input file)
+   - `[input_filename].REVOKED.json` containing bylaws that have been revoked and were found in the input file.
+   - `[input_filename].REVOKED_BUT_ALREADY_IN_DATABASE.json`: Contains records for bylaws that were revoked by a bylaw in the input file but were not themselves in the input file. This file can be used to update existing records in ChromaDB.
+   - `[input_filename].ERRORED.json` containing bylaws that encountered other processing errors.
 
 Usage:
 ```bash
@@ -250,6 +251,15 @@ The script connects to a running ChromaDB instance (by default at localhost:8000
 - Stores the complete document metadata for retrieval
 - Checks for existing by-laws to avoid duplicates
 
+#### Bylaw Status Updates
+
+The script can also be used in an update-only mode to modify the status of existing bylaws in the database.
+
+- **Update-Only Mode**: When run with the `--update-revoked-status` flag, the script will only perform updates and then exit, without ingesting new documents.
+- **Input File**: It takes a JSON file (like the `.REVOKED_BUT_ALREADY_IN_DATABASE.json` file from `bylaw_revocation_analysis.py`) as input.
+- **Status Update**: For each bylaw in the file, it finds the corresponding record in ChromaDB and updates its `isActive` and `whyNotActive` metadata fields.
+- **Safety Check**: The script includes a safety check to prevent accidental changes. If a bylaw is already marked as inactive (`isActive: false`), it will be skipped, and a warning will be logged.
+
 Usage:
 
 ```bash
@@ -263,6 +273,7 @@ Options:
 - `--chroma-port`: ChromaDB port (default: 8000)
 - `--collection`: Collection name (default: by-laws)
 - `--reset`: Reset collection if it exists
+- `--update-revoked-status`: Path to a JSON file with revoked bylaws to update in the DB. If provided, the script runs in update-only mode and then exits.
 - `--input-file`: Single JSON file to process (like the .FOR_DB.json file from prepare_final_json.py)
 - `--json-dir`: Directory containing by-laws JSON files (default: current directory, not used if --input-file is specified)
 - `--hnsw-M`: Maximum number of neighbour connections (default: 16)
@@ -271,14 +282,14 @@ Options:
 
 Examples:
 
+Updating revoked bylaw statuses from a file:
+```bash
+python init_chroma.py --update-revoked-status all_by-laws.REVOKED_BUT_ALREADY_IN_DATABASE.json
+```
+
 Basic usage with the consolidated FOR_DB.json file:
 ```bash
 python init_chroma.py --input-file parking_related_by-laws.FOR_DB.json
-```
-
-Reset existing collection and use the consolidated .FOR_DB.json file:
-```bash
-python init_chroma.py --reset --input-file parking_related_by-laws.FOR_DB.json
 ```
 
 For backward compatibility, you can still process a directory of JSON files:
