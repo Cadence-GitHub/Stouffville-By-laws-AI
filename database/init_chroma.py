@@ -39,6 +39,7 @@ def main():
     parser.add_argument("--reset", action="store_true", help="Reset collection if it exists")
     parser.add_argument("--json-dir", default=".", help="Directory containing by-laws JSON files (not used if --input-file is specified)")
     parser.add_argument("--input-file", help="Single JSON file to process (like .FOR_DB.json from prepare_final_json.py)")
+    parser.add_argument("--update-revoked-status", help="Path to a JSON file with revoked bylaws to update in the DB.")
     parser.add_argument("--hnsw-M", default="16", help="Maximum number of neighbour connections")
     parser.add_argument("--hnsw-construction_ef", default="100", help="Number of neighbours in the HNSW graph to explore when adding new vectors")
     parser.add_argument("--hnsw-search_ef", default="10", help="Number of neighbours in the HNSW graph to explore when searching")
@@ -85,6 +86,63 @@ def main():
             )
             
         print(f"Successfully connected to ChromaDB collection '{args.collection}'!")
+        
+        # Update revoked bylaw statuses if a file is provided
+        if args.update_revoked_status:
+            if os.path.exists(args.update_revoked_status):
+                print(f"Processing updates from {args.update_revoked_status}...")
+                update_count = 0
+                not_found_count = 0
+                skipped_count = 0
+                
+                with open(args.update_revoked_status, 'r', encoding='utf-8') as f:
+                    revoked_bylaws_to_update = json.load(f)
+                
+                for bylaw_info in revoked_bylaws_to_update:
+                    bylaw_number = bylaw_info.get("bylawNumber")
+                    if not bylaw_number:
+                        continue
+                        
+                    try:
+                        # Find bylaw by bylawNumber stored in metadata 'id' field, include documents
+                        results = vector_store.get(where={"id": bylaw_number}, include=["metadatas", "documents"])
+                        
+                        if results and results['ids']:
+                            doc_id = results['ids'][0]
+                            metadata = results['metadatas'][0]
+                            page_content = results['documents'][0]
+                            
+                            # Check if the bylaw is already inactive
+                            if metadata.get('isActive') is False:
+                                print(f"  Warning: Bylaw {bylaw_number} is already marked as inactive. Skipping update.")
+                                skipped_count += 1
+                                continue
+                            
+                            # Update metadata fields
+                            metadata['isActive'] = bylaw_info.get('isActive', metadata.get('isActive'))
+                            metadata['whyNotActive'] = bylaw_info.get('whyNotActive', metadata.get('whyNotActive'))
+                            
+                            # Create a new Document object with updated metadata
+                            updated_doc = Document(page_content=page_content, metadata=metadata)
+                            
+                            # Perform the update using the public API.
+                            # Note: This is safer but may be less efficient as it re-embeds the document.
+                            vector_store.update_document(doc_id, updated_doc)
+                            print(f"  Updated bylaw {bylaw_number} with new revocation status.")
+                            update_count += 1
+                        else:
+                            print(f"  Warning: Bylaw {bylaw_number} from update file not found in ChromaDB.")
+                            not_found_count += 1
+                    except Exception as e:
+                        print(f"  Error updating bylaw {bylaw_number}: {e}")
+                
+                print(f"Finished processing updates: {update_count} updated, {not_found_count} not found, {skipped_count} already inactive.")
+            else:
+                print(f"Error: Update file {args.update_revoked_status} does not exist.")
+            
+            # Since this was an update-only operation, exit the script
+            print("Update-only operation complete. Exiting.")
+            return
         
         # Get existing bylaw IDs from the collection
         existing_bylaws = set()
@@ -214,17 +272,17 @@ def main():
     get_stats(vector_store)
  
 
-def get_stats(self) :
+def get_stats(vector_store) :
         """
         Get statistics about the bylaw vector database.
         
         Returns:
             Dictionary with statistics
         """
-        total_docs = self._collection.count()
+        total_docs = len(vector_store)
         
         # Get all metadata to analyze collection contents
-        results = self._collection.get()
+        results = vector_store.get()
         unique_bylaws = set()
         bylaw_types = {}
         bylaw_years = {}
