@@ -361,6 +361,7 @@ def main():
     processed_file = f"{base_name}.PROCESSED_FOR_REVOCATION.json"
     revoked_file = f"{base_name}.REVOKED.json"
     errored_file = f"{base_name}.ERRORED.json"
+    revoked_but_in_db_file = f"{base_name}.REVOKED_BUT_ALREADY_IN_DATABASE.json"
     
     # Load input bylaws
     bylaws = load_json_file(input_file)
@@ -400,6 +401,7 @@ def main():
     processed_count = 0
     revoked_count = 0
     errored_count = 0
+    revoked_but_in_db_count = 0
     
     i = 0
     while i < len(bylaws_to_process):
@@ -463,8 +465,15 @@ def main():
                             logger.info(f"Added revoked bylaw {revoked_number} to revoked file")
                             revoked_count += 1
                     else:
-                        logger.warning(f"Could not find revoked bylaw {revoked_number} in the input file")
-                        all_revoked_bylaws_found = False
+                        logger.warning(f"Could not find revoked bylaw {revoked_number} in the input file. Creating a record for it in a separate file.")
+                        revoked_bylaw_record = {
+                            "bylawNumber": revoked_number,
+                            "isActive": False,
+                            "whyNotActive": f"Revoked by bylaw {bylaw_number}: {revocation_reason}"
+                        }
+                        if append_to_json_file(revoked_but_in_db_file, revoked_bylaw_record):
+                            logger.info(f"Added record for revoked bylaw {revoked_number} to {revoked_but_in_db_file}")
+                            revoked_but_in_db_count += 1
             
             # Only add to processed file if we found all revoked bylaws (or if it doesn't revoke any)
             if all_revoked_bylaws_found:
@@ -513,6 +522,7 @@ def main():
     # Log final summary
     logger.info(f"Processing complete: {processed_count} bylaws processed")
     logger.info(f"Revoked bylaws identified: {revoked_count} (saved to {revoked_file})")
+    logger.info(f"Revoked bylaws not in input file: {revoked_but_in_db_count} (saved to {revoked_but_in_db_file})")
     logger.info(f"Errored bylaws: {errored_count} (saved to {errored_file})")
     logger.info(f"Total bylaws processed: {len(processed_bylaws) + processed_count}")
     
