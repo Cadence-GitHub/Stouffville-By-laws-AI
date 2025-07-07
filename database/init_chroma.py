@@ -104,12 +104,13 @@ def main():
                         continue
                         
                     try:
-                        # Find bylaw by bylawNumber stored in metadata 'id' field
-                        results = vector_store.get(where={"id": bylaw_number})
+                        # Find bylaw by bylawNumber stored in metadata 'id' field, include documents
+                        results = vector_store.get(where={"id": bylaw_number}, include=["metadatas", "documents"])
                         
                         if results and results['ids']:
                             doc_id = results['ids'][0]
                             metadata = results['metadatas'][0]
+                            page_content = results['documents'][0]
                             
                             # Check if the bylaw is already inactive
                             if metadata.get('isActive') is False:
@@ -121,8 +122,12 @@ def main():
                             metadata['isActive'] = bylaw_info.get('isActive', metadata.get('isActive'))
                             metadata['whyNotActive'] = bylaw_info.get('whyNotActive', metadata.get('whyNotActive'))
                             
-                            # Perform the update
-                            vector_store._collection.update(ids=[doc_id], metadatas=[metadata])
+                            # Create a new Document object with updated metadata
+                            updated_doc = Document(page_content=page_content, metadata=metadata)
+                            
+                            # Perform the update using the public API.
+                            # Note: This is safer but may be less efficient as it re-embeds the document.
+                            vector_store.update_document(doc_id, updated_doc)
                             print(f"  Updated bylaw {bylaw_number} with new revocation status.")
                             update_count += 1
                         else:
@@ -274,10 +279,10 @@ def get_stats(vector_store) :
         Returns:
             Dictionary with statistics
         """
-        total_docs = vector_store._collection.count()
+        total_docs = len(vector_store)
         
         # Get all metadata to analyze collection contents
-        results = vector_store._collection.get()
+        results = vector_store.get()
         unique_bylaws = set()
         bylaw_types = {}
         bylaw_years = {}
