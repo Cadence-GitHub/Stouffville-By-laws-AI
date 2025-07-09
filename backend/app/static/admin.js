@@ -107,7 +107,7 @@ function renderTable() {
         const expTr = document.createElement('tr');
         expTr.className = 'admin-expanded-row';
         expTr.style.display = 'none';
-        expTr.innerHTML = `<td colspan="9"><div class="admin-expanded-content"></div></td>`;
+        expTr.innerHTML = `<td colspan="11"><div class="admin-expanded-content"></div></td>`;
         tbody.appendChild(expTr);
     });
     // Add expand/collapse logic
@@ -137,7 +137,7 @@ function stripHTML(html) {
 function renderExpandedRow(tr, row) {
     const div = tr.querySelector('.admin-expanded-content');
     let html = `<table class="admin-individual-table"><thead><tr>
-        <th>Evaluator</th><th>AI Response</th><th>Accuracy</th><th>Hallucination</th><th>Completeness</th><th>Authoritative</th><th>Usefulness</th><th>Pass/Fail</th><th>Comments</th><th>Timestamp</th><th>Actions</th>
+        <th>Evaluator</th><th>Response Generated</th><th>AI Response</th><th>Accuracy</th><th>Hallucination</th><th>Completeness</th><th>Authoritative</th><th>Usefulness</th><th>Pass/Fail</th><th>Comments</th><th>Timestamp</th><th>Actions</th>
     </tr></thead><tbody>`;
     
     // Add individual evaluations
@@ -166,6 +166,7 @@ function renderExpandedRow(tr, row) {
         
         html += `<tr>
             <td>${ev.evaluator}</td>
+            <td>${ev.response_generated ? 'Yes' : 'No'}</td>
             <td>
                 <div class="ai-response-cell">
                     <div class="ai-response-preview">${aiResponsePreview}</div>
@@ -187,6 +188,7 @@ function renderExpandedRow(tr, row) {
     // Add average summary row
     html += `<tr class="admin-summary-row">
         <td><strong>AVERAGE (${row.count} evaluators)</strong></td>
+        <td><em>N/A</em></td>
         <td><em>N/A</em></td>
         <td><strong>${row.avg_accuracy ?? 'N/A'}</strong></td>
         <td><strong>${row.avg_hallucination ?? 'N/A'}</strong></td>
@@ -266,12 +268,12 @@ document.getElementById('export-cumulative').onclick = function() {
 
 document.getElementById('export-individual').onclick = function() {
     const rows = [[
-        'Question','AI Response','Evaluator','Accuracy','Hallucination','Completeness','Authoritative','Usefulness','Pass/Fail','Comments','Timestamp'
+        'Question','AI Response','Evaluator','Response Generated','Accuracy','Hallucination','Completeness','Authoritative','Usefulness','Pass/Fail','Comments','Timestamp'
     ]];
     allData.forEach(row => {
         row.evaluations.forEach(ev => {
             rows.push([
-                row.question, ev.ai_response, ev.evaluator, ev.accuracy, ev.hallucination, ev.completeness, ev.authoritative, ev.usefulness, ev.pass_fail, ev.comments, ev.timestamp
+                row.question, ev.ai_response, ev.evaluator, ev.response_generated ? 'Yes' : 'No', ev.accuracy, ev.hallucination, ev.completeness, ev.authoritative, ev.usefulness, ev.pass_fail, ev.comments, ev.timestamp
             ]);
         });
     });
