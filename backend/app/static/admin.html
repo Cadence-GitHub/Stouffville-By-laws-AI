@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bylaw AI Admin Dashboard</title>
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body class="admin-bg">
+    <div class="admin-header">
+        <div class="admin-title">Bylaw AI Admin Dashboard</div>
+        <div class="admin-actions">
+            <button id="export-cumulative" class="admin-btn">Export Cumulative CSV</button>
+            <button id="export-individual" class="admin-btn">Export Individual CSV</button>
+            <button id="export-full-responses" class="admin-btn">Export Full Responses</button>
+        </div>
+    </div>
+    <div class="admin-progress-section">
+        <h2>SME Progress</h2>
+        <div id="sme-progress-list" class="sme-progress-list"></div>
+    </div>
+    <div class="admin-table-section">
+        <h2>Prompt/Response Evaluations</h2>
+        <div class="admin-table-controls">
+            <input type="text" id="admin-search" placeholder="Search question or AI response...">
+            <select id="admin-filter-sme"><option value="">All SMEs</option></select>
+        </div>
+        <table id="admin-table">
+            <thead>
+                <tr>
+                    <th>Question</th>
+                    <th>Count</th>
+                    <th>Accuracy</th>
+                    <th>Hallucination</th>
+                    <th>Completeness</th>
+                    <th>Authoritative</th>
+                    <th>Usefulness</th>
+                    <th>Pass Rate</th>
+                    <th>Expand</th>
+                </tr>
+            </thead>
+            <tbody id="admin-table-body">
+                <!-- Rows will be populated by JS -->
+            </tbody>
+        </table>
+        <div class="admin-pagination" id="admin-pagination"></div>
+    </div>
+
+    <!-- Delete Evaluation Modal -->
+    <div id="delete-eval-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Delete Evaluation</h3>
+                <span class="close" id="close-delete-eval-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this evaluation?</p>
+                <div id="delete-eval-details"></div>
+            </div>
+            <div class="modal-footer">
+                <button id="confirm-delete-eval" class="admin-btn admin-btn-danger">Delete</button>
+                <button id="cancel-delete-eval" class="admin-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete User Modal -->
+    <div id="delete-user-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Delete User</h3>
+                <span class="close" id="close-delete-user-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete <strong id="delete-user-name"></strong>?</p>
+                <div class="delete-options">
+                    <label>
+                        <input type="radio" name="delete-option" value="user-only" checked>
+                        Delete user only (keep evaluations)
+                    </label>
+                    <label>
+                        <input type="radio" name="delete-option" value="user-and-evals">
+                        Delete user and all their evaluations
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="confirm-delete-user" class="admin-btn admin-btn-danger">Delete</button>
+                <button id="cancel-delete-user" class="admin-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Response Modal -->
+    <div id="ai-response-modal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3>Full AI Response</h3>
+                <span class="close" id="close-ai-response-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="ai-response-details">
+                    <p><strong>Question:</strong> <span id="ai-response-question"></span></p>
+                    <p><strong>Evaluator:</strong> <span id="ai-response-evaluator"></span></p>
+                </div>
+                <div class="ai-response-content">
+                    <h4>AI Response:</h4>
+                    <div id="ai-response-text" class="ai-response-text"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="copy-ai-response-btn" class="admin-btn">Copy to Clipboard</button>
+                <button id="close-ai-response-btn" class="admin-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html> 

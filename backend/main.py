@@ -16,8 +16,13 @@ from app import (
     get_provincial_law_info,
     ALLOWED_MODELS,
     count_tokens,
-    MODEL_PRICING
+    MODEL_PRICING,
+    db, Evaluation, Evaluator, EvalStatus
 )
+from flask import send_file
+import io
+import csv
+
 from app.gemini_handler import process_voice_query
 from app.gemini_tts_handler import tts_bp
 
@@ -28,6 +33,7 @@ load_dotenv()
 app = Flask(__name__, 
             template_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'app', 'templates'),
             static_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'app', 'static'))
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///bylaw_eval.db'
 CORS(app)
 app.register_blueprint(tts_bp)
 
@@ -39,6 +45,283 @@ LOG_FILE = os.path.join(BACKEND_DIR, 'queries_log.json')
 
 # Initialize ChromaDB retriever
 chroma_retriever = ChromaDBRetriever()
+
+# Initialize DB
+db.init_app(app)
+with app.app_context():
+    db.create_all()
+
+# Serve list of Q&A items for evaluation (stub: returns last 20 from log for now)
+@app.route('/api/eval-items', methods=['GET'])
+def get_eval_items():
+    # For now, load from log file (can be replaced with DB or API)
+    items = []
+    if os.path.exists(LOG_FILE):
+        with open(LOG_FILE, 'r', encoding='utf-8') as f:
+            logs = json.load(f)
+            for entry in logs[-20:]:
+                items.append({
+                    'question': entry['query'],
+                    'ai_response': entry.get('laymans_answer', ''),
+                    'reference_answer': '',  # Add if available
+                })
+    return jsonify(items)
+
+# Submit an evaluation
+@app.route('/api/eval', methods=['POST'])
+def submit_eval():
+    data = request.get_json()
+    
+    # Check if evaluation already exists for this evaluator and question
+    existing_eval = Evaluation.query.filter_by(
+        evaluator=data['evaluator'],
+        question=data['question']
+    ).first()
+    
+    if existing_eval:
+        # Update existing evaluation
+        existing_eval.ai_response = data['ai_response']
+        existing_eval.reference_answer = data.get('reference_answer', '')
+        existing_eval.response_generated = data['response_generated']
+        existing_eval.accuracy = data.get('accuracy')
+        existing_eval.hallucination = data.get('hallucination')
+        existing_eval.completeness = data.get('completeness')
+        existing_eval.authoritative = data.get('authoritative')
+        existing_eval.usefulness = data.get('usefulness')
+        existing_eval.comments = data.get('comments', '')
+        existing_eval.pass_fail = data.get('pass_fail')
+        existing_eval.timestamp = datetime.datetime.utcnow()  # Update timestamp
+        db.session.commit()
+        return jsonify({'status': 'updated', 'id': existing_eval.id})
+    else:
+        # Create new evaluation
+        eval_obj = Evaluation(
+            question=data['question'],
+            ai_response=data['ai_response'],
+            reference_answer=data.get('reference_answer', ''),
+            evaluator=data['evaluator'],
+            response_generated=data['response_generated'],
+            accuracy=data.get('accuracy'),
+            hallucination=data.get('hallucination'),
+            completeness=data.get('completeness'),
+            authoritative=data.get('authoritative'),
+            usefulness=data.get('usefulness'),
+            comments=data.get('comments', ''),
+            pass_fail=data.get('pass_fail')
+        )
+        db.session.add(eval_obj)
+        db.session.commit()
+        return jsonify({'status': 'created', 'id': eval_obj.id})
+
+# Serve evaluator list
+@app.route('/api/evaluators', methods=['GET'])
+def get_evaluators():
+    evaluators = Evaluator.query.all()
+    return jsonify([e.name for e in evaluators])
+
+# Add a new evaluator (if not already present)
+@app.route('/api/evaluators', methods=['POST'])
+def add_evaluator():
+    data = request.get_json()
+    name = data.get('name', '').strip()
+    if not name:
+        return jsonify({'error': 'Name is required'}), 400
+    existing = Evaluator.query.filter_by(name=name).first()
+    if existing:
+        return jsonify({'status': 'exists', 'name': name})
+    new_eval = Evaluator(name=name)
+    db.session.add(new_eval)
+    db.session.commit()
+    return jsonify({'status': 'added', 'name': name})
+
+# Delete an evaluator with options
+@app.route('/api/evaluators/<name>', methods=['DELETE'])
+def delete_evaluator(name):
+    data = request.get_json() or {}
+    delete_evals = data.get('delete_evals', False)
+    
+    # Find the evaluator
+    evaluator = Evaluator.query.filter_by(name=name).first()
+    if not evaluator:
+        return jsonify({'error': 'Evaluator not found'}), 404
+    
+    try:
+        if delete_evals:
+            # Delete all evaluations for this evaluator
+            Evaluation.query.filter_by(evaluator=name).delete()
+            # Delete all eval statuses for this evaluator
+            EvalStatus.query.filter_by(evaluator=name).delete()
+        
+        # Delete the evaluator
+        db.session.delete(evaluator)
+        db.session.commit()
+        
+        return jsonify({
+            'status': 'success',
+            'message': f'Evaluator {name} deleted' + (' along with all evaluations and statuses' if delete_evals else '')
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Failed to delete evaluator: {str(e)}'}), 500
+
+# Delete a specific evaluation by ID
+@app.route('/api/eval/<int:eval_id>', methods=['DELETE'])
+def delete_evaluation(eval_id):
+    evaluation = Evaluation.query.get(eval_id)
+    if not evaluation:
+        return jsonify({'error': 'Evaluation not found'}), 404
+    
+    try:
+        db.session.delete(evaluation)
+        db.session.commit()
+        return jsonify({
+            'status': 'success',
+            'message': f'Evaluation {eval_id} deleted'
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Failed to delete evaluation: {str(e)}'}), 500
+
+# Admin: export all evaluations as CSV
+@app.route('/api/eval-admin/export', methods=['GET'])
+def export_evals():
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['question', 'ai_response', 'reference_answer', 'evaluator', 'response_generated', 'accuracy', 'hallucination', 'completeness', 'authoritative', 'usefulness', 'comments', 'pass_fail', 'timestamp'])
+    for e in Evaluation.query.all():
+        writer.writerow([e.question, e.ai_response, e.reference_answer, e.evaluator, e.response_generated, e.accuracy, e.hallucination, e.completeness, e.authoritative, e.usefulness, e.comments, e.pass_fail, e.timestamp])
+    output.seek(0)
+    return send_file(io.BytesIO(output.getvalue().encode()), mimetype='text/csv', as_attachment=True, download_name='evaluations.csv')
+
+# Admin: summary stats (simple counts/averages)
+@app.route('/api/eval-admin/summary', methods=['GET'])
+def eval_summary():
+    evals = Evaluation.query.all()
+    count = len(evals)
+    if count == 0:
+        return jsonify({'count': 0})
+    avg = lambda field: round(sum(getattr(e, field) or 0 for e in evals) / count, 2)
+    return jsonify({
+        'count': count,
+        'avg_accuracy': avg('accuracy'),
+        'avg_hallucination': avg('hallucination'),
+        'avg_completeness': avg('completeness'),
+        'avg_authoritative': avg('authoritative'),
+        'avg_usefulness': avg('usefulness'),
+    })
+
+# Admin: per-evaluator progress and stats
+@app.route('/api/eval-admin/progress', methods=['GET'])
+def eval_admin_progress():
+    from sqlalchemy import func
+    evals = Evaluation.query.all()
+    evaluators = Evaluator.query.all()
+    # Get total number of questions (assume all evaluators should answer all questions)
+    with open('app/eval_questions.json', 'r') as f:
+        total_questions = len(json.load(f))
+    # Build progress per evaluator
+    progress = []
+    for e in evaluators:
+        user_evals = [ev for ev in evals if ev.evaluator == e.name]
+        count = len(user_evals)
+        avg = lambda field: round(sum(getattr(ev, field) or 0 for ev in user_evals) / count, 2) if count else None
+        progress.append({
+            'evaluator': e.name,
+            'completed': count,
+            'total': total_questions,
+            'avg_accuracy': avg('accuracy'),
+            'avg_hallucination': avg('hallucination'),
+            'avg_completeness': avg('completeness'),
+            'avg_authoritative': avg('authoritative'),
+            'avg_usefulness': avg('usefulness'),
+        })
+    return jsonify(progress)
+
+# Admin: all evaluations grouped by question with cumulative and individual scores
+@app.route('/api/eval-admin/all', methods=['GET'])
+def eval_admin_all():
+    from collections import defaultdict
+    evals = Evaluation.query.all()
+    # Group by question only
+    grouped = defaultdict(list)
+    for ev in evals:
+        grouped[ev.question].append(ev)
+    result = []
+    for question, group in grouped.items():
+        n = len(group)
+        def avg(field):
+            vals = [getattr(ev, field) for ev in group if getattr(ev, field) is not None]
+            return round(sum(vals) / len(vals), 2) if vals else None
+        
+        # Calculate pass/fail statistics
+        pass_count = sum(1 for ev in group if ev.pass_fail == 'Pass')
+        fail_count = sum(1 for ev in group if ev.pass_fail == 'Fail')
+        pass_rate = round((pass_count / n) * 100, 1) if n > 0 else 0
+        
+        result.append({
+            'question': question,
+            'count': n,
+            'avg_accuracy': avg('accuracy'),
+            'avg_hallucination': avg('hallucination'),
+            'avg_completeness': avg('completeness'),
+            'avg_authoritative': avg('authoritative'),
+            'avg_usefulness': avg('usefulness'),
+            'pass_count': pass_count,
+            'fail_count': fail_count,
+            'pass_rate': pass_rate,
+            'evaluations': [
+                {
+                    'id': ev.id,
+                    'evaluator': ev.evaluator,
+                    'ai_response': ev.ai_response,
+                    'response_generated': ev.response_generated,
+                    'accuracy': ev.accuracy,
+                    'hallucination': ev.hallucination,
+                    'completeness': ev.completeness,
+                    'authoritative': ev.authoritative,
+                    'usefulness': ev.usefulness,
+                    'comments': ev.comments,
+                    'pass_fail': ev.pass_fail,
+                    'timestamp': ev.timestamp
+                }
+                for ev in group
+            ]
+        })
+    return jsonify(result)
+
+# --- EvalStatus API ---
+@app.route('/api/eval-status', methods=['GET'])
+def get_eval_status():
+    evaluator = request.args.get('evaluator')
+    if not evaluator:
+        return jsonify({'error': 'Missing evaluator'}), 400
+    statuses = EvalStatus.query.filter_by(evaluator=evaluator).all()
+    result = [
+        {
+            'question_idx': s.question_idx,
+            'bookmarked': s.bookmarked,
+            'skipped': s.skipped
+        } for s in statuses
+    ]
+    return jsonify(result)
+
+@app.route('/api/eval-status', methods=['POST'])
+def set_eval_status():
+    data = request.get_json()
+    evaluator = data.get('evaluator')
+    question_idx = data.get('question_idx')
+    bookmarked = bool(data.get('bookmarked', False))
+    skipped = bool(data.get('skipped', False))
+    if evaluator is None or question_idx is None:
+        return jsonify({'error': 'Missing evaluator or question_idx'}), 400
+    status = EvalStatus.query.filter_by(evaluator=evaluator, question_idx=question_idx).first()
+    if not status:
+        status = EvalStatus(evaluator=evaluator, question_idx=question_idx)
+        db.session.add(status)
+    status.bookmarked = bookmarked
+    status.skipped = skipped
+    db.session.commit()
+    return jsonify({'status': 'ok'})
 
 @app.route('/api/hello', methods=['GET'])
 def hello():
@@ -457,6 +740,31 @@ def voice_query():
     result = process_voice_query(audio_data, mime_type)
     # Return the transcript directly
     return jsonify({"transcript": result})
+
+# Utility: Populate evaluators and load golden questions
+@app.cli.command('init-eval-data')
+def init_eval_data():
+    with app.app_context():
+        # Add 10 evaluators if not present
+        for i in range(1, 11):
+            name = f'User_{i}'
+            if not Evaluator.query.filter_by(name=name).first():
+                db.session.add(Evaluator(name=name))
+        db.session.commit()
+        print('Evaluators added.')
+        # Load golden questions (if needed for future expansion)
+        import json
+        with open('app/eval_questions.json', 'r') as f:
+            questions = json.load(f)
+        print(f'Loaded {len(questions)} golden questions.')
+
+# Endpoint to get golden set of questions
+@app.route('/api/golden-questions', methods=['GET'])
+def get_golden_questions():
+    import json
+    with open('app/eval_questions.json', 'r') as f:
+        questions = json.load(f)
+    return jsonify(questions)
 
 if __name__ == '__main__':
     # Check if SSL certificate files exist
