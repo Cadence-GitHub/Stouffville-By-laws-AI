@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evaluation System - Stouffville By-laws AI</title>
+    <link rel="icon" href="/static/images/favicon.png" type="image/png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/public_demo.css">
+    <style>
+        .redirect-container {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .redirect-message {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .redirect-message h2 {
+            margin-bottom: 1rem;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+        
+        .redirect-message p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        
+        .countdown {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #ffd700;
+            margin-bottom: 1rem;
+        }
+        
+        .redirect-button {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 1rem;
+        }
+        
+        .redirect-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(238, 90, 36, 0.3);
+        }
+        
+        .info-box {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            border-left: 4px solid #ffd700;
+        }
+        
+        .info-box h4 {
+            margin-bottom: 0.5rem;
+            color: #ffd700;
+        }
+        
+        .info-box ul {
+            text-align: left;
+            margin: 0;
+            padding-left: 1.5rem;
+        }
+        
+        .info-box li {
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <header>
+            <div class="theme-switch-wrapper">
+                <label class="theme-switch" for="checkbox">
+                    <div class="slider-icons">
+                        <i class="fas fa-sun"></i>
+                        <i class="fas fa-moon"></i>
+                    </div>
+                    <input type="checkbox" id="checkbox" />
+                    <div class="slider"></div>
+                </label>
+            </div>
+            <h1>Bylaw AI</h1>
+            <p class="h1">Bylaw AI SME Evaluation</p>
+        </header>
+        
+        <div class="redirect-container">
+            <div class="redirect-message">
+                <h2>🚧 Evaluation System Temporarily Unavailable</h2>
+                <p>We're currently transitioning our evaluation system to a more streamlined approach. The evaluation interface you're looking for is no longer available here.</p>
+                
+                <div class="countdown" id="countdown">
+                    Redirecting in <span id="timer">20</span> seconds...
+                </div>
+                
+                <div class="info-box">
+                    <h4>📋 How to Evaluate AI Responses:</h4>
+                    <ul>
+                        <li><strong>Use the main chat application</strong> at bylaws.aicircle.ca to interact with the AI</li>
+                        <li><strong>Access the <a href="https://docs.google.com/spreadsheets/d/19gyLzqQp76mnxd-OI8ZrGTTe2-meze43yNZfHFpnkyY/edit?usp=sharing" target="_blank" rel="noopener noreferrer" style="color: #ffd700; text-decoration: underline;">Google Sheet</a></strong> to record your evaluations and feedback</li>
+                    </ul>
+                </div>
+                
+                <a href="https://bylaws.aicircle.ca" class="redirect-button" id="redirectButton">
+                    <i class="fas fa-external-link-alt"></i> Go to Main Application
+                </a>
+            </div>
+        </div>
+        
+        <footer>
+            <p>This AI tool provides general information about Stouffville by-laws and should not be considered legal advice.</p>
+            <div class="footer-links">
+                <a href="https://github.com/Cadence-GitHub/Stouffville-By-laws-AI" target="_blank" rel="noopener noreferrer">
+                    <i class="fab fa-github"></i> GitHub
+                </a>
+                <span class="separator">|</span>
+                <a href="https://aicircle.ca/" target="_blank" rel="noopener noreferrer">
+                    <img src="/static/images/aicircle_logo_small.webp" alt="AI Circle Logo" style="width: 32px; height: 32px; margin-right: 0.5rem; vertical-align: middle;"> AI Circle
+                </a>
+            </div>
+        </footer>
+    </main>
+    
+    <script>
+        // Countdown timer
+        let timeLeft = 30;
+        const timerElement = document.getElementById('timer');
+        const countdownElement = document.getElementById('countdown');
+        
+        const countdown = setInterval(() => {
+            timeLeft--;
+            timerElement.textContent = timeLeft;
+            
+            if (timeLeft <= 0) {
+                clearInterval(countdown);
+                countdownElement.textContent = 'Redirecting now...';
+                window.location.href = 'https://bylaws.aicircle.ca';
+            }
+        }, 1000);
+        
+        // Manual redirect button
+        document.getElementById('redirectButton').addEventListener('click', function(e) {
+            e.preventDefault();
+            countdownElement.textContent = 'Redirecting now...';
+            clearInterval(countdown);
+            window.location.href = 'https://bylaws.aicircle.ca';
+        });
+        
+        // Theme switching functionality (from public_demo.css)
+        const checkbox = document.getElementById('checkbox');
+        const html = document.documentElement;
+        
+        // Check for saved theme preference or default to light
+        const currentTheme = localStorage.getItem('theme') ? localStorage.getItem('theme') : null;
+        if (currentTheme) {
+            html.setAttribute('data-theme', currentTheme);
+            if (currentTheme === 'dark') {
+                checkbox.checked = true;
+            }
+        }
+        
+        // Listen for checkbox changes
+        checkbox.addEventListener('change', function() {
+            if (this.checked) {
+                html.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                html.setAttribute('data-theme', 'light');
+                localStorage.setItem('theme', 'light');
+            }
+        });
+    </script>
+</body>
+</html> 
