@@ -169,7 +169,7 @@ def demo():
         query = request.form.get('query', '')
         compare_mode = request.form.get('filter_expired', 'false') == 'true'
         side_by_side = request.form.get('side_by_side', 'false') == 'true'
-        model = request.form.get('model', 'gemini-2.0-flash')
+        model = request.form.get('model', 'gemini-2.5-flash')
         # Get the bylaws limit parameter, default to 10 if not provided
         bylaws_limit = int(request.form.get('bylaws_limit', '10'))
         # Check if enhanced search is enabled
@@ -433,7 +433,7 @@ def provincial_laws():
     """API endpoint that provides information about provincial laws with Google Search grounding."""
     data = request.get_json()
     bylaw_type = data.get('bylaw_type', 'general')
-    model = data.get('model', 'gemini-2.0-flash')
+    model = data.get('model', 'gemini-2.5-flash')
     
     response = get_provincial_law_info(bylaw_type, model)
     
