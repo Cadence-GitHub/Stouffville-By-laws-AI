@@ -435,14 +435,14 @@ The system uses a cost-efficient multi-step approach for processing by-laws info
 The API now standardizes on the 'gemini-mixed' approach for all public-facing endpoints, but still supports model selection in the developer demo:
 
 - `gemini-mixed`: Uses the best model for each query stage (default for all API calls)
-- `gemini-2.0-flash-lite`: Fastest, lowest cost option (available in dev demo only)
-- `gemini-2.0-flash`: Balanced speed and quality (available in dev demo only)
-- `gemini-2.5-flash`: Best reasoning option (available in dev demo only)
+- `gemini-2.5-flash-lite`: Fastest, lowest cost option (available in dev demo only)
+- `gemini-2.5-flash`: Balanced speed and quality (available in dev demo only)
+- `gemini-3-flash-preview`: Best reasoning option (available in dev demo only)
 
 The gemini-mixed option selects different models for different processing stages:
-- Query transformation: Uses `gemini-2.0-flash` for efficient query enhancement
-- First query (bylaws): Uses `gemini-2.5-flash` for highest quality initial response
-- Second query (layman's terms): Uses `gemini-2.0-flash` for balanced quality/speed in final simplification
+- Query transformation: Uses `gemini-2.5-flash-lite` for efficient, low-cost query enhancement
+- First query (bylaws): Uses `gemini-3-flash-preview` for highest quality initial response
+- Second query (layman's terms): Uses `gemini-2.5-flash-lite` for balanced quality/speed in final simplification
 
 Each prompt type uses a specific temperature setting for optimal results:
 - Bylaws prompt: 0.0 (consistent, deterministic outputs)

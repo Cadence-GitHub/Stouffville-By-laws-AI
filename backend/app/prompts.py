@@ -1,4 +1,4 @@
-from langchain.prompts import PromptTemplate
+from langchain_core.prompts import PromptTemplate
 from datetime import datetime
 
 # Define temperature values for each prompt type in a dictionary

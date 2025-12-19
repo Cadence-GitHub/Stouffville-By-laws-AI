@@ -1,7 +1,9 @@
 import os
 import json
+import random
+import logging
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain.schema.output_parser import StrOutputParser
+from langchain_core.output_parsers import StrOutputParser
 from app.prompts import (
     get_bylaws_prompt_template, 
     LAYMANS_PROMPT_TEMPLATE, ENHANCED_SEARCH_PROMPT_TEMPLATE,
@@ -11,12 +13,36 @@ import time
 import re
 from langchain_core.messages import HumanMessage
 
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+def _get_google_api_key():
+    """
+    Retrieves a random Google API key from environment variables.
+    It looks for keys named GOOGLE_API_KEY, GOOGLE_API_KEY2, ..., GOOGLE_API_KEY9.
+    """
+    key_names = []
+    # The first key is GOOGLE_API_KEY, the rest are GOOGLE_API_KEY2, GOOGLE_API_KEY3, etc.
+    for i in range(1, 10):
+        key_name = f"GOOGLE_API_KEY{i if i > 1 else ''}"
+        if os.environ.get(key_name):
+            key_names.append(key_name)
+
+    if not key_names:
+        logging.error("No Google API keys found in environment variables.")
+        return None
+
+    logging.info(f"Found {len(key_names)} API key(s): {', '.join(key_names)}")
+    selected_key_name = random.choice(key_names)
+    logging.info(f"Using API key: {selected_key_name}")
+    return os.environ.get(selected_key_name)
+
 # Define allowed models
 ALLOWED_MODELS = [
     "gemini-mixed",
-    "gemini-2.0-flash",
-    "gemini-2.0-flash-lite", 
-    "gemini-2.5-flash"
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-lite", 
+    "gemini-3-flash-preview"
 ]
 
 def invoke_model_with_timing(prompt_type, model_config, prompt_template, prompt_args):
@@ -90,20 +116,20 @@ def convert_bylaw_tags_to_links(text):
     
     return result
 
-def get_gemini_response(query, relevant_bylaws, model="gemini-2.0-flash", bylaw_status="active"):
+def get_gemini_response(query, relevant_bylaws, model="gemini-2.5-flash", bylaw_status="active"):
     """
     Process user queries through the Gemini AI model.
     
     Args:
         query (str): The user's question about Stouffville by-laws
         relevant_bylaws (list): List of by-laws relevant to the query
-        model (str): The Gemini model to use (default: gemini-2.0-flash)
+        model (str): The Gemini model to use (default: gemini-2.5-flash)
         bylaw_status (str): Status of bylaws being queried (default: "active")
         
     Returns:
         dict: Contains either the AI response(s) or error information
     """
-    api_key = os.environ.get("GOOGLE_API_KEY")
+    api_key = _get_google_api_key()
     if not api_key:
         return {"error": "GOOGLE_API_KEY environment variable is not set"}
     
@@ -119,8 +145,8 @@ def get_gemini_response(query, relevant_bylaws, model="gemini-2.0-flash", bylaw_
         if model == "gemini-mixed":
             # For gemini-mixed option, use specific models for each step
             models = {
-                "bylaws": "gemini-2.5-flash",  # Best model for first query
-                "laymans": "gemini-2.0-flash"                # Balanced model for second query
+                "bylaws": "gemini-3-flash-preview",   # Highest quality for first query
+                "laymans": "gemini-2.5-flash-lite"  # Lightweight model for second query
             }
         else:
             # For all other options, use the selected model for all steps
@@ -174,7 +200,7 @@ def get_gemini_response(query, relevant_bylaws, model="gemini-2.0-flash", bylaw_
     except Exception as e:
         return {"error": str(e)}
 
-def transform_query_for_enhanced_search(query, model="gemini-2.0-flash"):
+def transform_query_for_enhanced_search(query, model="gemini-2.5-flash"):
     """
     Transform a user query into formal, bylaw-oriented language for enhanced search.
     
@@ -185,14 +211,14 @@ def transform_query_for_enhanced_search(query, model="gemini-2.0-flash"):
     Returns:
         tuple: (transformed_query, transform_time) or (original_query, 0) if transformation fails
     """
-    api_key = os.environ.get("GOOGLE_API_KEY")
+    api_key = _get_google_api_key()
     if not api_key:
         print("GOOGLE_API_KEY environment variable is not set")
         return query, 0
     
     try:
-        # For the gemini-mixed option, always use gemini-2.0-flash for query transformation
-        transform_model = "gemini-2.0-flash" if model == "gemini-mixed" else model
+        # For the gemini-mixed option, always use gemini-2.5-flash-lite for query transformation
+        transform_model = "gemini-2.5-flash-lite" if model == "gemini-mixed" else model
         
         model_config = {
             'model': transform_model,
@@ -237,9 +263,9 @@ def clean_response(response):
     
     return response 
 
-def get_provincial_law_info(bylaw_type, model="gemini-2.0-flash"):
+def get_provincial_law_info(bylaw_type, model="gemini-2.5-flash"):
     """Get information about provincial laws using Google Search grounding."""
-    api_key = os.environ.get("GOOGLE_API_KEY")
+    api_key = _get_google_api_key()
     if not api_key:
         return {"error": "GOOGLE_API_KEY environment variable is not set"}
     
@@ -249,7 +275,7 @@ def get_provincial_law_info(bylaw_type, model="gemini-2.0-flash"):
     try:
         # Define model to use
         if model == "gemini-mixed":
-            model_to_use = "gemini-2.0-flash"
+            model_to_use = "gemini-2.5-flash"
         else:
             model_to_use = model
             
@@ -373,12 +399,12 @@ def get_provincial_law_info(bylaw_type, model="gemini-2.0-flash"):
         return {"error": str(e)}
 
 # Process voice queries
-def process_voice_query(encoded_audio: str, mime_type: str, model: str = "gemini-2.0-flash"):
+def process_voice_query(encoded_audio: str, mime_type: str, model: str = "gemini-2.5-flash"):
     """
     Process a voice query audio using the VOICE_PROMPT_TEMPLATE and return the reformulated question
     or NO_BYLAW_QUESTION_DETECTED.
     """
-    api_key = os.environ.get("GOOGLE_API_KEY")
+    api_key = _get_google_api_key()
     if not api_key:
         return "Error: GOOGLE_API_KEY environment variable is not set"
 

@@ -28,9 +28,9 @@
             <label for="model">Select model:</label>
             <select id="model" name="model">
                 <option value="gemini-mixed" {% if model == "gemini-mixed" or not model %}selected{% endif %}>gemini-mixed (use best model for each query)</option>
-                <option value="gemini-2.0-flash-lite" {% if model == "gemini-2.0-flash-lite" %}selected{% endif %}>gemini-2.0-flash-lite (fastest, lowest cost)</option>
-                <option value="gemini-2.0-flash" {% if model == "gemini-2.0-flash" %}selected{% endif %}>gemini-2.0-flash (balanced speed/quality)</option>
-                <option value="gemini-2.5-flash" {% if model == "gemini-2.5-flash" %}selected{% endif %}>gemini-2.5-flash (best reasoning)</option>
+                <option value="gemini-2.5-flash-lite" {% if model == "gemini-2.5-flash-lite" %}selected{% endif %}>gemini-2.5-flash-lite (fastest, lowest cost)</option>
+                <option value="gemini-2.5-flash" {% if model == "gemini-2.5-flash" %}selected{% endif %}>gemini-2.5-flash (balanced speed/quality)</option>
+                <option value="gemini-3-flash-preview" {% if model == "gemini-3-flash-preview" %}selected{% endif %}>gemini-3-flash-preview (best reasoning)</option>
             </select>
             
             <label for="bylaws_limit" style="margin-left: 20px;">Bylaws to retrieve from ChromaDB:</label>
@@ -78,9 +78,9 @@
                 
                 <label for="provincial_model" style="margin-left: 20px; margin-right: 10px;">Model:</label>
                 <select id="provincial_model">
-                    <option value="gemini-2.0-flash" selected>gemini-2.0-flash</option>
-                    <option value="gemini-2.0-flash-lite">gemini-2.0-flash-lite</option>
-                    <option value="gemini-2.5-flash">gemini-2.5-flash</option>
+                    <option value="gemini-2.5-flash" selected>gemini-2.5-flash</option>
+                    <option value="gemini-2.5-flash-lite">gemini-2.5-flash-lite</option>
+                    <option value="gemini-3-flash-preview">gemini-3-flash-preview</option>
                 </select>
                 
                 <button type="button" id="fetchProvincialLaws" style="margin-left: 20px;">Fetch Information</button>

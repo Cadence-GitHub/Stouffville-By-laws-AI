@@ -9,12 +9,12 @@ from app.prompts import (
 # Model pricing information (cost per 1M tokens)
 MODEL_PRICING = {
     "gemini-mixed": {"input": 0.15, "output": 2.00},  # Estimated cost for gemini-mixed
-    "gemini-2.0-flash": {"input": 0.10, "output": 0.40},
-    "gemini-2.0-flash-lite": {"input": 0.07, "output": 0.30},
-    "gemini-2.5-flash": {"input": 0.30, "output": 5.00}
+    "gemini-2.5-flash": {"input": 0.30, "output": 5.00},
+    "gemini-2.5-flash-lite": {"input": 0.10, "output": 0.40},
+    "gemini-3-flash-preview": {"input": 2.00, "output": 24.00}
 }
 
-def count_tokens(bylaws=None, response=None, model="gemini-2.0-flash"):
+def count_tokens(bylaws=None, response=None, model="gemini-2.5-flash"):
     """
     Count tokens in bylaws data and Gemini responses using tiktoken.
     Also calculates the cost based on the model used.
@@ -76,7 +76,7 @@ def count_tokens(bylaws=None, response=None, model="gemini-2.0-flash"):
             token_counts['output_tokens'] = full_tokens + filtered_tokens + laymans_tokens
         
         # Calculate costs based on model
-        pricing = MODEL_PRICING.get(model, MODEL_PRICING["gemini-2.0-flash"])
+        pricing = MODEL_PRICING.get(model, MODEL_PRICING["gemini-2.5-flash"])
         token_counts['input_cost'] = (token_counts['input_tokens'] / 1000000) * pricing["input"]
         token_counts['output_cost'] = (token_counts['output_tokens'] / 1000000) * pricing["output"]
         token_counts['total_cost'] = token_counts['input_cost'] + token_counts['output_cost']
